@@ -33,7 +33,7 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     'sslserver',
     'corsheaders',
-    'EduAdmin'
+    'EduAdmin.apps.EduAdminConfig'
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
