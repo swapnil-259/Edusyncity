@@ -33,7 +33,7 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     'sslserver',
     'corsheaders',
-    'EduAdmin.apps.EduAdminConfig'
+    'EduAdmin.apps.EduadminConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -84,6 +84,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'EduSyncity.wsgi.application'
+AUTH_USER_MODEL = 'EduAdmin.User'
 
 
 # Database
@@ -94,7 +95,7 @@ DATABASES = {
          'ENGINE': 'django.db.backends.mysql',
         'NAME': 'EduSyncity',
         'USER': 'harry',
-        'PASSWORD':'MyStrongPassword1234$g',
+        'PASSWORD':'MyStrongPassword1234$',
         'HOST':'localhost',
         'PORT':'3306',
     }
