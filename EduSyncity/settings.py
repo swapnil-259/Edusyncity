@@ -89,16 +89,6 @@ WSGI_APPLICATION = 'EduSyncity.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'EduSyncity',
-        'USER': 'nikhil',
-        'PASSWORD':'Nik212107@',
-        'HOST':'localhost',
-        'PORT':'3306',
-    }
-}
 
 
 # Password validation
