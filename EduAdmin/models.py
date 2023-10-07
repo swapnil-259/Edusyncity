@@ -9,9 +9,9 @@ class BaseModel(models.Model):
     deleted_status = models.BooleanField(default=0)
     deleted_time = models.DateTimeField(null=True)
 
-class DepartmentUnderCourses(models.Model):
+class DepartmentUnderCourses(BaseModel):
     courses_name = models.CharField(null = True, max_length=100)
-    course = models.ForeignKey("Courses", on_delete=models.CASCADE)
+    course = models.ForeignKey("DepartmentUnderCourses", on_delete=models.CASCADE)
     
 class Roles(BaseModel):
     role_name=models.CharField(max_length=50,null=True)
@@ -27,6 +27,6 @@ class Subjects(BaseModel):
 
 class Faculty(BaseModel):
     user=models.ForeignKey(User,on_delete=models.CASCADE,null=True)
-    department=models.ForeignKey(DepartmentUnderCourses,on_delete=models)
+    department=models.ForeignKey(DepartmentUnderCourses,on_delete=models.CASCADE, null=True)
     subject=models.ForeignKey(Subjects,on_delete=models.CASCADE,null=True)
     qualification=models.CharField(null=True,max_length=100)
