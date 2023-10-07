@@ -1,0 +1,7 @@
+# ignore files
+
+migrations/
+
+# dont ignore files
+
+!__init__.py

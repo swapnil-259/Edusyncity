@@ -94,9 +94,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'Edusyncity',
-        'USER': 'harry',
+        'USER': 'swapnil',
         'PASSWORD':'Kiet@123',
-        'HOST':'%',
+        'HOST':'0.0.0.0',
         'PORT':'3306',
     }
 }
