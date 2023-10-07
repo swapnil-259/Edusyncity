@@ -21,7 +21,7 @@ class UserRole(BaseModel):
     department=models.ForeignKey(DepartmentUnderCourses,on_delete=models.CASCADE,null=True)
     role=models.ForeignKey(Roles,on_delete=models.CASCADE,null=True)
     
-class Subjects(models.Model):
+class Subjects(BaseModel):
     subject_name = models.CharField(max_length=100, null=True)
     subject_code = models.CharField(max_length=50, null=True)
 
