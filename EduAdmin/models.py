@@ -8,6 +8,9 @@ class BaseModel(models.Model):
     created_time=models.DateTimeField(auto_now_add=True)
     deleted_status = models.BooleanField(default=0)
     deleted_time = models.DateTimeField(null=True)
+    
+class Meta:
+        abstract = True
 
 class DepartmentUnderCourses(BaseModel):
     courses_name = models.CharField(null = True, max_length=100)

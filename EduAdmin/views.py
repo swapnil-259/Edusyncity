@@ -75,8 +75,7 @@ def login_user(request):
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=400)
 
-def logout_user(request):   
-    
+def logout_user(request):      
     if request.method == 'GET':
         
         if request.user.is_authenticated:
