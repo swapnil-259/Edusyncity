@@ -4,15 +4,9 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     pass
 
-class Basemodel(models.Model):
-    created_time=models.DateTimeField(auto_now=True)
-    deleted_status=models.BooleanField(default=False)
-    deleted_time=models.DateTimeField(null=True)
-
-
-class DepartmentUnderCourses(Basemodel):
-    name = models.CharField(null = True, max_length=100)
-    course = models.ForeignKey("DepartmentUnderCourses", on_delete=models.CASCADE)
+class Courses(models.Model):
+    courses_name = models.CharField(null = True, max_length=100)
+    course = models.ForeignKey("Courses", on_delete=models.CASCADE)
     
 
 
