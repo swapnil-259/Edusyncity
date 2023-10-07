@@ -22,6 +22,10 @@ def register_faculty(request):
       profile_pic = request.FILES.get('profilepic')
       password =  request.POST.get('password')
       confirm_pass =  request.POST.get('confirmpassword')
+
+      if not re.match(r'(/^[A-Za-z]+$/)', qualification):
+            return JsonResponse({'message':'Only Charcters are Alowed in Qulification Field'},status=400)
+      
       if password != confirm_pass:
             return JsonResponse({'message': 'Password and confirmPassword do not match'}, status=400)
       if user_name or first_name or last_name or email or gender or phone or age or address or password or confirm_pass== None:
