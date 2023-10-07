@@ -13,8 +13,6 @@ class DepartmentUnderCourses(models.Model):
     courses_name = models.CharField(null = True, max_length=100)
     course = models.ForeignKey("Courses", on_delete=models.CASCADE)
     
-
-
 class Roles(BaseModel):
     role_name=models.CharField(max_length=50,null=True)
 
@@ -22,8 +20,10 @@ class UserRole(BaseModel):
     user=models.ForeignKey(User,on_delete=models.CASCADE,null=True)
     department=models.ForeignKey(DepartmentUnderCourses,on_delete=models.CASCADE,null=True)
     role=models.ForeignKey(Roles,on_delete=models.CASCADE,null=True)
-   
-
+    
+class Subjects(models.Model):
+    subject_name = models.CharField(max_length=100, null=True)
+    subject_code = models.CharField(max_length=50, null=True)
 
 class Faculty(BaseModel):
     user=models.ForeignKey(User,on_delete=models.CASCADE,null=True)
