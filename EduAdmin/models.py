@@ -3,3 +3,7 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     pass
+
+class Courses(models.Model):
+    courses_name = models.CharField(null = True, max_length=100)
+    department = models.ForeignKey("Courses", on_delete=models.CASCADE)
