@@ -6,4 +6,5 @@ class User(AbstractUser):
 
 class Courses(models.Model):
     courses_name = models.CharField(null = True, max_length=100)
-    department = models.ForeignKey("Courses", on_delete=models.CASCADE)
+    course = models.ForeignKey("Courses", on_delete=models.CASCADE)
+    
