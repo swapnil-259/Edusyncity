@@ -92,11 +92,11 @@ AUTH_USER_MODEL = 'EduAdmin.User'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Edusyncity',
+         'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'EduSyncity',
         'USER': 'harry',
-        'PASSWORD':'Kiet@123',
-        'HOST':'10.21.66.153',
+        'PASSWORD':'MyStrongPassword1234$',
+        'HOST':'localhost',
         'PORT':'3306',
     }
 }
