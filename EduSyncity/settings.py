@@ -95,8 +95,8 @@ DATABASES = {
          'ENGINE': 'django.db.backends.mysql',
         'NAME': 'EduSyncity',
         'USER': 'harry',
-        'PASSWORD':'MyStrongPassword1234$',
-        'HOST':'localhost',
+        'PASSWORD':'Kiet@123',
+        'HOST':'10.21.66.153',
         'PORT':'3306',
     }
 }
