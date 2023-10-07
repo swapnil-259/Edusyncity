@@ -30,3 +30,5 @@ class Faculty(BaseModel):
     department=models.ForeignKey(DepartmentUnderCourses,on_delete=models.CASCADE, null=True)
     subject=models.ForeignKey(Subjects,on_delete=models.CASCADE,null=True)
     qualification=models.CharField(null=True,max_length=100)
+    address = models.CharField(max_length=200, blank=True)
+    profile_picture = models.ImageField(upload_to = 'faculty_profile_pics', blank=True)
