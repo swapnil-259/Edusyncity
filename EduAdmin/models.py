@@ -8,13 +8,18 @@ class BaseModel(models.Model):
     created_time=models.DateTimeField(auto_now_add=True)
     deleted_status = models.BooleanField(default=0)
     deleted_time = models.DateTimeField(null=True)
+    added_by= models.ForeignKey(User,on_delete=models.SET_NULL)
     
-class Meta:
+    class Meta:
         abstract = True
 
 class DepartmentUnderCourses(BaseModel):
-    courses_name = models.CharField(null = True, max_length=100)
-    course = models.ForeignKey("DepartmentUnderCourses", on_delete=models.CASCADE)
+    name = models.CharField(null = True, max_length=100)
+    relation = models.ForeignKey("DepartmentUnderCourses", on_delete=models.CASCADE)
+    can_delete=models.BooleanField(default=False)
+    can_update=models.BooleanField(default=False)
+    child=models.PositiveIntegerField(default='0')
+    order_by=models.PositiveIntegerField(blank=True)
     
 class Roles(BaseModel):
     role_name=models.CharField(max_length=50,null=True)
