@@ -8,7 +8,8 @@ urlpatterns = [
      path('add_role/', views.add_role, name = 'add_role'),
      path('add_course/', views.add_course, name = 'add_course'),
      path('add_departments/', views.add_departments, name = 'add_departments'),
-     path('assign_department/',views.assign_department_to_course, name='assign_department_to_course')
+     path('assign_department/',views.assign_department_to_course, name='assign_department_to_course'),
+     path('sidebar/',views.sidebar, name='sidebar')
 
 ]
   
