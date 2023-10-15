@@ -2,7 +2,11 @@ from django.shortcuts import render
 from django.http import JsonResponse,HttpResponse
 import json
 import re
+<<<<<<< HEAD
 from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping 
+=======
+from .models import User,Roles, UserRole, Faculty,Dropdown, Mapping
+>>>>>>> f4446fa34c0f3cfe0765dba08dadf5dd685b1694
 from django.contrib.auth import authenticate,login,logout
 from django.db.models.functions import Lower
 
@@ -212,9 +216,16 @@ def assign_department_to_course(request):
                     department_id = load.get('department_id')
                     mapping, created = Mapping.objects.get_or_create(course= course_id, department = department_id, added_by = user_exist )
                     if created:
-                        return JsonResponse({'message':'successfully department added to course'})
+                        course_exist= Dropdown.objects.filter(pk = course_id).first()
+                        department_exist = Dropdown.objects.filter(pk = department_id).first()
+                    if course_exist is not None and department_exist is not None:
+                        mapping, created = Mapping.objects.get_or_create(course= course_exist, department = department_exist, added_by = user_exist )
+                        if created:
+                            return JsonResponse({'message':'successfully department added to course'})
+                        else:
+                            return JsonResponse({'message':'departemnt already assigned to this course'})
                     else:
-                        return JsonResponse({'message':'departemnt already assigned to this course'})
+                        return JsonResponse({'message':'course/departemnt not exist'})
             else:
                 return JsonResponse({'message':'user is not Admin'})
         else:
