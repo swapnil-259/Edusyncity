@@ -272,7 +272,7 @@ def sidebar(request):
                     master_configuration.append(pk)
 
                            
-                #  print(master_configuration)   
+                 print(master_configuration)   
                  return JsonResponse(master_configuration, safe=False)
              else:
                  return JsonResponse({'message':'user is not admin'})
