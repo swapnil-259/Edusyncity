@@ -262,7 +262,7 @@ def sidebar(request):
         if request.user.is_authenticated:
              check_admin = UserRole.objects.filter(role_id = '1').first()
              if check_admin:
-                 master_configuration = Dropdown.objects.filter(relation_id = '1').values('name','child','state','icon','type')
+                 master_configuration = Dropdown.objects.filter(panel='1').values('name','child','state','icon','type')
                  master_configuration_list = list(master_configuration)
                  return JsonResponse(master_configuration_list, safe=False)
              else:
