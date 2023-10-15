@@ -5,6 +5,7 @@ import re
 from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping 
 from django.contrib.auth import authenticate,login,logout
 from django.db.models.functions import Lower
+# import numpy
 
 
 def register_faculty(request):
@@ -261,27 +262,41 @@ def sidebar(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
              check_admin = UserRole.objects.filter(role_id = '1').first()
-             child = []
+             child_count = []
              leftpanel = []
+             child=[]
              if check_admin:
-                 child_exist = Dropdown.objects.filter().first()
                  childs = Dropdown.objects.filter(pannel=1).values('id','child')
                  for i in range(0,len(childs)):
-                  child.append(childs[i])
-                 print(child)
-                 master_configuration = list(Dropdown.objects.filter(pannel=1).values('pk','name','icon','type','state'))
-                 leftpanel.append(master_configuration)
-                #  print(leftpanel)
-               
-                 for i in range(0,len(child)):
-                     child_data = list(Dropdown.objects.filter(relation_id = child[i].get('id')).values('name'))
-                     leftpanel.append(child_data)
-                 print(leftpanel)
-                 master_configuration_list = list(leftpanel)
+                  child_count.append(childs[i])
+                 print(child_count)
+                 for i in range(0,len(child_count)):
+                     child_data = list(Dropdown.objects.filter(relation_id = child_count[i].get('id')).values('name'))
+                     child.append(child_data)
+                 master_configuration = Dropdown.objects.filter(pannel=1).values('pk','name','icon','type','state')
+                 master_configuration_list = list(master_configuration)
+                 for i in range(0, len(master_configuration_list)):
+                  print(child[i])
+                #   child_data = list(Dropdown.objects.filter(relation_id = child_count[i].get('id')).values('name'))
+                  master_configuration_list.append(child[i])
+                  leftpanel.append(master_configuration_list[i])
+                #   master_configuration_list.append(child[i])
+                 print(master_configuration_list)
+                 leftpanel_list = list(leftpanel)
                  
-                 return JsonResponse(master_configuration_list, safe=False)
+                 return JsonResponse(leftpanel_list, safe=False)
              else:
                  return JsonResponse({'message':'user is not admin'})
+             panel = []
+            #  panel_data = Dropdown.objects.filter(pannel='1').values('id')
+            #  for i in range(0,len(panel_data)):
+            #     panel.append(panel_data[i].get('id'))
+            #  print(panel)
+            #  for i in range(0, len(panel)):
+            #      print(panel[i])
+            #      data = Dropdown.objects.filter(relation_id = panel[i]).values('id','name','relation_id__name','relation_id__child','relation_id__state','relation_id__icon','relation_id__type')
+            #      print(data)
+                 
         else:
             return JsonResponse({'message':'user is not authenticated'})
     else:
