@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse,HttpResponse
 import json
 import re
-from .models import User,Roles, UserRole, Faculty,Dropdown, Child
+from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping 
 from django.contrib.auth import authenticate,login,logout
 from django.db.models.functions import Lower
 
@@ -126,15 +126,15 @@ def add_role(request):
                 added_by = user_exist
               )
               if created:
-               return JsonResponse({'message':'role successfully added'})
+               return JsonResponse({'message':'role successfully added'},status=201)
               else:
-                  return JsonResponse({'message':'role already exist'})
+                  return JsonResponse({'message':'role already exist'},status=409)
             else:
-                return JsonResponse({'message':'user is not admin'})
+                return JsonResponse({'message':'user is not admin'},status=403)
         else:
-            return JsonResponse({'message':'user is not authenticated '})
+            return JsonResponse({'message':'user is not authenticated '},status=401)
     else:
-        return JsonResponse({'message':'invalid request method'})
+        return JsonResponse({'message':'invalid request method'},status=405)
 
 
 def add_course(request):
@@ -210,7 +210,7 @@ def assign_department_to_course(request):
                     load=json.loads(request.body)
                     course_id = load.get('course_id')
                     department_id = load.get('department_id')
-                    mapping, created = Child.objects.get_or_create(course= course_id, department = department_id, added_by = user_exist )
+                    mapping, created = Mapping.objects.get_or_create(course= course_id, department = department_id, added_by = user_exist )
                     if created:
                         return JsonResponse({'message':'successfully department added to course'})
                     else:

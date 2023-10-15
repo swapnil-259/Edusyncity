@@ -22,7 +22,7 @@ class Dropdown(BaseModel):
     order_by=models.PositiveIntegerField(default=0)
     icon=models.TextField(max_length=100,null=True)
     type=models.TextField(max_length=100,null=True)
-    controler=models.TextField(max_length=100,null=True)
+    state=models.TextField(max_length=100,null=True)
 
 class Mapping(BaseModel):
     course = models.ForeignKey(Dropdown, null=True, on_delete=models.SET_NULL, related_name='course_name')
