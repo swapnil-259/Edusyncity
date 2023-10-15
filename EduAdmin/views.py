@@ -105,10 +105,10 @@ def logout_user(request):
         else:
             return JsonResponse({'message':'User Is Not Authenticated'},status=401) 
     else:
-        return JsonResponse({'message':'Invalid Request Method'},status=400)    
-
-
-        
+        return JsonResponse({'message':'Invalid Request Method'},status=400) 
+    
+    
+          
 def add_role(request):
     roles_data = json.loads(request.body)
     if request.method =='POST':
@@ -155,17 +155,12 @@ def add_course(request):
         else:
             return JsonResponse({'message':'user is not authenticated '})
     else:
-        return JsonResponse({'message':'invalid request method'})
-
-    
-            
-        
-            
+        return JsonResponse({'message':'invalid request method'})   
 
 def add_departments(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
-            if UserRole.objects.filter(user=request.user.id,role="roleid").exists():
+            if UserRole.objects.filter(user=request.user.id,role_id = '1').exists():
                 if Dropdown.objects.filter(pk="course id",child__gt=0):
                     load=json.loads(request.body)
                     name=load.get('name')
@@ -177,12 +172,10 @@ def add_departments(request):
                         dept.child=childs-1
                         dept.save()
                         return JsonResponse({'message':'Department Added Successfully'},status=201)
-
             else:
                 return JsonResponse({'message': 'You Are Not Autherised'},status=403)   
         else:
-            return JsonResponse({'message': 'User not logged in'},status=401)
-    
+            return JsonResponse({'message': 'User not logged in'},status=401) 
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)     
        
