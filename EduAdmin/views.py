@@ -68,13 +68,14 @@ def login_user(request):
         load=json.loads(request.body)
         username = load.get('username')
         password = load.get('password')
-        user=authenticate(username=username,password=password)
-        
+       
         if username is None or password is None:
             return JsonResponse({'message': 'Missing any Key.'}, status=400)
         
         if not username or not password:
             return JsonResponse({'message': 'Missing Required field.'}, status=400)
+        
+        user=authenticate(username=username,password=password)
         
         if user is not None:
             login(request,user)
@@ -82,8 +83,15 @@ def login_user(request):
             user_data = list(user_exist)
             return JsonResponse(user_data, safe=False)
         else:
-            return JsonResponse({'message':'Incorrect Username Or password'},status=401)
-        
+            email = User.objects.get(email=email.lower()).username
+            user2 = authenticate(username=email, password= password)
+            if user2 is not None:
+                login(request, user2)
+                user_exist2 = UserRole.objects.filter(user_id = request.user.id).values('role','role__rolename')
+                user_data2 = list(user_exist2)
+                return JsonResponse(user_data2, safe=False)
+            else:
+             return JsonResponse({'message':'Incorrect Username/Email Or password'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=400)
 
