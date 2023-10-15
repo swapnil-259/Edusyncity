@@ -2,11 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse,HttpResponse
 import json
 import re
-<<<<<<< HEAD
 from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping 
-=======
-from .models import User,Roles, UserRole, Faculty,Dropdown, Mapping
->>>>>>> f4446fa34c0f3cfe0765dba08dadf5dd685b1694
 from django.contrib.auth import authenticate,login,logout
 from django.db.models.functions import Lower
 
