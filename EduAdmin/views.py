@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse,HttpResponse
 import json
 import re
-from .models import User,Roles, UserRole, Faculty
+from .models import User,Roles, UserRole, Faculty,Dropdown
 from django.contrib.auth import authenticate,login,logout
 from django.db.models.functions import Lower
 
@@ -111,4 +111,80 @@ def logout_user(request):
 
 
         
+def add_role(request):
+    roles_data = json.loads(request.body)
+    if request.method =='POST':
+        if request.user.is_authenticated:
+            check_admin = UserRole.objects.filter(role_id = '1').first()
+            if check_admin: 
+              name =roles_data['name']
+              role_exist , created= Roles.objects.get_or_create(
+                role_name = name,
+              )
+              if created:
+               return JsonResponse({'message':'role successfully added'})
+              else:
+                  return JsonResponse({'message':'role already exist'})
+            else:
+                return JsonResponse({'message':'user is not admin'})
+        else:
+            return JsonResponse({'message':'user is not authenticated '})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+
+
+def add_course(request):
+    course_data = json.loads(request.body)
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            check_admin = UserRole.objects.filter(role_id = '1').first()
+            user_exist = User.objects.get(pk = request.user.id)
+            if check_admin: 
+                course_name = course_data['course_name']
+                child_count = course_data['child_no']
+                course_exist , created = Dropdown.objects.get_or_create(
+                    name = course_name,
+                    child = child_count,
+                    relation_id = '1',
+                    added_by = user_exist
+                )
+                if created:
+                    return JsonResponse({'message':'Course successfully added'})
+                else:
+                  return JsonResponse({'message':'Course already exist'})
+            else:
+                return JsonResponse({'message':'user is not admin'})
+        else:
+            return JsonResponse({'message':'user is not authenticated '})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+
+    
+            
         
+            
+
+def add_departments(request):
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            if UserRole.objects.filter(user=request.user.id,role="roleid").exists():
+                if Dropdown.objects.filter(pk="course id",child__gt=0):
+                    load=json.loads(request.body)
+                    name=load.get('name')
+                    dept , created =Dropdown.objects.get_or_create(name=name,relation="deptid",can_delete=True,can_edit=True,added_by=request.user.id)
+                    if created:
+                        return JsonResponse({'message':'Department Already Exists'},status=409)
+                    else:
+                        childs=dept.child
+                        dept.child=childs-1
+                        dept.save()
+                        return JsonResponse({'message':'Department Added Successfully'},status=201)
+
+            else:
+                return JsonResponse({'message': 'You Are Not Autherised'},status=403)   
+        else:
+            return JsonResponse({'message': 'User not logged in'},status=401)
+    
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)     
+       
