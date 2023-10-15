@@ -116,7 +116,6 @@ def add_role(request):
         if name is None or not name:
             return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
         if request.user.is_authenticated:
-            current_user= request.session.get('user_id')
             check_admin = UserRole.objects.filter(role_id = '1').first()
             user_exist = User.objects.get(pk = request.user.id)
             print(user_exist.id)
@@ -133,6 +132,26 @@ def add_role(request):
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
             return JsonResponse({'message':'user is not authenticated '},status=401)
+        
+    if request.method == "PUT":
+        load = json.loads(request.body)
+        new_name=load.get('new_name')
+        role_id=load.get('role_id')
+        if new_name is None or role_id is None or not new_name or not role_id:
+            return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
+        if request.user.is_authenticated:
+            check_admin = UserRole.objects.filter(role_id = '1').first()
+            user_exist = User.objects.get(pk = request.user.id)
+            print(user_exist.id)
+            if check_admin:
+                Roles.objects.filter(pk=role_id).update(name=new_name)
+                return JsonResponse({'message':'Role Updated Successfully'},status=200)
+            else:
+                return JsonResponse({'message':'user is not admin'},status=403)
+        else:
+            return JsonResponse({'message':'user is not authenticated '},status=401)
+
+
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
 
