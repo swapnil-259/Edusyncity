@@ -278,7 +278,7 @@ def sidebar(request):
                  for i in range(0, len(master_configuration_list)):
                   print(child[i])
                 #   child_data = list(Dropdown.objects.filter(relation_id = child_count[i].get('id')).values('name'))
-                  master_configuration_list.append(child[i])
+                  master_configuration_list[i]['child'] = child[i]
                   leftpanel.append(master_configuration_list[i])
                 #   master_configuration_list.append(child[i])
                  print(master_configuration_list)
