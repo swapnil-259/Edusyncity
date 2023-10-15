@@ -174,18 +174,24 @@ def add_course(request):
 def add_departments(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
-            if UserRole.objects.filter(user=request.user.id,role_id = '1').exists():
-                if Dropdown.objects.filter(pk="course id",child__gt=0):
+            user_exist = User.objects.get(pk = request.user.id)
+            if UserRole.objects.filter(user=request.user.id,role_id = '1').first():
                     load=json.loads(request.body)
                     course_id = load.get('id')
                     name=load.get('name')
-                    dept , created =Dropdown.objects.get_or_create(name=name,relation=course_id,can_delete=False,can_edit=True,added_by=request.user.id)
-                    if created:
-                        childs=dept.child
-                        dept.child=childs-1
-                        dept.save()
+                    course_exist= Dropdown.objects.filter(pk = course_id).first()
+                    print(course_exist.child)
+                    if course_exist:    
+                     dept , created =Dropdown.objects.get_or_create(name=name,relation=course_exist,can_delete=False,can_update=True,added_by=user_exist)
+                     print(dept.child)
+                     if created:
+                        childs=course_exist.child
+                        childs=int(childs)-1
+                        course_exist.child= childs
+                        course_exist.save()
+                       
                         return JsonResponse({'message':'Department added Successfully'},status=409)
-                    else:
+                     else:
                         return JsonResponse({'message':'Department already exist'},status=201)
             else:
                 return JsonResponse({'message': 'You Are Not Authorised'},status=403)   
