@@ -257,28 +257,3 @@ def assign_department_to_course(request):
         return JsonResponse({'message':'invalid request method'})
     
     
-def sidebar(request):
-    if request.method == 'GET':
-        if request.user.is_authenticated:
-             check_admin = UserRole.objects.filter(role_id = '1').first()
-             if check_admin:
-                 pannel_data=Dropdown.objects.filter(pannel=1).values('pk')
-                #  print(pannel_data)
-                 master_configuration = list(Dropdown.objects.filter(pannel=1).values('pk','name','child','state','icon','type'))
-                 
-                 for pannel in pannel_data:
-                    
-                    pk=list(Dropdown.objects.filter(relation=pannel.get('pk')).values('name','child','state','icon','type'))
-                    master_configuration.append(pk)
-
-                           
-                 print(master_configuration)   
-                 return JsonResponse(master_configuration, safe=False)
-             else:
-                 return JsonResponse({'message':'user is not admin'})
-        else:
-            return JsonResponse({'message':'user is not authenticated'})
-    else:
-        return JsonResponse({'message':'invalid request method'})
-            
-            
