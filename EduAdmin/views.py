@@ -83,7 +83,6 @@ def login_user(request):
             user_data = list(user_exist)
             return JsonResponse(user_data, safe=False)
         else:
-            print(user_name)
             auth= User.objects.get(email=user_name.lower()).username
             user2 = authenticate(username=auth, password= password)
             if user2 is not None:
@@ -92,9 +91,9 @@ def login_user(request):
                 user_data2 = list(user_exist2)
                 return JsonResponse(user_data2, safe=False)
             else:
-             return JsonResponse({'message':'Incorrect Username/Email Or password'},status=401)
+                return JsonResponse({'message':'Incorrect Username/Email Or password'},status=401)
     else:
-        return JsonResponse({'message':'Invalid Request Method'},status=400)
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 def logout_user(request):      
     if request.method == 'GET':
@@ -105,17 +104,20 @@ def logout_user(request):
         else:
             return JsonResponse({'message':'User Is Not Authenticated'},status=401) 
     else:
-        return JsonResponse({'message':'Invalid Request Method'},status=400) 
+        return JsonResponse({'message':'Invalid Request Method'},status=405) 
     
     
           
 def add_role(request):
-    roles_data = json.loads(request.body)
+    
     if request.method =='POST':
+        roles_data = json.loads(request.body)
+        name=roles_data.get('name')
+        if name is None or not name:
+            return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
         if request.user.is_authenticated:
             check_admin = UserRole.objects.filter(role_id = '1').first()
             if check_admin: 
-              name =roles_data['name']
               role_exist , created= Roles.objects.get_or_create(
                 role_name = name,
               )
@@ -132,15 +134,21 @@ def add_role(request):
 
 
 def add_course(request):
-    course_data = json.loads(request.body)
+    
     if request.method == 'POST':
+        course_data = json.loads(request.body)
+        course_name = course_data.get('course_name')
+        child_count = course_data.get('child_count')
+        if course_name is None or not child_count:
+            return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
         if request.user.is_authenticated:
             check_admin = UserRole.objects.filter(role_id = '1').first()
             user_exist = User.objects.get(pk = request.user.id)
             course_id = Dropdown.objects.get(name='Courses').pk
+            if not course_id:
+                return JsonResponse({'message':'You Have No Attribute Named Cources'},status=400)
             if check_admin: 
-                course_name = course_data['course_name']
-                child_count = course_data['child_count']
+                
                 course_exist , created = Dropdown.objects.get_or_create(
                     name = course_name,
                     child = child_count,
@@ -149,15 +157,15 @@ def add_course(request):
                     can_update = True
                 )
                 if created:
-                    return JsonResponse({'message':'Course successfully added'})
+                    return JsonResponse({'message':'Course successfully added'},status=201)
                 else:
-                  return JsonResponse({'message':'Course already exist'})
+                  return JsonResponse({'message':'Course already exist'},status=409)
             else:
-                return JsonResponse({'message':'user is not admin'})
+                return JsonResponse({'message':'user is not admin'},status=403)
         else:
-            return JsonResponse({'message':'user is not authenticated '})
+            return JsonResponse({'message':'user is not authenticated '},status=401)
     else:
-        return JsonResponse({'message':'invalid request method'})   
+        return JsonResponse({'message':'invalid request method'},status=405)   
 
 def add_departments(request):
     if request.method == 'POST':
