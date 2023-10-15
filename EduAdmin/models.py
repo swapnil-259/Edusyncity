@@ -30,7 +30,7 @@ class Roles(BaseModel):
 
 class UserRole(BaseModel):
     user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='user_identity')
-    department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True)
+    # department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True)
     role=models.ForeignKey(Roles,on_delete=models.SET_NULL,null=True)
     
 class Subjects(BaseModel):
