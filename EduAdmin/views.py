@@ -137,14 +137,16 @@ def add_course(request):
         if request.user.is_authenticated:
             check_admin = UserRole.objects.filter(role_id = '1').first()
             user_exist = User.objects.get(pk = request.user.id)
+            course_id = Dropdown.objects.get(name='Courses').pk
             if check_admin: 
                 course_name = course_data['course_name']
-                child_count = course_data['child_no']
+                child_count = course_data['child_count']
                 course_exist , created = Dropdown.objects.get_or_create(
                     name = course_name,
                     child = child_count,
-                    relation_id = '1',
-                    added_by = user_exist
+                    relation_id = course_id,
+                    added_by = user_exist,
+                    can_update = True
                 )
                 if created:
                     return JsonResponse({'message':'Course successfully added'})
