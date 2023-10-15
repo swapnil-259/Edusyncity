@@ -23,6 +23,7 @@ class Dropdown(BaseModel):
     icon=models.TextField(max_length=100,null=True)
     type=models.TextField(max_length=100,null=True)
     state=models.TextField(max_length=100,null=True)
+    pannel=models.BooleanField(default=0)
 
 class Mapping(BaseModel):
     course = models.ForeignKey(Dropdown, null=True, on_delete=models.SET_NULL, related_name='course_name')
