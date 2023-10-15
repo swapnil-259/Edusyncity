@@ -8,35 +8,39 @@ class BaseModel(models.Model):
     created_time=models.DateTimeField(auto_now_add=True)
     deleted_status = models.BooleanField(default=0)
     deleted_time = models.DateTimeField(null=True)
-    added_by= models.ForeignKey(User,on_delete=models.SET_NULL)
+    added_by= models.ForeignKey(User,on_delete=models.SET_NULL, null=True)
     
     class Meta:
         abstract = True
 
-class DepartmentUnderCourses(BaseModel):
+class Dropdown(BaseModel):
     name = models.CharField(null = True, max_length=100)
-    relation = models.ForeignKey("DepartmentUnderCourses", on_delete=models.CASCADE)
+    relation = models.ForeignKey("Dropdown", on_delete=models.SET_NULL, null=True)
     can_delete=models.BooleanField(default=False)
     can_update=models.BooleanField(default=False)
     child=models.PositiveIntegerField(default='0')
     order_by=models.PositiveIntegerField(blank=True)
+
+class Child(BaseModel):
+    course = models.ForeignKey(Dropdown, null=True, on_delete=models.SET_NULL, related_name='course_name')
+    department = models.ForeignKey(Dropdown, null=True, on_delete=models.SET_NULL, related_name='department_name')
     
 class Roles(BaseModel):
     role_name=models.CharField(max_length=50,null=True)
 
 class UserRole(BaseModel):
-    user=models.ForeignKey(User,on_delete=models.CASCADE,null=True)
-    department=models.ForeignKey(DepartmentUnderCourses,on_delete=models.CASCADE,null=True)
-    role=models.ForeignKey(Roles,on_delete=models.CASCADE,null=True)
+    user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    # department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True)
+    role=models.ForeignKey(Roles,on_delete=models.SET_NULL,null=True)
     
 class Subjects(BaseModel):
     subject_name = models.CharField(max_length=100, null=True)
     subject_code = models.CharField(max_length=50, null=True)
 
 class Faculty(BaseModel):
-    user=models.ForeignKey(User,on_delete=models.CASCADE,null=True)
-    department=models.ForeignKey(DepartmentUnderCourses,on_delete=models.CASCADE, null=True)
-    subject=models.ForeignKey(Subjects,on_delete=models.CASCADE,null=True)
+    user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True)
+    subject=models.ForeignKey(Subjects,on_delete=models.SET_NULL,null=True)
     age = models.PositiveIntegerField(null= True)
     gender = models.CharField(max_length=10, null= True)
     qualification=models.CharField(null=True,max_length=100)
