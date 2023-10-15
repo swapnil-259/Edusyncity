@@ -83,8 +83,8 @@ def login_user(request):
             user_data = list(user_exist)
             return JsonResponse(user_data, safe=False)
         else:
-            email = User.objects.get(email=username.lower()).username
-            user2 = authenticate(username=email, password= password)
+            auth= User.objects.get(email=username.lower()).username
+            user2 = authenticate(username=auth, password= password)
             if user2 is not None:
                 login(request, user2)
                 user_exist2 = UserRole.objects.filter(user_id = request.user.id).values('role','role__rolename')
