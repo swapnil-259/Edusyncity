@@ -113,11 +113,15 @@ def add_role(request):
     roles_data = json.loads(request.body)
     if request.method =='POST':
         if request.user.is_authenticated:
+            current_user= request.session.get('user_id')
             check_admin = UserRole.objects.filter(role_id = '1').first()
+            user_exist = User.objects.get(pk = request.user.id)
+            print(user_exist.id)
             if check_admin: 
               name =roles_data['name']
               role_exist , created= Roles.objects.get_or_create(
                 role_name = name,
+                added_by = user_exist
               )
               if created:
                return JsonResponse({'message':'role successfully added'})
@@ -163,17 +167,18 @@ def add_departments(request):
             if UserRole.objects.filter(user=request.user.id,role_id = '1').exists():
                 if Dropdown.objects.filter(pk="course id",child__gt=0):
                     load=json.loads(request.body)
+                    course_id = load.get('id')
                     name=load.get('name')
-                    dept , created =Dropdown.objects.get_or_create(name=name,relation="deptid",can_delete=True,can_edit=True,added_by=request.user.id)
+                    dept , created =Dropdown.objects.get_or_create(name=name,relation=course_id,can_delete=False,can_edit=True,added_by=request.user.id)
                     if created:
-                        return JsonResponse({'message':'Department Already Exists'},status=409)
-                    else:
                         childs=dept.child
                         dept.child=childs-1
                         dept.save()
-                        return JsonResponse({'message':'Department Added Successfully'},status=201)
+                        return JsonResponse({'message':'Department added Successfully'},status=409)
+                    else:
+                        return JsonResponse({'message':'Department already exist'},status=201)
             else:
-                return JsonResponse({'message': 'You Are Not Autherised'},status=403)   
+                return JsonResponse({'message': 'You Are Not Authorised'},status=403)   
         else:
             return JsonResponse({'message': 'User not logged in'},status=401) 
     else:
