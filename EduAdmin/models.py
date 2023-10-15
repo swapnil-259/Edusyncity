@@ -19,7 +19,7 @@ class Dropdown(BaseModel):
     can_delete=models.BooleanField(default=False)
     can_update=models.BooleanField(default=False)
     child=models.PositiveIntegerField(default='0')
-    order_by=models.PositiveIntegerField(blank=True)
+    order_by=models.PositiveIntegerField(default=0)
 
 class Child(BaseModel):
     course = models.ForeignKey(Dropdown, null=True, on_delete=models.SET_NULL, related_name='course_name')
