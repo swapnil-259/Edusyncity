@@ -257,3 +257,46 @@ def assign_department_to_course(request):
         return JsonResponse({'message':'invalid request method'})
     
     
+def sidebar(request):
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+             check_admin = UserRole.objects.filter(role_id = '1').first()
+             child_count = []
+             leftpanel = []
+             child=[]
+             if check_admin:
+                 childs = Dropdown.objects.filter(pannel=1).values('id','child')
+                 for i in range(0,len(childs)):
+                  child_count.append(childs[i])
+                 print(child_count)
+                 for i in range(0,len(child_count)):
+                     child_data = list(Dropdown.objects.filter(relation_id = child_count[i].get('id')).values('name'))
+                     child.append(child_data)
+                 master_configuration = Dropdown.objects.filter(pannel=1).values('pk','name','icon','type','state')
+                 master_configuration_list = list(master_configuration)
+                 for i in range(0, len(master_configuration_list)):
+                  print(child[i])
+                #   child_data = list(Dropdown.objects.filter(relation_id = child_count[i].get('id')).values('name'))
+                  master_configuration_list[i]['child'] = child[i]
+                  leftpanel.append(master_configuration_list[i])
+                #   master_configuration_list.append(child[i])
+                 print(master_configuration_list)
+                 leftpanel_list = list(leftpanel)
+                 
+                 return JsonResponse(leftpanel_list, safe=False)
+             else:
+                 return JsonResponse({'message':'user is not admin'})
+             panel = []
+            #  panel_data = Dropdown.objects.filter(pannel='1').values('id')
+            #  for i in range(0,len(panel_data)):
+            #     panel.append(panel_data[i].get('id'))
+            #  print(panel)
+            #  for i in range(0, len(panel)):
+            #      print(panel[i])
+            #      data = Dropdown.objects.filter(relation_id = panel[i]).values('id','name','relation_id_name','relation_idchild','relation_idstate','relation_idicon','relation_id_type')
+            #      print(data)
+                 
+        else:
+            return JsonResponse({'message':'user is not authenticated'})
+    else:
+        return JsonResponse({'message':'invalid request method'})
