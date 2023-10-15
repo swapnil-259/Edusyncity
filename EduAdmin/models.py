@@ -29,8 +29,8 @@ class Roles(BaseModel):
     role_name=models.CharField(max_length=50,null=True)
 
 class UserRole(BaseModel):
-    user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
-    # department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True)
+    user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='user_identity')
+    department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True)
     role=models.ForeignKey(Roles,on_delete=models.SET_NULL,null=True)
     
 class Subjects(BaseModel):
@@ -38,7 +38,7 @@ class Subjects(BaseModel):
     subject_code = models.CharField(max_length=50, null=True)
 
 class Faculty(BaseModel):
-    user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name="faculty_identity")
     department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True)
     subject=models.ForeignKey(Subjects,on_delete=models.SET_NULL,null=True)
     age = models.PositiveIntegerField(null= True)
