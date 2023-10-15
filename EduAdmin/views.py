@@ -105,7 +105,9 @@ def logout_user(request):
         else:
             return JsonResponse({'message':'User Is Not Authenticated'},status=401) 
     else:
-        return JsonResponse({'message':'Invalid Request Method'},status=400)    
+        return JsonResponse({'message':'Invalid Request Method'},status=400) 
+
+               
 
 
         
