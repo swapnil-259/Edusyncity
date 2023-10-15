@@ -19,6 +19,7 @@ def register_faculty(request):
         address =  request.POST.get('address')
         department =  request.POST.get('department')
         qualification = request.POST.get('qualification')
+        title = request.POST.get('title')
         subject =  request.POST.get('subject')
         profile_pic = request.FILES.get('profilepic')
         password =  request.POST.get('password')
@@ -45,7 +46,8 @@ def register_faculty(request):
             subject_id = subject,
             qualification = qualification,
             address = address,
-            profile_picture = profile_pic   
+            profile_picture = profile_pic,
+            title = title
         )
         roles, created = Roles.objects.get_or_create(rolename= 'Faculty')
 
@@ -162,6 +164,8 @@ def add_course(request):
         course_data = json.loads(request.body)
         course_name = course_data.get('course_name')
         child_count = course_data.get('child_count')
+        state = course_data.get('state')
+        type = course_data.get('type')
         if course_name is None or not child_count:
             return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
         if request.user.is_authenticated:
@@ -177,7 +181,9 @@ def add_course(request):
                     child = child_count,
                     relation_id = course_id,
                     added_by = user_exist,
-                    can_update = True
+                    can_update = True,
+                    state = state,
+                    type = type
                 )
                 if created:
                     return JsonResponse({'message':'Course successfully added'},status=201)
@@ -195,13 +201,15 @@ def add_departments(request):
         if request.user.is_authenticated:
             user_exist = User.objects.get(pk = request.user.id)
             if UserRole.objects.filter(user=request.user.id,role_id = '1').first():
-                    load=json.loads(request.body)
-                    course_id = load.get('id')
-                    name=load.get('name')
+                    departement_data=json.loads(request.body)
+                    course_id = departement_data.get('id')
+                    name=departement_data.get('name')
+                    state = departement_data.get('state')
+                    type = departement_data.get('type')
                     course_exist= Dropdown.objects.filter(pk = course_id).first()
                     print(course_exist.child)
                     if course_exist:    
-                     dept , created =Dropdown.objects.get_or_create(name=name,relation=course_exist,can_delete=False,can_update=True,added_by=user_exist)
+                     dept , created =Dropdown.objects.get_or_create(name=name,relation=course_exist,can_delete=False,can_update=True,added_by=user_exist, state=state, type = type)
                      print(dept.child)
                      if created:
                         childs=course_exist.child
@@ -247,4 +255,21 @@ def assign_department_to_course(request):
             return JsonResponse({'message':'user is not authenticated'})
     else:
         return JsonResponse({'message':'invalid request method'})
+    
+    
+def sidebar(request):
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+             check_admin = UserRole.objects.filter(role_id = '1').first()
+             if check_admin:
+                 master_configuration = Dropdown.objects.filter(relation_id = '1').values('name','child','state','icon','type')
+                 master_configuration_list = list(master_configuration)
+                 return JsonResponse(master_configuration_list, safe=False)
+             else:
+                 return JsonResponse({'message':'user is not admin'})
+        else:
+            return JsonResponse({'message':'user is not authenticated'})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+            
             
