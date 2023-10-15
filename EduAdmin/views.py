@@ -261,13 +261,24 @@ def sidebar(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
              check_admin = UserRole.objects.filter(role_id = '1').first()
+             child = []
+             leftpanel = []
              if check_admin:
-<<<<<<< HEAD
-                 master_configuration = Dropdown.objects.filter(pannel='1').values('name','child','state','icon','type')
-=======
-                 master_configuration = Dropdown.objects.filter(pannel=1).values('pk','name','child','state','icon','type')
->>>>>>> 584b6b39ef811a2a4c3a52bf9ba636e0cd087dfb
-                 master_configuration_list = list(master_configuration)
+                 child_exist = Dropdown.objects.filter().first()
+                 childs = Dropdown.objects.filter(pannel=1).values('id','child')
+                 for i in range(0,len(childs)):
+                  child.append(childs[i])
+                 print(child)
+                 master_configuration = list(Dropdown.objects.filter(pannel=1).values('pk','name','icon','type','state'))
+                 leftpanel.append(master_configuration)
+                #  print(leftpanel)
+               
+                 for i in range(0,len(child)):
+                     child_data = list(Dropdown.objects.filter(relation_id = child[i].get('id')).values('name'))
+                     leftpanel.append(child_data)
+                 print(leftpanel)
+                 master_configuration_list = list(leftpanel)
+                 
                  return JsonResponse(master_configuration_list, safe=False)
              else:
                  return JsonResponse({'message':'user is not admin'})
