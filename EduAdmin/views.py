@@ -4,6 +4,7 @@ import json
 import re
 from .models import User,Roles, UserRole, Faculty
 from django.contrib.auth import authenticate,login,logout
+from django.db.models.functions import Lower
 
 
 def register_faculty(request):
@@ -66,28 +67,28 @@ def login_user(request):
     if request.method == 'POST':
 
         load=json.loads(request.body)
-        username = load.get('username')
+        user_name = load.get('username')
         password = load.get('password')
        
-        if username is None or password is None:
+        if user_name is None or password is None:
             return JsonResponse({'message': 'Missing any Key.'}, status=400)
         
-        if not username or not password:
+        if not user_name or not password:
             return JsonResponse({'message': 'Missing Required field.'}, status=400)
         
-        user=authenticate(username=username,password=password)
-        
+        user=authenticate(username=user_name,password=password)
         if user is not None:
             login(request,user)
-            user_exist = UserRole.objects.filter(user_id = request.user.id).values('role','role__rolename')
+            user_exist = UserRole.objects.filter(user_id = request.user.id).values('role','role__role_name')
             user_data = list(user_exist)
             return JsonResponse(user_data, safe=False)
         else:
-            auth= User.objects.get(email=username.lower()).username
+            print(user_name)
+            auth= User.objects.get(email=user_name.lower()).username
             user2 = authenticate(username=auth, password= password)
             if user2 is not None:
                 login(request, user2)
-                user_exist2 = UserRole.objects.filter(user_id = request.user.id).values('role','role__rolename')
+                user_exist2 = UserRole.objects.filter(user_id = request.user.id).values('role','role__role_name')
                 user_data2 = list(user_exist2)
                 return JsonResponse(user_data2, safe=False)
             else:
