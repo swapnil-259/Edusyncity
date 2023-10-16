@@ -5,7 +5,7 @@ import re
 from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping, Student
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
-from django.db.models.functions import Lower
+
 
 
 def register_faculty(request):
@@ -94,6 +94,22 @@ def login_user(request):
                 return JsonResponse({'message':'Incorrect Username/Email Or password'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+def forgot_password(request):
+    if request.method == 'POST':
+        load_data=json.loads(request.body)
+        username = load_data.get('username')
+        old_password = load_data.get('old_password')
+        new_password = load_data.get('new_password')
+        user =  authenticate(username= username, password = old_password)
+        if user is not None:
+            User.objects.filter(id = request.user.id).update(password = make_password(new_password))
+            return JsonResponse({'message':'Password Updated Successfully'},status=200)
+        else:
+            return JsonResponse({'message':'Your Old Password Does Not Matched'},status=401)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+
 
 def logout_user(request):      
     if request.method == 'GET':
