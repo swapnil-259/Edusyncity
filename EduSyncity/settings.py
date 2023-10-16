@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'EduRegister',
 ]
 
 MIDDLEWARE = [
@@ -96,7 +97,7 @@ DATABASES = {
         'NAME': 'Edusyncity',
         'USER': 'harry',
         'PASSWORD':'Kiet@123',
-        'HOST':'10.21.66.153',
+        'HOST':'10.21.66.14',
         'PORT':'3306',
     }
 }
