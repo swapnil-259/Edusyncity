@@ -265,9 +265,11 @@ def sidebar(request):
                  childs = Dropdown.objects.filter(pannel=1).values('id','child')
                  for i in range(0,len(childs)):
                   child_count.append(childs[i])
+                 print(child_count)
                  for i in range(0,len(child_count)):
                      child_data = list(Dropdown.objects.filter(relation_id = child_count[i].get('id')).values('name'))
                      child.append(child_data)
+                 print(child)
                  master_configuration = Dropdown.objects.filter(pannel=1).values('pk','name','icon','type','state')
                  master_configuration_list = list(master_configuration)
                  for i in range(0, len(master_configuration_list)):
