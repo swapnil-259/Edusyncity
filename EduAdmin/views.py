@@ -317,8 +317,6 @@ def forgot_password(request):
         username = load_data.get('username')
         old_password = load_data.get('old_password')
         new_password = load_data.get('new_password')
-        password = make_password(load_data.get('old_password'))
-        print(password)
         user =  authenticate(username= username, password = old_password)
         if user is not None:
             User.objects.filter(id = request.user.id).update(password = make_password(new_password))
