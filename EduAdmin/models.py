@@ -40,7 +40,7 @@ class UserRole(BaseModel):
     
 class Subjects(BaseModel):
     department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True)
-    year = models.ForeignKey(Dropdown, null=True, )
+    year = models.ForeignKey(Dropdown, on_delete=models.SET_NULL,null=True,related_name='year_identify')
     subject_name = models.CharField(max_length=100, null=True)
     subject_code = models.CharField(max_length=50, null=True)
 
