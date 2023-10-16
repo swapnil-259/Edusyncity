@@ -42,7 +42,7 @@ def register_faculty(request):
             department_id = department,
             subject_id = subject,
             qualification = qualification,
-            address = address,
+            address = address
             title = title
         )
         roles, created = Roles.objects.get_or_create(rolename= 'Faculty')
@@ -240,66 +240,79 @@ def assign_department_to_course(request):
                     if course_exist is not None and department_exist is not None:
                         mapping, created = Mapping.objects.get_or_create(course= course_exist, department = department_exist, added_by = user_exist )
                         if created:
-                            return JsonResponse({'message':'successfully department added to course'})
+                            return JsonResponse({'message':'successfully department added to course'},status=201)
                         else:
-                            return JsonResponse({'message':'departemnt already assigned to this course'})
+                            return JsonResponse({'message':'departemnt already assigned to this course'},status=409)
                     else:
-                        return JsonResponse({'message':'course/departemnt not exist'})
+                        return JsonResponse({'message':'course/departemnt not exist'},status=204)
             else:
-                return JsonResponse({'message':'user is not Admin'})
+                return JsonResponse({'message':'user is not Admin'},status=403)
         else:
-            return JsonResponse({'message':'user is not authenticated'})
+            return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
-        return JsonResponse({'message':'invalid request method'})
-    
+        return JsonResponse({'message':'invalid request method'},status=405)
     
 def sidebar(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
              check_admin = UserRole.objects.filter(role_id = '1').first()
-             child_count = []
              leftpanel = []
              child=[]
              if check_admin:
-                 childs = Dropdown.objects.filter(pannel=1).values('id','child')
-                 for i in range(0,len(childs)):
-                  child_count.append(childs[i])
-                 print(child_count)
-                 for i in range(0,len(child_count)):
-                     child_data = list(Dropdown.objects.filter(relation_id = child_count[i].get('id')).values('name'))
-                     child.append(child_data)
-                 print(child)
-                 master_configuration = Dropdown.objects.filter(pannel=1).values('pk','name','icon','type','state')
-                 master_configuration_list = list(master_configuration)
-                 for i in range(0, len(master_configuration_list)):
-                  master_configuration_list[i]['child'] = child[i]
-                  leftpanel.append(master_configuration_list[i])
-                 leftpanel_list = list(leftpanel)
-                 
-                 return JsonResponse(leftpanel_list, safe=False)
+                pannels = Dropdown.objects.filter(pannel=1).values('id')
+                if not pannels or pannels is None:
+                    return JsonResponse({'message':'Missing Required Field or Key'},status=400)
+                for i in pannels:
+                    child_data = list(Dropdown.objects.filter(relation_id = i.get('id')).values('name','state'))
+                    child.append(child_data)
+                master_configuration = Dropdown.objects.filter(pannel=1).values('pk','name','icon','type','state')
+                master_configuration_list = list(master_configuration)
+                for i in range(0, len(master_configuration_list)):
+                    master_configuration_list[i]['child'] = child[i]
+                    leftpanel.append(master_configuration_list[i])
+                return JsonResponse(list(leftpanel), safe=False)
              else:
-                 return JsonResponse({'message':'user is not admin'})
+                 return JsonResponse({'message':'User is not Admin'},status=403)         
         else:
-            return JsonResponse({'message':'user is not authenticated'})
+            return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
-        return JsonResponse({'message':'invalid request method'})
-def forgot_password(request):
-    if request.method == 'POST':
-        load_data=json.loads(request.body)
-        username = load_data.get('username')
-        old_password = load_data.get('old_password')
-        new_password = load_data.get('new_password')
-        password = make_password(load_data.get('old_password'))
-        print(password)
-        user =  authenticate(username= username, password = old_password)
-        if user is not None:
-            User.objects.filter(id = request.user.id).update(password = make_password(new_password))
-            return JsonResponse({'message':'password updated successfully'})
+        return JsonResponse({'message':'invalid request method'},status=405)
+    
+def courses(request):
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+            if UserRole.objects.filter(role_id='1').exists():
+                data=Dropdown.objects.filter(relation='2').values('id','name')
+                if data is None:
+                    return JsonResponse({'message':'Courses Not Found'},status=204)
+                else:
+                    return JsonResponse(list(data),safe=False)
+            else:
+                return JsonResponse({'message':'You Are Not Admin'},status=403)
         else:
-            return JsonResponse({'message':'user is not authenticated'})
+            return JsonResponse({'message':'You are not authenticated'},status=401)
     else:
-        return JsonResponse({'message':'invalid request method'})
-# def register_student(request):
-    # if request.method == 'POST':
-        
-           
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+
+def departments(request):
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+            if UserRole.objects.filter(role_id='1').exists():
+                course_id=request.GET.get('course_id')
+                data=Mapping.objects.filter(course=course_id).values('id','department__name')
+                if data is None:
+                    return JsonResponse({'message':'Courses Not Found'},status=204)
+                else:
+                    return JsonResponse(list(data),safe=False)
+            else:
+                return JsonResponse({'message':'You Are Not Admin'},status=403)
+        else:
+            return JsonResponse({'message':'You are not authenticated'},status=401)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+
+
+
+
