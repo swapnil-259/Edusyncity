@@ -42,7 +42,7 @@ def register_faculty(request):
             department_id = department,
             subject_id = subject,
             qualification = qualification,
-            address = address
+            address = address,
             title = title
         )
         roles, created = Roles.objects.get_or_create(rolename= 'Faculty')
@@ -311,6 +311,24 @@ def departments(request):
             return JsonResponse({'message':'You are not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+def forgot_password(request):
+    if request.method == 'POST':
+        load_data=json.loads(request.body)
+        username = load_data.get('username')
+        old_password = load_data.get('old_password')
+        new_password = load_data.get('new_password')
+        password = make_password(load_data.get('old_password'))
+        print(password)
+        user =  authenticate(username= username, password = old_password)
+        if user is not None:
+            User.objects.filter(id = request.user.id).update(password = make_password(new_password))
+            return JsonResponse({'message':'password updated successfully'})
+        else:
+            return JsonResponse({'message':'user is not authenticated'})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+# def register_student(request):
+    # if request.method == 'POST':
 
 
 

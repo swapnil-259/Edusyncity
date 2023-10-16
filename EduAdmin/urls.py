@@ -12,6 +12,7 @@ urlpatterns = [
      path('sidebar/',views.sidebar, name='sidebar'),
      path('courses/',views.courses, name='courses'),
      path('departments/',views.departments, name='departments'),
+     path('forgot_password/',views.forgot_password, name = 'forgot_password')
 
 
 ]
