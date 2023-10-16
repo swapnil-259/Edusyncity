@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse,HttpResponse
 import json
 import re
-from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping 
+from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping, Student
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
 from django.db.models.functions import Lower
@@ -10,18 +10,20 @@ from django.db.models.functions import Lower
 
 def register_faculty(request):
     if request.method == 'POST':
-        first_name = request.POST.get('firstname')
-        last_name = request.POST.get('lastname')
-        user_name =  request.POST.get('username')
-        email =  request.POST.get('email')
-        gender =  request.POST.get('gender')
-        phone =  request.POST.get('phone')
-        age =  request.POST.get('age')
-        address =  request.POST.get('address')
-        department =  request.POST.get('department')
-        qualification = request.POST.get('qualification')
-        title = request.POST.get('title')
-        subject =  request.POST.get('subject')
+        load= json.loads(request.body)
+        first_name = load.get('firstname')
+        last_name = load.get('lastname')
+        user_name =  load.get('username')
+        email =  load.get('email')
+        gender =  load.get('gender')
+        phone =  load.get('phone')
+        age =  load.get('age')
+        address =  load.get('address')
+        department =  load.get('department')
+        qualification = load.get('qualification')
+        title = load.get('title')
+        subject =  load.get('subject')
+        course = load.get('course')
       
 
         if not re.match(r'(/^[A-Za-z]+$/)', qualification):
@@ -43,7 +45,8 @@ def register_faculty(request):
             subject_id = subject,
             qualification = qualification,
             address = address,
-            title = title
+            title = title,
+            course = course
         )
         roles, created = Roles.objects.get_or_create(rolename= 'Faculty')
 
@@ -53,7 +56,6 @@ def register_faculty(request):
             UserRole.objects.create(
             user_id = user.id,
             role_id = roles.id,
-            department = department
             )
             return JsonResponse({'message':'Registration Succesfull'},status=201)
     else:
@@ -325,20 +327,56 @@ def forgot_password(request):
             return JsonResponse({'message':'user is not authenticated'})
     else:
         return JsonResponse({'message':'invalid request method'})
-# def register_student(request):
-#     if request.method == 'POST':
-#         first_name = request.POST.get('firstname')
-#         last_name = request.POST.get('lastname')
-#         user_name =  request.POST.get('username')
-#         email =  request.POST.get('email')
-#         gender =  request.POST.get('gender')
-#         phone =  request.POST.get('phone')
-#         age =  request.POST.get('age')
-#         address =  request.POST.get('address')
-#         course =  request.POST.get('course')
-#         department = request.POST.get('department')
-#         title = request.POST.get('title')
-#         subject =  request.POST.get('subject')
+def register_student(request):
+    if request.method == 'POST':
+        load=json.loads(request.body)
+        first_name = load.get('firstname')
+        last_name = load.get('lastname')
+        user_name =  load.get('username')
+        father_name = load.get('father_name')
+        mother_name = load.get('mother_name')
+        email =  load.get('email')
+        gender =  load.get('gender')
+        contact =  load.get('contact')
+        age =  load.get('age')
+        address =  load.get('address')
+        course =  load.get('course')
+        department = load.get('department')
+        year = load.get('year')
+        
+        user = User.objects.create_user(
+            first_name= first_name,
+            last_name=last_name,
+            username = user_name,
+            email=email,
+            password = "Kiet@123"
+        )
+        Student.objects.create(
+            user = user.id,
+            department = department,
+            age = age,
+            gender = gender,
+            address= address,
+            year = year,
+            contact= contact,
+            course = course,
+            father_name = father_name,
+            mother_name= mother_name
+        )
+        roles, created = Roles.objects.get_or_create(rolename= 'Student')
+
+        if not created:
+            return JsonResponse({'message':'You Already Have This Role'},status=409)
+        else:
+            UserRole.objects.create(
+            user_id = user.id,
+            role_id = roles.id,
+            )
+            return JsonResponse({'message':'Registration Succesfull'},status=201)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+        
         
 
 

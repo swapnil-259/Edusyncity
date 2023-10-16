@@ -24,6 +24,7 @@ class Dropdown(BaseModel):
     type=models.TextField(max_length=100,null=True)
     state=models.TextField(max_length=100,null=True)
     pannel=models.BooleanField(default=0)
+    year = models.PositiveIntegerField(default=1)
 
 class Mapping(BaseModel):
     course = models.ForeignKey(Dropdown, null=True, on_delete=models.SET_NULL, related_name='course_name')
@@ -38,15 +39,36 @@ class UserRole(BaseModel):
     role=models.ForeignKey(Roles,on_delete=models.SET_NULL,null=True)
     
 class Subjects(BaseModel):
+    department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True)
+    year = models.ForeignKey(Dropdown, null=True, )
     subject_name = models.CharField(max_length=100, null=True)
     subject_code = models.CharField(max_length=50, null=True)
 
 class Faculty(BaseModel):
     user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name="faculty_identity")
+    course = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True, related_name='faculty_course')
     department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True)
     subject=models.ForeignKey(Subjects,on_delete=models.SET_NULL,null=True)
     age = models.PositiveIntegerField(null= True)
     gender = models.CharField(max_length=10, null= True)
     qualification=models.CharField(null=True,max_length=100)
     address = models.CharField(max_length=200, blank=True)
-    profile_picture = models.ImageField(upload_to = 'faculty_profile_pics', blank=True)
+    contact = models.PositiveIntegerField(null=True)
+   
+class Student(BaseModel):
+    user =models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name="student_identity")
+    course = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True, related_name='student_course')
+    department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True)
+    age = models.PositiveIntegerField(null=True)
+    gender = models.CharField(null=True, max_length=100)
+    address = models.CharField(max_length=200, blank=True)
+    year = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True, related_name='student_year')
+    contact = models.PositiveIntegerField(null=True)
+    father_name = models.CharField(null=True, max_length=200)
+    mother_name = models.CharField(max_length=200, null=True)
+
+    
+  
+
+    
+   
