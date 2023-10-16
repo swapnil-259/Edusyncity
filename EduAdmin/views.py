@@ -5,7 +5,7 @@ import re
 from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping 
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
-from django.db.models.functions import Lower
+
 
 
 def register_faculty(request):
@@ -92,6 +92,22 @@ def login_user(request):
                 return JsonResponse({'message':'Incorrect Username/Email Or password'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+def forgot_password(request):
+    if request.method == 'POST':
+        load_data=json.loads(request.body)
+        username = load_data.get('username')
+        old_password = load_data.get('old_password')
+        new_password = load_data.get('new_password')
+        user =  authenticate(username= username, password = old_password)
+        if user is not None:
+            User.objects.filter(id = request.user.id).update(password = make_password(new_password))
+            return JsonResponse({'message':'Password Updated Successfully'},status=200)
+        else:
+            return JsonResponse({'message':'Your Old Password Does Not Matched'},status=401)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+
 
 def logout_user(request):      
     if request.method == 'GET':
@@ -252,79 +268,8 @@ def assign_department_to_course(request):
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
     
-def sidebar(request):
-    if request.method == 'GET':
-        if request.user.is_authenticated:
-             check_admin = UserRole.objects.filter(role_id = '1').first()
-             leftpanel = []
-             child=[]
-             if check_admin:
-                pannels = Dropdown.objects.filter(pannel=1).values('id')
-                if not pannels or pannels is None:
-                    return JsonResponse({'message':'Missing Required Field or Key'},status=400)
-                for i in pannels:
-                    child_data = list(Dropdown.objects.filter(relation_id = i.get('id')).values('name','state'))
-                    child.append(child_data)
-                master_configuration = Dropdown.objects.filter(pannel=1).values('pk','name','icon','type','state')
-                master_configuration_list = list(master_configuration)
-                for i in range(0, len(master_configuration_list)):
-                    master_configuration_list[i]['child'] = child[i]
-                    leftpanel.append(master_configuration_list[i])
-                return JsonResponse(list(leftpanel), safe=False)
-             else:
-                 return JsonResponse({'message':'User is not Admin'},status=403)         
-        else:
-            return JsonResponse({'message':'user is not authenticated'},status=401)
-    else:
-        return JsonResponse({'message':'invalid request method'},status=405)
-    
-def courses(request):
-    if request.method == 'GET':
-        if request.user.is_authenticated:
-            if UserRole.objects.filter(role_id='1').exists():
-                data=Dropdown.objects.filter(relation='2').values('id','name')
-                if data is None:
-                    return JsonResponse({'message':'Courses Not Found'},status=204)
-                else:
-                    return JsonResponse(list(data),safe=False)
-            else:
-                return JsonResponse({'message':'You Are Not Admin'},status=403)
-        else:
-            return JsonResponse({'message':'You are not authenticated'},status=401)
-    else:
-        return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 
-def departments(request):
-    if request.method == 'GET':
-        if request.user.is_authenticated:
-            if UserRole.objects.filter(role_id='1').exists():
-                course_id=request.GET.get('course_id')
-                data=Mapping.objects.filter(course=course_id).values('id','department__name')
-                if data is None:
-                    return JsonResponse({'message':'Courses Not Found'},status=204)
-                else:
-                    return JsonResponse(list(data),safe=False)
-            else:
-                return JsonResponse({'message':'You Are Not Admin'},status=403)
-        else:
-            return JsonResponse({'message':'You are not authenticated'},status=401)
-    else:
-        return JsonResponse({'message':'Invalid Request Method'},status=405)
-def forgot_password(request):
-    if request.method == 'POST':
-        load_data=json.loads(request.body)
-        username = load_data.get('username')
-        old_password = load_data.get('old_password')
-        new_password = load_data.get('new_password')
-        user =  authenticate(username= username, password = old_password)
-        if user is not None:
-            User.objects.filter(id = request.user.id).update(password = make_password(new_password))
-            return JsonResponse({'message':'password updated successfully'})
-        else:
-            return JsonResponse({'message':'user is not authenticated'})
-    else:
-        return JsonResponse({'message':'invalid request method'})
 # def register_student(request):
 #     if request.method == 'POST':
 #         first_name = request.POST.get('firstname')
