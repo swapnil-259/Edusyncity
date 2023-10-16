@@ -326,7 +326,20 @@ def forgot_password(request):
     else:
         return JsonResponse({'message':'invalid request method'})
 # def register_student(request):
-    # if request.method == 'POST':
+#     if request.method == 'POST':
+#         first_name = request.POST.get('firstname')
+#         last_name = request.POST.get('lastname')
+#         user_name =  request.POST.get('username')
+#         email =  request.POST.get('email')
+#         gender =  request.POST.get('gender')
+#         phone =  request.POST.get('phone')
+#         age =  request.POST.get('age')
+#         address =  request.POST.get('address')
+#         course =  request.POST.get('course')
+#         department = request.POST.get('department')
+#         title = request.POST.get('title')
+#         subject =  request.POST.get('subject')
+        
 
 
 
