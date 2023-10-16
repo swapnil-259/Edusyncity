@@ -4,6 +4,7 @@ import json
 import re
 from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping 
 from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.hashers import make_password
 from django.db.models.functions import Lower
 
 
@@ -21,21 +22,17 @@ def register_faculty(request):
         qualification = request.POST.get('qualification')
         title = request.POST.get('title')
         subject =  request.POST.get('subject')
-        profile_pic = request.FILES.get('profilepic')
-        password =  request.POST.get('password')
-        confirm_pass =  request.POST.get('confirmpassword')
+      
 
         if not re.match(r'(/^[A-Za-z]+$/)', qualification):
               return JsonResponse({'message':'Only Charcters are Alowed in Qulification Field'},status=400)
         
-        if password != confirm_pass:
-              return JsonResponse({'message': 'Password and confirmPassword do not match'}, status=400)
-        if user_name or first_name or last_name or email or gender or phone or age or address or password or confirm_pass== None:
+        if user_name or first_name or last_name or email or gender or phone or age or address == None:
               return JsonResponse({'message':'all details is mandatory'}, status = 400)
           
         user=  User.objects.create_user(
                  username = user_name,
-                 password = password,
+                 password = "Kiet@123",
                  first_name=first_name,
                  last_name=last_name,
                  email=email
@@ -268,35 +265,40 @@ def sidebar(request):
                  childs = Dropdown.objects.filter(pannel=1).values('id','child')
                  for i in range(0,len(childs)):
                   child_count.append(childs[i])
-                 print(child_count)
                  for i in range(0,len(child_count)):
                      child_data = list(Dropdown.objects.filter(relation_id = child_count[i].get('id')).values('name'))
                      child.append(child_data)
                  master_configuration = Dropdown.objects.filter(pannel=1).values('pk','name','icon','type','state')
                  master_configuration_list = list(master_configuration)
                  for i in range(0, len(master_configuration_list)):
-                  print(child[i])
-                #   child_data = list(Dropdown.objects.filter(relation_id = child_count[i].get('id')).values('name'))
                   master_configuration_list[i]['child'] = child[i]
                   leftpanel.append(master_configuration_list[i])
-                #   master_configuration_list.append(child[i])
-                 print(master_configuration_list)
                  leftpanel_list = list(leftpanel)
                  
                  return JsonResponse(leftpanel_list, safe=False)
              else:
                  return JsonResponse({'message':'user is not admin'})
-             panel = []
-            #  panel_data = Dropdown.objects.filter(pannel='1').values('id')
-            #  for i in range(0,len(panel_data)):
-            #     panel.append(panel_data[i].get('id'))
-            #  print(panel)
-            #  for i in range(0, len(panel)):
-            #      print(panel[i])
-            #      data = Dropdown.objects.filter(relation_id = panel[i]).values('id','name','relation_id_name','relation_idchild','relation_idstate','relation_idicon','relation_id_type')
-            #      print(data)
-                 
         else:
             return JsonResponse({'message':'user is not authenticated'})
     else:
         return JsonResponse({'message':'invalid request method'})
+def forgot_password(request):
+    if request.method == 'POST':
+        load_data=json.loads(request.body)
+        username = load_data.get('username')
+        old_password = load_data.get('old_password')
+        new_password = load_data.get('new_password')
+        password = make_password(load_data.get('old_password'))
+        print(password)
+        user =  authenticate(username= username, password = old_password)
+        if user is not None:
+            User.objects.filter(id = request.user.id).update(password = make_password(new_password))
+            return JsonResponse({'message':'password updated successfully'})
+        else:
+            return JsonResponse({'message':'user is not authenticated'})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+# def register_student(request):
+    # if request.method == 'POST':
+        
+           
