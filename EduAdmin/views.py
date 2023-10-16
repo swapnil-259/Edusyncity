@@ -43,7 +43,6 @@ def register_faculty(request):
             subject_id = subject,
             qualification = qualification,
             address = address,
-            profile_picture = profile_pic,
             title = title
         )
         roles, created = Roles.objects.get_or_create(rolename= 'Faculty')
