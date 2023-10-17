@@ -9,7 +9,8 @@ urlpatterns = [
      path('add_course/', views.add_course, name = 'add_course'),
      path('add_departments/', views.add_departments, name = 'add_departments'),
      path('assign_department/',views.assign_department_to_course, name='assign_department_to_course'),
-     path('forgot_password/',views.forgot_password, name = 'forgot_password')
+     path('forgot_password/',views.forgot_password, name = 'forgot_password'),
+     path('add_dropdown/', views.add_dropdown, name='add_dropdown')
 
 
 ]

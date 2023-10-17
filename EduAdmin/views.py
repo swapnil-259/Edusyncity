@@ -327,22 +327,24 @@ def add_dropdown(request):
             if check_admin:
                 id = load.get('id')
                 name = load.get('name')
-                child = load.get('child')
                 dropdown_id_exist=Dropdown.objects.filter(id = id, child__gte=0).first()
                 if dropdown_id_exist is not None:
                     dropdown, created=Dropdown.objects.get_or_create(
                         name= name,
-                        child = child,
-                        added_by=check_admin.user_id,
+                        added_by=check_admin.user,
                         relation_id = dropdown_id_exist.id,
-                        type=type
                     )
                     if created:
-                        childs=dropdown_id_exist.child
-                        childs=int(childs)-1
-                        dropdown_id_exist.child= childs
-                        dropdown_id_exist.save()
-                        return JsonResponse({'message':'dropdown created successfully'})
+                        child_count = Dropdown.objects.filter(relation_id = id).count()
+                        if child_count==1:
+                            childs=dropdown_id_exist.child
+                            childs=int(childs)-1
+                            dropdown_id_exist.child= childs
+                            dropdown_id_exist.save()
+                            return JsonResponse({'message':'dropdown added successfully'})
+                        else: 
+                         Dropdown.objects.filter(id = dropdown.pk).update(child = dropdown_id_exist.child)   
+                         return JsonResponse({'message':'dropdown added successfully'})
                     else:
                         return JsonResponse({'message':'dropdown already exist'})
                 else:

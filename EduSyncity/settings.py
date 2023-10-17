@@ -97,7 +97,7 @@ DATABASES = {
         'NAME': 'Edusyncity',
         'USER': 'harry',
         'PASSWORD':'Kiet@123',
-        'HOST':'10.21.66.14',
+        'HOST':'10.21.67.138',
         'PORT':'3306',
     }
 }
