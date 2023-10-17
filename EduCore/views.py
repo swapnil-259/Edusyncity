@@ -2,7 +2,7 @@ from django.shortcuts import render
 import json
 
 from django.http import JsonResponse
-from EduAdmin.models import UserRole,Dropdown,Mapping, Subjects
+from EduAdmin.models import UserRole,Dropdown,Mapping,Subjects
 
 
 def sidebar(request):
@@ -113,14 +113,12 @@ def subject(request):
 
 def subjects(request):
     if request.method == 'GET':
-        course_id=request.GET.get('course_id')
         department_id=request.GET.get('department_id')
         year=request.GET.get('year')
-        data=Dropdown.objects.get(pk=course_id)
-        print(data.year)
-        years=[]
-        for i in range(1,data.year+1):
-            years.append(i)
-        return JsonResponse(years,safe=False)
+        subjects=Subjects.objects.filter(department=department_id,year=year).values('subject_name')
+        if subjects:
+            return JsonResponse(subjects,safe=False)
+        else:
+            return JsonResponse({'message':'Subjaect Not avialable'},status=204)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
