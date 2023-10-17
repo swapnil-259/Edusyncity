@@ -24,7 +24,7 @@ class Dropdown(BaseModel):
     type=models.TextField(max_length=100,null=True)
     state=models.TextField(max_length=100,null=True)
     pannel=models.BooleanField(default=0)
-    year = models.PositiveIntegerField(default=1)
+    year = models.PositiveIntegerField(null=True)
 
 class Mapping(BaseModel):
     course = models.ForeignKey(Dropdown, null=True, on_delete=models.SET_NULL, related_name='course_name')
@@ -39,8 +39,9 @@ class UserRole(BaseModel):
     role=models.ForeignKey(Roles,on_delete=models.SET_NULL,null=True)
     
 class Subjects(BaseModel):
+    course=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True,related_name='course_identity')
     department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True)
-    year = models.ForeignKey(Dropdown, on_delete=models.SET_NULL,null=True,related_name='year_identify')
+    year = models.PositiveIntegerField(null=True)
     subject_name = models.CharField(max_length=100, null=True)
     subject_code = models.CharField(max_length=50, null=True)
 

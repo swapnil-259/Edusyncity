@@ -110,8 +110,17 @@ def subject(request):
             return JsonResponse({'message':'user is not authenticated'}, status=401)
     else:
         return JsonResponse({'message':'invalid request method'},status = 405)
-                
-                
-                
-        
-        
+
+def subjects(request):
+    if request.method == 'GET':
+        course_id=request.GET.get('course_id')
+        department_id=request.GET.get('department_id')
+        year=request.GET.get('year')
+        data=Dropdown.objects.get(pk=course_id)
+        print(data.year)
+        years=[]
+        for i in range(1,data.year+1):
+            years.append(i)
+        return JsonResponse(years,safe=False)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
