@@ -6,5 +6,6 @@ urlpatterns = [
     path('courses/',views.courses, name='courses'),
     path('departments/',views.departments, name='departments'),
     path('years/',views.years, name='years'),
-    path('subject/',views.subject, name = 'subject')
+    path('subject/',views.subject, name = 'subject'),
+    path('subjects/', views.subjects,name='subjects')
 ]

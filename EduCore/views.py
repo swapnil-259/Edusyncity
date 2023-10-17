@@ -88,15 +88,15 @@ def subject(request):
                 year = data.get('year')
                 department_id = data.get('department_id')
                 course_id = data.get('course_id')
-                check_mapping = Mapping.objects.filter(department = department_id, course = course_id).first()
-                
+                check_mapping = Mapping.objects.filter(department = department_id, course  = course_id).first()         
                 if check_mapping:
                     subjects , created = Subjects.objects.get_or_create(
                     subject_name= subject_name,
                     subject_code=subject_code,
-                    department = check_mapping.department.pk,
-                    course = check_mapping.course.pk,
-                    year = year
+                    department = check_mapping.department,
+                    course = check_mapping.course,
+                    year = year,
+                    added_by = check_admin.user
                     ) 
                     if created:
                        return JsonResponse({'message':'subject added successfully'})
