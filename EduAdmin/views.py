@@ -319,41 +319,36 @@ def register_student(request):
             return JsonResponse({'message':'Registration Succesfull'},status=201)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
-def add_dropdown(request):
+
+def dropdown(request):
     if request.method == 'POST':
         load = json.loads(request.body)
         if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(role_id = '1').first()
+            check_admin = UserRole.objects.filter(role_id = '1').exists()
             if check_admin:
                 id = load.get('id')
                 name = load.get('name')
-                dropdown_id_exist=Dropdown.objects.filter(id = id, child__gte=0).first()
-                if dropdown_id_exist is not None:
+                parent=Dropdown.objects.filter(id = id, child__gte=0).first()
+                if parent is not None:
                     dropdown, created=Dropdown.objects.get_or_create(
                         name= name,
                         added_by=check_admin.user,
-                        relation_id = dropdown_id_exist.id,
+                        relation_id = parent.id,
+                        child = parent.child -1,
                     )
                     if created:
-                        child_count = Dropdown.objects.filter(relation_id = id).count()
-                        if child_count==1:
-                            childs=dropdown_id_exist.child
-                            childs=int(childs)-1
-                            dropdown_id_exist.child= childs
-                            dropdown_id_exist.save()
-                            return JsonResponse({'message':'dropdown added successfully'})
-                        else: 
-                         Dropdown.objects.filter(id = dropdown).update(child = dropdown_id_exist.child)   
-                         return JsonResponse({'message':'dropdown added successfully'})
+                        return JsonResponse({'message':'dropdown added successfully'},status=201)
                     else:
-                        return JsonResponse({'message':'dropdown already exist'})
+                        return JsonResponse({'message':'dropdown already exist'},status=409)
                 else:
-                    return JsonResponse({'message':'not more child added'})
+                    return JsonResponse({'message':'You can not add child for this Parent'},status=409)
                 
             else:
-                return JsonResponse({'message':'user is not admin'})
+                return JsonResponse({'message':'user is not admin'},status=403)
         else:
-            return JsonResponse({'message':'user is not authenticated'})
+            return JsonResponse({'message':'user is not authenticated'},status=401)
+    else:
+        return JsonResponse({'message':'Invalid Reqest Method'},status=405)
         
                 
                 

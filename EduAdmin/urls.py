@@ -10,7 +10,7 @@ urlpatterns = [
      path('add_departments/', views.add_departments, name = 'add_departments'),
      path('assign_department/',views.assign_department_to_course, name='assign_department_to_course'),
      path('forgot_password/',views.forgot_password, name = 'forgot_password'),
-     path('add_dropdown/', views.add_dropdown, name='add_dropdown')
+     path('dropdown/', views.dropdown, name='dropdown')
 
 
 ]
