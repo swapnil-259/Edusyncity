@@ -5,4 +5,5 @@ urlpatterns = [
     path('sidebar/',views.sidebar, name='sidebar'),
     path('courses/',views.courses, name='courses'),
     path('departments/',views.departments, name='departments'),
+    path('years/',views.years, name='years'),
 ]

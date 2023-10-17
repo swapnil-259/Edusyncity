@@ -330,9 +330,10 @@ def dropdown(request):
                 name = load.get('name')
                 parent=Dropdown.objects.filter(id = id, child__gte=0).first()
                 if parent is not None:
+                    user=request.user.id
                     dropdown, created=Dropdown.objects.get_or_create(
                         name= name,
-                        added_by=check_admin.user,
+                        added_by=user,
                         relation_id = parent.id,
                         child = parent.child -1,
                     )
