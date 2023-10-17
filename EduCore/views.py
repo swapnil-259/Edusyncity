@@ -1,7 +1,8 @@
 from django.shortcuts import render
+import json
 
 from django.http import JsonResponse
-from EduAdmin.models import UserRole,Dropdown,Mapping 
+from EduAdmin.models import UserRole,Dropdown,Mapping, Subjects
 
 
 def sidebar(request):
@@ -76,3 +77,41 @@ def years(request):
         return JsonResponse(years,safe=False)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+def subject(request):
+    if request.method =='POST':
+        data = json.loads(request.body)
+        if request.user.is_authenticated:
+            check_admin = UserRole.objects.filter(user= request.user.id, role='1').first()
+            if check_admin:
+                subject_name = data.get('subject_name')
+                subject_code = data.get('subject_code')
+                year = data.get('year')
+                department_id = data.get('department_id')
+                course_id = data.get('course_id')
+                check_mapping = Mapping.objects.filter(department = department_id, course= course_id ).first()
+                
+                if check_mapping:
+                    subjects , created = Subjects.objects.get_or_create(
+                    subject_name= subject_name,
+                    subject_code=subject_code,
+                    department = check_mapping.department.pk,
+                    course = check_mapping.course.pk,
+                    year = year
+                    ) 
+                    if created:
+                       return JsonResponse({'message':'subject added successfully'})
+                    else:
+                       return JsonResponse({'message':'subject already exist'}, status = 409)
+                else:
+                    return JsonResponse({'message':'department do not exist'}, status=204)
+            else:
+                return JsonResponse({'message':'user is not admin'}, status=403)
+        else:
+            return JsonResponse({'message':'user is not authenticated'}, status=401)
+    else:
+        return JsonResponse({'message':'invalid request method'},status = 405)
+                
+                
+                
+        
+        
