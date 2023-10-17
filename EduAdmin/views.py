@@ -324,7 +324,7 @@ def dropdown(request):
     if request.method == 'POST':
         load = json.loads(request.body)
         if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(role_id = '1').exists()
+            check_admin = UserRole.objects.filter(role_id = '1', user_id = request.user.id).first()
             if check_admin:
                 id = load.get('id')
                 name = load.get('name')
@@ -349,7 +349,7 @@ def dropdown(request):
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Reqest Method'},status=405)
-        
+
                 
                 
                         
