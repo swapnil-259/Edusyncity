@@ -63,3 +63,16 @@ def departments(request):
             return JsonResponse({'message':'You are not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+
+def years(request):
+    if request.method == 'GET':
+        course_id=request.GET.get('course_id')
+        data=Dropdown.objects.get(pk=course_id)
+        print(data.year)
+        years=[]
+        for i in range(1,data.year+1):
+            years.append(i)
+        return JsonResponse(years,safe=False)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
