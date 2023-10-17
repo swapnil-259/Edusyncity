@@ -175,24 +175,28 @@ def add_role(request):
 def add_course(request):
     
     if request.method == 'POST':
-        
+        course_data = json.loads(request.body)
+        course_name = course_data.get('course_name')
+        child_count = course_data.get('child_count')
+        state = course_data.get('state')
+        type = course_data.get('type')
+        if course_name is None or not child_count:
+            return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
         if request.user.is_authenticated:
-            course_data = json.loads(request.body)
-            course_name = course_data.get('course_name')
-            if course_name is None or not course_name:
-                return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
             check_admin = UserRole.objects.filter(role_id = '1').first()
             user_exist = User.objects.get(pk = request.user.id)
             course_id = Dropdown.objects.get(name='Courses').pk
             if not course_id:
-                return JsonResponse({'message':'You have no attribute named cources'},status=400)
+                return JsonResponse({'message':'You Have No Attribute Named Cources'},status=400)
             if check_admin: 
                 
                 course_exist , created = Dropdown.objects.get_or_create(
                     name = course_name,
+                    child = child_count,
                     relation_id = course_id,
                     added_by = user_exist,
                     can_update = True,
+                    state = state,
                     type = type
                 )
                 if created:
@@ -219,20 +223,17 @@ def add_departments(request):
                     course_exist= Dropdown.objects.filter(pk = course_id).first()
                     print(course_exist.child)
                     if course_exist:    
-                        dept , created =Dropdown.objects.get_or_create(name=name,relation=course_exist,can_delete=False,can_update=True,added_by=user_exist, state=state, type = type)
-                        print(dept.child)
-                        if created:
-                            childs=course_exist.child
-                            childs=int(childs)-1
-                            course_exist.child= childs
-                            course_exist.save()
+                     dept , created =Dropdown.objects.get_or_create(name=name,relation=course_exist,can_delete=False,can_update=True,added_by=user_exist, state=state, type = type)
+                     print(dept.child)
+                     if created:
+                        childs=course_exist.child
+                        childs=int(childs)-1
+                        course_exist.child= childs
+                        course_exist.save()
                        
-                            return JsonResponse({'message':'Department added Successfully'},status=201)
-                        else:
-                            return JsonResponse({'message':'Department already exist'},status=409)
-
-                    else:
-                        return JsonResponse({'message':'Attribute Courses Does Not Exists'},status=204)
+                        return JsonResponse({'message':'Department added Successfully'},status=409)
+                     else:
+                        return JsonResponse({'message':'Department already exist'},status=201)
             else:
                 return JsonResponse({'message': 'You Are Not Authorised'},status=403)   
         else:
@@ -323,7 +324,7 @@ def dropdown(request):
     if request.method == 'POST':
         load = json.loads(request.body)
         if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(role_id = '1').exists()
+            check_admin = UserRole.objects.filter(role_id = '1', user_id = request.user.id).first()
             if check_admin:
                 id = load.get('id')
                 name = load.get('name')
@@ -349,7 +350,7 @@ def dropdown(request):
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Reqest Method'},status=405)
-        
+
                 
                 
                         
