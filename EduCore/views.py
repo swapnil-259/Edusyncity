@@ -87,15 +87,15 @@ def subject(request):
                 subject_code = data.get('subject_code')
                 year = data.get('year')
                 department_id = data.get('department_id')
-                # course_id = data.get('course_id')
-                check_mapping = Mapping.objects.filter(department = department_id).first()
+                course_id = data.get('course_id')
+                check_mapping = Mapping.objects.filter(department = department_id, course = course_id).first()
                 
                 if check_mapping:
                     subjects , created = Subjects.objects.get_or_create(
                     subject_name= subject_name,
                     subject_code=subject_code,
                     department = check_mapping.department.pk,
-                    # course = check_mapping.course.pk,
+                    course = check_mapping.course.pk,
                     year = year
                     ) 
                     if created:
