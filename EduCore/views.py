@@ -87,7 +87,7 @@ def departments(request):
         if request.user.is_authenticated:
             if UserRole.objects.filter(role_id='1').exists():
                 course_id=request.GET.get('course_id')
-                data=Mapping.objects.filter(course=course_id).values('id','department__name')
+                data=Mapping.objects.filter(course=course_id).values('department__name', 'department_id')
                 if data is None:
                     return JsonResponse({'message':'Courses Not Found'},status=204)
                 else:
@@ -151,9 +151,9 @@ def subjects(request):
         year=request.GET.get('year')
         subjects=Subjects.objects.filter(department=department_id,year=year,course=course_id).values('subject_name')
         if subjects:
-            return JsonResponse(subjects,safe=False)
+            return JsonResponse(list(subjects),safe=False)
         else:
-            return JsonResponse({'message':'Subjaect Not avialable'},status=204)
+            return JsonResponse({'message':'Subject Not avialable'},status=204)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 def gender(request):
