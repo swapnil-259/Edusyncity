@@ -158,7 +158,7 @@ def subjects(request):
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 def gender(request):
     if request.method == 'GET':
-       gender = Dropdown.objects.filter(relation_id = '44').values('name')
+       gender = Dropdown.objects.filter(relation_id = '44').values('id','name')
        if gender:
            gender_data = list(gender)
            
@@ -169,7 +169,7 @@ def gender(request):
         return JsonResponse({'message':'invalid request method'})
 def title(request):
     if request.method == 'GET':
-       title = Dropdown.objects.filter(relation_id = '48').values('name')
+       title = Dropdown.objects.filter(relation_id = '48').values('id','name')
        if title:
            title_data = list(title)
            
@@ -180,7 +180,7 @@ def title(request):
         return JsonResponse({'message':'invalid request method'})
 def religion(request):
     if request.method == 'GET':
-       religion = Dropdown.objects.filter(relation_id = '40').values('name')
+       religion = Dropdown.objects.filter(relation_id = '40').values('id','name')
        if religion:
            religion_data = list(religion)
            
