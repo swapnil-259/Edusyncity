@@ -27,6 +27,20 @@ def register_faculty(request):
                 subject =  load.get('subject')
                 course = load.get('course')
                 religion = load.get('religion')
+                print(first_name)
+                print(last_name)
+                print(user_name)
+                print(email)
+                print(gender)
+                print(contact)
+                print(age)
+                print(address)
+                print(department)
+                print(qualification)
+                print(title)
+                print(subject)
+                print(course)
+                print(religion )
                 
                 if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address or not department or not qualification or not title or not subject or not course or not religion:
                       return JsonResponse({'message':'all details is mandatory'}, status = 400)
@@ -43,7 +57,7 @@ def register_faculty(request):
                     return JsonResponse({'message':'Invalid last_name format'},status=400)
                 if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
                     return JsonResponse({'message':'Match Your email Requirements'},status=400)
-                if age < 0:
+                if int(age) < 0:
                     return JsonResponse({'message':'Age Can Not Be Negative '},status=400)
                 
                 gender_exist = Dropdown.objects.filter(id = gender ).exists()
@@ -78,13 +92,13 @@ def register_faculty(request):
                 ) 
                 Faculty.objects.create(
                 user_id = user.id,
-                department_id = department,
-                subject_id = subject,
+                department_id = department_exist,
+                subject_id = subject_exist,
                 qualification = qualification,
                 address = address,
-                title = title,
-                course = course,
-                religion = religion
+                title = title_exist,
+                course = course_exist,
+                religion = religion_exist
                 )
                 roles, created = Roles.objects.get_or_create(rolename= 'Faculty')
                 if not created:
