@@ -147,6 +147,7 @@ def subject(request):
 def subjects(request):
     if request.method == 'GET':
         course_id=request.GET.get('course_id')
+        
         department_id=request.GET.get('department_id')
         year=request.GET.get('year')
         subjects=Subjects.objects.filter(department=department_id,year=year,course=course_id).values('subject_name')
