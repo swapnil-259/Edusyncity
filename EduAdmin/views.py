@@ -86,17 +86,20 @@ def register_faculty(request):
                 course = course_exist,
                 religion = religion_exist, 
                 contact= contact,
-                added_by = admin_exist.user
+                added_by = admin_exist.user,
+                age = age,
+                gender = gender_exist
                 )
-                roles, created = Roles.objects.get_or_create(role_name= 'Faculty')
-                if not created:
-                    return JsonResponse({'message':'You Already Have This Role'},status=409)
-                else:
-                    UserRole.objects.create(
+                roles, created = Roles.objects.get_or_create(role_name= 'Teacher')
+                UserRole.objects.create(
                     user_id = user.id,
                     role_id = roles.id,
+                    added_by = admin_exist.user
                     )
-                    return JsonResponse({'message':'Registration Succesfull'},status=201)
+                if not created:
+                    return JsonResponse({'message':'Registration Succesfull'},status=409)
+                else:
+                    return JsonResponse({'message':'You already have this role'},status=201)
             else:
                 return JsonResponse({'message':'You are not Admin'},status=403)
         else:
@@ -185,15 +188,15 @@ def register_student(request):
                     added_by = admin_exist.user
                 )
                 roles, created = Roles.objects.get_or_create(role_name= 'Student')
-
-                if not created:
-                    return JsonResponse({'message':'You Already Have This Role'},status=409)
-                else:
-                    UserRole.objects.create(
+                UserRole.objects.create(
                     user_id = user.id,
                     role_id = roles.id,
+                    added_by = admin_exist.user
                     )
-                    return JsonResponse({'message':'Registration Succesfull'},status=201)
+                if   not created:
+                    return JsonResponse({'message':'Registration Succesfull'},status=201) 
+                else:
+                   return JsonResponse({'message':'You Already Have This Role'},status=409)
             else:
                 return JsonResponse({'message':'user is not admin'})
          else:
