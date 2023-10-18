@@ -32,6 +32,12 @@ def register_faculty(request):
                       return JsonResponse({'message':'Missing Required Field'}, status = 400)
                 if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None or subject is None or course is None or religion is None:
                     return JsonResponse({'messge':'Missing any key'},status=400) 
+                if age is ' ' or age < 0:
+                    return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
+                if contact is ' ' or contact < 0:
+                    return JsonResponse({'message':'Contact Can Not Be Negative or blank space'},status=400)
+                if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
+                    return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
                 
                 if not re.match(r'^[6-9]\d{9}$',contact):
                     return JsonResponse({'message':'Your Contact Can have only 10 digits and in indian Format'},status=400)
