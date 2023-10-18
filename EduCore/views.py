@@ -156,3 +156,38 @@ def subjects(request):
             return JsonResponse({'message':'Subjaect Not avialable'},status=204)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+def gender(request):
+    if request.method == 'GET':
+       gender = Dropdown.objects.filter(relation_id = '44').values('name')
+       if gender:
+           gender_data = list(gender)
+           
+           return JsonResponse(gender_data, safe=False)
+       else:
+           return JsonResponse({'message':'data not found'})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+def title(request):
+    if request.method == 'GET':
+       title = Dropdown.objects.filter(relation_id = '48').values('name')
+       if title:
+           title_data = list(title)
+           
+           return JsonResponse(title_data, safe=False)
+       else:
+           return JsonResponse({'message':'data not found'})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+def religion(request):
+    if request.method == 'GET':
+       religion = Dropdown.objects.filter(relation_id = '40').values('name')
+       if religion:
+           religion_data = list(religion)
+           
+           return JsonResponse(religion_data, safe=False)
+       else:
+           return JsonResponse({'message':'data not found'})
+    else:
+         return JsonResponse({'message':'invalid request method'})
+    
+    

@@ -9,5 +9,8 @@ urlpatterns = [
     path('departments/',views.departments, name='departments'),
     path('years/',views.years, name='years'),
     path('subject/',views.subject, name = 'subject'),
-    path('subjects/', views.subjects,name='subjects')
+    path('subjects/', views.subjects,name='subjects'),
+    path('gender/', views.gender, name='gender'),
+    path('title/', views.title, name='title'),
+    path('religion/', views.religion, name='religion')
 ]
