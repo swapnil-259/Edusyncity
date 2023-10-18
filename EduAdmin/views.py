@@ -11,7 +11,8 @@ from datetime import datetime,date
 def register_faculty(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
-            if UserRole.objects.filter(user=request.user.id,role_id = '1').first():
+            admin_exist = UserRole.objects.filter(user=request.user.id,role_id = '1').first()
+            if admin_exist:
                 load= json.loads(request.body)
                 first_name = load.get('firstname')
                 last_name = load.get('lastname')
@@ -83,7 +84,9 @@ def register_faculty(request):
                 address = address,
                 title = title_exist,
                 course = course_exist,
-                religion = religion_exist
+                religion = religion_exist, 
+                contact= contact,
+                added_by = admin_exist.user
                 )
                 roles, created = Roles.objects.get_or_create(role_name= 'Faculty')
                 if not created:
@@ -102,91 +105,99 @@ def register_faculty(request):
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 def register_student(request):
     if request.method == 'POST':
-        load=json.loads(request.body)
-        first_name = load.get('first_name')
-        last_name = load.get('last_name')
-        user_name =  load.get('username')
-        father_name = load.get('father_name')
-        mother_name = load.get('mother_name')
-        email =  load.get('email')
-        gender =  load.get('gender')
-        contact =  load.get('contact')
-        age =  load.get('age')
-        address =  load.get('address')
-        course =  load.get('course')
-        department = load.get('department')
-        year = load.get('year')
-        religion = load.get('religion')
-        if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address or not department or not father_name or not mother_name or not year or not course or not religion:
-                      return JsonResponse({'message':'Missing Required Field'}, status = 400)
-        if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or father_name is None or mother_name is None or year is None or course is None or religion is None:
-                    return JsonResponse({'messge':'Missing any key'},status=400) 
-                
-        if not re.match(r'^[6-9]\d{9}$',contact):
-            return JsonResponse({'message':'Your Contact Can have only 10 digits and in indian Format'},status=400)
-        if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
-            return JsonResponse({'message':'Match Your Username Requirements'},status=400)
-        if not re.match(r'^[A-Za-z\s]+$', first_name):
-            return JsonResponse({'message':'Invalid first_name format'},status=400)
-        if not re.match(r'^[A-Za-z\s]+$', father_name):
-            return JsonResponse({'message':'Invalid first_name format'},status=400)
-        if not re.match(r'^[A-Za-z\s]+$', mother_name):
-            return JsonResponse({'message':'Invalid first_name format'},status=400)
-        if not re.match(r'^[A-Za-z\s]+$', last_name):
-            return JsonResponse({'message':'Invalid last_name format'},status=400)
-        if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
-            return JsonResponse({'message':'Match Your email Requirements'},status=400)
-        if int(age) < 0:
-            return JsonResponse({'message':'Age Can Not Be Negative '},status=400)
-        
-        gender_exist = Dropdown.objects.filter(id = gender ).first()
-        if gender_exist is None:
-            return JsonResponse({'message':'Gender Not an instance'},status=400)
-        department_exist = Mapping.objects.filter(id = department).first()
-        if department_exist is None:
-            return JsonResponse({'message':'Department Not an Instance'},status=400)
-        course_exist = Dropdown.objects.filter(id = course).first()
-        if course_exist is None:
-            return JsonResponse({'message':'Course Not an Instance'},status=400)
-        religion_exist = Dropdown.objects.filter(id = religion).first()
-        if religion_exist is None:
-            return JsonResponse({'message':'Religion Not an Instance'},status=400)
-        if User.objects.filter(username=user_name).exists():
-            return JsonResponse({'message':'Username Already exists'},status=409)
-        elif User.objects.filter(email=email).exists():
-            return JsonResponse({'message':'Email Already exists'},status=409)
-                
-        
-        user = User.objects.create_user(
-            first_name= first_name,
-            last_name=last_name,
-            username = user_name,
-            email=email,
-            password = "Kiet@123"
-        )
-        Student.objects.create(
-            user_id = user.id,
-            department = department_exist,
-            age = age,
-            gender = gender_exist,
-            address= address,
-            year = year,
-            contact= contact,
-            course = course_exist,
-            father_name = father_name,
-            mother_name= mother_name,
-            religion = religion_exist
-        )
-        roles, created = Roles.objects.get_or_create(role_name= 'Student')
+         if request.user.is_authenticated:
+            admin_exist = UserRole.objects.filter(user=request.user.id,role_id = '1').first()
+            if admin_exist:
+                load=json.loads(request.body)
+                first_name = load.get('first_name')
+                last_name = load.get('last_name')
+                user_name =  load.get('username')
+                father_name = load.get('father_name')
+                mother_name = load.get('mother_name')
+                email =  load.get('email')
+                gender =  load.get('gender')
+                contact =  load.get('contact')
+                age =  load.get('age')
+                address =  load.get('address')
+                course =  load.get('course')
+                department = load.get('department')
+                year = load.get('year')
+                religion = load.get('religion')
+                if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address or not department or not father_name or not mother_name or not year or not course or not religion:
+                              return JsonResponse({'message':'Missing Required Field'}, status = 400)
+                if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or father_name is None or mother_name is None or year is None or course is None or religion is None:
+                            return JsonResponse({'messge':'Missing any key'},status=400) 
 
-        if not created:
-            return JsonResponse({'message':'You Already Have This Role'},status=409)
-        else:
-            UserRole.objects.create(
-            user_id = user.id,
-            role_id = roles.id,
-            )
-            return JsonResponse({'message':'Registration Succesfull'},status=201)
+                if not re.match(r'^[6-9]\d{9}$',contact):
+                    return JsonResponse({'message':'Your Contact Can have only 10 digits and in indian Format'},status=400)
+                if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
+                    return JsonResponse({'message':'Match Your Username Requirements'},status=400)
+                if not re.match(r'^[A-Za-z\s]+$', first_name):
+                    return JsonResponse({'message':'Invalid first_name format'},status=400)
+                if not re.match(r'^[A-Za-z\s]+$', father_name):
+                    return JsonResponse({'message':'Invalid first_name format'},status=400)
+                if not re.match(r'^[A-Za-z\s]+$', mother_name):
+                    return JsonResponse({'message':'Invalid first_name format'},status=400)
+                if not re.match(r'^[A-Za-z\s]+$', last_name):
+                    return JsonResponse({'message':'Invalid last_name format'},status=400)
+                if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
+                    return JsonResponse({'message':'Match Your email Requirements'},status=400)
+                if int(age) < 0:
+                    return JsonResponse({'message':'Age Can Not Be Negative '},status=400)
+
+                gender_exist = Dropdown.objects.filter(id = gender ).first()
+                if gender_exist is None:
+                    return JsonResponse({'message':'Gender Not an instance'},status=400)
+                department_exist = Mapping.objects.filter(id = department).first()
+                if department_exist is None:
+                    return JsonResponse({'message':'Department Not an Instance'},status=400)
+                course_exist = Dropdown.objects.filter(id = course).first()
+                if course_exist is None:
+                    return JsonResponse({'message':'Course Not an Instance'},status=400)
+                religion_exist = Dropdown.objects.filter(id = religion).first()
+                if religion_exist is None:
+                    return JsonResponse({'message':'Religion Not an Instance'},status=400)
+                if User.objects.filter(username=user_name).exists():
+                    return JsonResponse({'message':'Username Already exists'},status=409)
+                elif User.objects.filter(email=email).exists():
+                    return JsonResponse({'message':'Email Already exists'},status=409)
+
+
+                user = User.objects.create_user(
+                    first_name= first_name,
+                    last_name=last_name,
+                    username = user_name,
+                    email=email,
+                    password = "Kiet@123"
+                )
+                Student.objects.create(
+                    user_id = user.id,
+                    department = department_exist,
+                    age = age,
+                    gender = gender_exist,
+                    address= address,
+                    year = year,
+                    contact = contact,
+                    course = course_exist,
+                    father_name = father_name,
+                    mother_name= mother_name,
+                    religion = religion_exist,
+                    added_by = admin_exist.user
+                )
+                roles, created = Roles.objects.get_or_create(role_name= 'Student')
+
+                if not created:
+                    return JsonResponse({'message':'You Already Have This Role'},status=409)
+                else:
+                    UserRole.objects.create(
+                    user_id = user.id,
+                    role_id = roles.id,
+                    )
+                    return JsonResponse({'message':'Registration Succesfull'},status=201)
+            else:
+                return JsonResponse({'message':'user is not admin'})
+         else:
+            return JsonResponse({'message':'user is not authenticated'})
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
