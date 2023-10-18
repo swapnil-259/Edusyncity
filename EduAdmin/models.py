@@ -48,10 +48,10 @@ class Subjects(BaseModel):
 class Faculty(BaseModel):
     user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name="faculty_identity")
     course = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True, related_name='faculty_course')
-    department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True)
+    department=models.ForeignKey(Mapping,on_delete=models.SET_NULL, null=True)
     subject=models.ForeignKey(Subjects,on_delete=models.SET_NULL,null=True)
     age = models.PositiveIntegerField(null= True)
-    gender = models.CharField(max_length=10, null= True)
+    gender = models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='faculty_gender')
     qualification=models.CharField(null=True,max_length=100)
     address = models.CharField(max_length=200, blank=True)
     contact = models.PositiveIntegerField(null=True)
@@ -60,15 +60,15 @@ class Faculty(BaseModel):
 class Student(BaseModel):
     user =models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name="student_identity")
     course = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True, related_name='student_course')
-    department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True)
+    department=models.ForeignKey(Mapping,on_delete=models.SET_NULL, null=True)
     age = models.PositiveIntegerField(null=True)
-    gender = models.CharField(null=True, max_length=100)
+    gender = models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='student_gender')
     address = models.CharField(max_length=200, blank=True)
     year = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True, related_name='student_year')
     contact = models.PositiveIntegerField(null=True)
     father_name = models.CharField(null=True, max_length=200)
     mother_name = models.CharField(max_length=200, null=True)
-
+    religion = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True,related_name="student_religion")
     
   
 
