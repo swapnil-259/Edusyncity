@@ -5,7 +5,7 @@ import re
 from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping, Student
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
-
+from datetime import datetime,date
 
 
 def register_faculty(request):
@@ -16,7 +16,7 @@ def register_faculty(request):
         user_name =  load.get('username')
         email =  load.get('email')
         gender =  load.get('gender')
-        phone =  load.get('phone')
+        contact =  load.get('contact')
         age =  load.get('age')
         address =  load.get('address')
         department =  load.get('department')
@@ -29,9 +29,11 @@ def register_faculty(request):
         if not re.match(r'(/^[A-Za-z]+$/)', qualification):
               return JsonResponse({'message':'Only Charcters are Alowed in Qulification Field'},status=400)
         
-        if user_name or first_name or last_name or email or gender or phone or age or address == None:
+        if user_name or first_name or last_name or email or gender or contact or age or address == None:
               return JsonResponse({'message':'all details is mandatory'}, status = 400)
-          
+
+        if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or qualification is None :
+            return JsonResponse({'messge':'Missing any key'},status=400) 
         user=  User.objects.create_user(
                  username = user_name,
                  password = "Kiet@123",
@@ -134,22 +136,23 @@ def add_role(request):
         if request.user.is_authenticated:
             check_admin = UserRole.objects.filter(role_id = '1').first()
             user_exist = User.objects.get(pk = request.user.id)
-            print(user_exist.id)
             if check_admin: 
-              role_exist , created= Roles.objects.get_or_create(
-                role_name = name,
-                added_by = user_exist
-              )
-              if created:
-               return JsonResponse({'message':'role successfully added'},status=201)
-              else:
-                  return JsonResponse({'message':'role already exist'},status=409)
+                role_exist , created= Roles.objects.get_or_create(
+                    role_name = name,
+                    added_by = user_exist,
+                    deleted_status=False,
+                    )
+                if created:
+                    
+                    return JsonResponse({'message':'role successfully added'},status=201)
+                else:
+                    return JsonResponse({'message':'role already exist'},status=409)
             else:
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
             return JsonResponse({'message':'user is not authenticated '},status=401)
         
-    if request.method == "PUT":
+    elif request.method == "PUT":
         load = json.loads(request.body)
         new_name=load.get('new_name')
         role_id=load.get('role_id')
@@ -158,16 +161,28 @@ def add_role(request):
         if request.user.is_authenticated:
             check_admin = UserRole.objects.filter(role_id = '1').first()
             user_exist = User.objects.get(pk = request.user.id)
-            print(user_exist.id)
+    
             if check_admin:
-                Roles.objects.filter(pk=role_id).update(name=new_name)
+                Roles.objects.filter(pk=role_id).update(role_name=new_name)
                 return JsonResponse({'message':'Role Updated Successfully'},status=200)
             else:
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
             return JsonResponse({'message':'user is not authenticated '},status=401)
 
-
+    elif request.method=='DELETE':
+        if request.user.is_authenticated:
+            if UserRole.objects.filter(role_id = '1').exists():
+                id=request.GET.get('id')
+                deleted=Roles.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.today())
+                if deleted:
+                    return JsonResponse({'message':'Role Deleted Successfully'},status=200)
+                else:
+                    return JsonResponse({'message':'No Role Found'},status=204)
+            else:
+                return JsonResponse({'message':'You Are Not Admin'},status=403)
+        else:
+            return JsonResponse({'message':'You Are Not Logged In'},status=401)
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
 
@@ -330,10 +345,9 @@ def dropdown(request):
                 name = load.get('name')
                 parent=Dropdown.objects.filter(id = id, child__gte=0).first()
                 if parent is not None:
-                    user=request.user.id
                     dropdown, created=Dropdown.objects.get_or_create(
                         name= name,
-                        added_by=user,
+                        added_by=check_admin.id,
                         relation_id = parent.id,
                         child = parent.child -1,
                     )
@@ -348,6 +362,44 @@ def dropdown(request):
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
             return JsonResponse({'message':'user is not authenticated'},status=401)
+        
+    elif request.method=='PUT':
+        if request.user.is_authenticated:
+            check_admin = UserRole.objects.filter(role_id = '1', user_id = request.user.id).first()
+            if check_admin:
+                load=json.loads(request.body)
+                id = load.get('id')
+                new_name = load.get('new_name')
+                parent=Dropdown.objects.filter(id = id).exists()
+                if parent is not None:
+                    updated=Dropdown.objects.filter(pk=id).update(name=new_name)
+                    
+                    if updated:
+                        return JsonResponse({'message':'dropdown updated successfully'},status=201)
+                    else:
+                        return JsonResponse({'message':'dropdown does not exists'},status=204)
+                else:
+                    return JsonResponse({'message':'You can not add child for this Parent'},status=409)
+                
+            else:
+                return JsonResponse({'message':'user is not admin'},status=403)
+        else:
+            return JsonResponse({'message':'user is not authenticated'},status=401)
+        
+    elif request.method=='DELETE':
+        if request.user.is_authenticated:
+            if UserRole.objects.filter(role_id = '1').exists():
+                id=request.GET.get('id')
+                deleted=Dropdown.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.today())
+                if deleted:
+                    return JsonResponse({'message':'Role Deleted Successfully'},status=200)
+                else:
+                    return JsonResponse({'message':'No Role Found'},status=204)
+            else:
+                return JsonResponse({'message':'You Are Not Admin'},status=403)
+        else:
+            return JsonResponse({'message':'You Are Not Logged In'},status=401)
+
     else:
         return JsonResponse({'message':'Invalid Reqest Method'},status=405)
 

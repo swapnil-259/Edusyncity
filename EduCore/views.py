@@ -31,6 +31,40 @@ def sidebar(request):
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
     
+
+def parents(request):
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+            if UserRole.objects.filter(role_id='1').exists():
+                data=Dropdown.objects.values('id','name')
+                if data is None:
+                    return JsonResponse({'message':'Courses Not Found'},status=204)
+                else:
+                    return JsonResponse(list(data),safe=False)
+            else:
+                return JsonResponse({'message':'You Are Not Admin'},status=403)
+        else:
+            return JsonResponse({'message':'You are not authenticated'},status=401)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+def childs(request):
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+            if UserRole.objects.filter(role_id='1').exists():
+                parent_id=request.GET.get('parent_id')
+                data=Dropdown.objects.filter(relation=parent_id).values('id','name')
+                if data is None:
+                    return JsonResponse({'message':'Courses Not Found'},status=204)
+                else:
+                    return JsonResponse(list(data),safe=False)
+            else:
+                return JsonResponse({'message':'You Are Not Admin'},status=403)
+        else:
+            return JsonResponse({'message':'You are not authenticated'},status=401)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+    
 def courses(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
@@ -70,7 +104,6 @@ def years(request):
     if request.method == 'GET':
         course_id=request.GET.get('course_id')
         data=Dropdown.objects.get(pk=course_id)
-        print(data.year)
         years=[]
         for i in range(1,data.year+1):
             years.append(i)
