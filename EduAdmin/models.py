@@ -55,7 +55,7 @@ class Faculty(BaseModel):
     qualification=models.CharField(null=True,max_length=100)
     address = models.CharField(max_length=200, blank=True)
     contact = models.BigIntegerField(null=True)
-    religion = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True,related_name="faculty_religion")
+    # religion = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True,related_name="faculty_religion")
     title = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True, related_name='identify_title')
    
 class Student(BaseModel):

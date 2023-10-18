@@ -69,35 +69,35 @@ def register_faculty(request):
                 elif User.objects.filter(email=email).exists():
                     return JsonResponse({'message':'Email Already exists'},status=409)
                 
-                user=  User.objects.create_user(
-                username = user_name,
-                password = "Kiet@123",
-                first_name=first_name,
-                last_name=last_name,
-                email=email
-                ) 
-                Faculty.objects.create(
-                user_id = user.id,
-                department = department_exist,
-                subject = subject_exist,
-                qualification = qualification,
-                address = address,
-                title = title_exist,
-                course = course_exist,
-                religion = religion_exist, 
-                contact= contact,
-                added_by = admin_exist.user,
-                age = age,
-                gender = gender_exist
-                )
-                roles, created = Roles.objects.get_or_create(role_name= 'Teacher')
-                UserRole.objects.create(
-                    user_id = user.id,
-                    role_id = roles.id,
-                    added_by = admin_exist.user
-                    )
-                if not created:
-                    return JsonResponse({'message':'Registration Succesfull'},status=409)
+                # user=  User.objects.create_user(
+                # username = user_name,
+                # password = "Kiet@123",
+                # first_name=first_name,
+                # last_name=last_name,
+                # email=email
+                # ) 
+                # Faculty.objects.create(
+                # user_id = user.id,
+                # department = department_exist,
+                # subject = subject_exist,
+                # qualification = qualification,
+                # address = address,
+                # title = title_exist,
+                # course = course_exist,
+                # religion = religion_exist, 
+                # contact= contact,
+                # added_by = admin_exist.user,
+                # age = age,
+                # gender = gender_exist
+                # )
+                # roles, created = Roles.objects.get_or_create(role_name= 'Teacher')
+                # UserRole.objects.create(
+                #     user_id = user.id,
+                #     role_id = roles.id,
+                #     added_by = admin_exist.user
+                #     )
+                # if not created:
+                #     return JsonResponse({'message':'Registration Succesfull'},status=409)
                 else:
                     return JsonResponse({'message':'You already have this role'},status=201)
             else:
