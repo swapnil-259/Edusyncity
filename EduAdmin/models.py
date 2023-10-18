@@ -65,7 +65,7 @@ class Student(BaseModel):
     age = models.PositiveIntegerField(null=True)
     gender = models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='student_gender')
     address = models.CharField(max_length=200, blank=True)
-    year = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True, related_name='student_year')
+    year = models.PositiveIntegerField(null=True)
     contact = models.PositiveIntegerField(null=True)
     father_name = models.CharField(null=True, max_length=200)
     mother_name = models.CharField(max_length=200, null=True)
