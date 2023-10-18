@@ -54,7 +54,7 @@ class Faculty(BaseModel):
     gender = models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='faculty_gender')
     qualification=models.CharField(null=True,max_length=100)
     address = models.CharField(max_length=200, blank=True)
-    contact = models.PositiveIntegerField(null=True)
+    contact = models.BigIntegerField(null=True)
     religion = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True,related_name="faculty_religion")
     title = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True, related_name='identify_title')
    
@@ -66,7 +66,7 @@ class Student(BaseModel):
     gender = models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='student_gender')
     address = models.CharField(max_length=200, blank=True)
     year = models.PositiveIntegerField(null=True)
-    contact = models.PositiveIntegerField(null=True)
+    contact = models.BigIntegerField(null=True)
     father_name = models.CharField(null=True, max_length=200)
     mother_name = models.CharField(max_length=200, null=True)
     religion = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True,related_name="student_religion")
