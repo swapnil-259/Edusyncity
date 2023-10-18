@@ -24,6 +24,7 @@ def register_faculty(request):
         title = load.get('title')
         subject =  load.get('subject')
         course = load.get('course')
+        religion = load.get('religion')
       
 
         if not re.match(r'(/^[A-Za-z]+$/)', qualification):
@@ -347,9 +348,9 @@ def dropdown(request):
                 if parent is not None:
                     dropdown, created=Dropdown.objects.get_or_create(
                         name= name,
-                        added_by=check_admin.id,
-                        relation_id = parent.id,
-                        child = parent.child -1,
+                        added_by=check_admin.user,
+                        relation_id = parent.pk,
+                        child = int(parent.child) -1,
                     )
                     if created:
                         return JsonResponse({'message':'dropdown added successfully'},status=201)
@@ -390,7 +391,7 @@ def dropdown(request):
         if request.user.is_authenticated:
             if UserRole.objects.filter(role_id = '1').exists():
                 id=request.GET.get('id')
-                deleted=Dropdown.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.today())
+                deleted=Dropdown.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.now())
                 if deleted:
                     return JsonResponse({'message':'Role Deleted Successfully'},status=200)
                 else:
