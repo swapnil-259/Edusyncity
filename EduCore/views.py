@@ -36,7 +36,7 @@ def parents(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
             if UserRole.objects.filter(role_id='1').exists():
-                data=Dropdown.objects.values('id','name')
+                data=Dropdown.objects.filter(deleted_status=True).values('id','name')
                 if data is None:
                     return JsonResponse({'message':'Courses Not Found'},status=204)
                 else:
