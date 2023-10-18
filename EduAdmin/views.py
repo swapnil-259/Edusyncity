@@ -25,8 +25,8 @@ def register_faculty(request):
         subject =  load.get('subject')
         course = load.get('course')
         religion = load.get('religion')
-      
-
+        
+        
         if not re.match(r'(/^[A-Za-z]+$/)', qualification):
               return JsonResponse({'message':'Only Charcters are Alowed in Qulification Field'},status=400)
         
@@ -35,33 +35,57 @@ def register_faculty(request):
 
         if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or qualification is None :
             return JsonResponse({'messge':'Missing any key'},status=400) 
-        user=  User.objects.create_user(
-                 username = user_name,
-                 password = "Kiet@123",
-                 first_name=first_name,
-                 last_name=last_name,
-                 email=email
-               ) 
-        Faculty.objects.create(
-            user_id = user.id,
-            department_id = department,
-            subject_id = subject,
-            qualification = qualification,
-            address = address,
-            title = title,
-            course = course,
-            religion = religion
-        )
-        roles, created = Roles.objects.get_or_create(rolename= 'Faculty')
+        gender_exist = Dropdown.objects.filter(id = gender ).first()
+        department_exist = Dropdown.objects.filter(id = department).first()
+        title_exist = Dropdown.objects.filter(id = title).first()
+        subject_exist = Dropdown.objects.filter(id = subject).first()
+        course_exist = Dropdown.objects.filter(id = course).first()
+        religion_exist = Dropdown.objects.filter(id = religion).first()
+        if gender_exist is not None:
+            if department_exist is not None:
+                if title_exist is not None:
+                    if subject_exist is not None:
+                        if course_exist is not None:
+                            if religion_exist is not None:
+                                user=  User.objects.create_user(
+                                username = user_name,
+                                password = "Kiet@123",
+                                first_name=first_name,
+                                last_name=last_name,
+                                email=email
+                                ) 
+                                Faculty.objects.create(
+                                user_id = user.id,
+                                department_id = department,
+                                subject_id = subject,
+                                qualification = qualification,
+                                address = address,
+                                title = title,
+                                course = course,
+                                religion = religion
+                                )
+                                roles, created = Roles.objects.get_or_create(rolename= 'Faculty')
 
-        if not created:
-            return JsonResponse({'message':'You Already Have This Role'},status=409)
+                                if not created:
+                                    return JsonResponse({'message':'You Already Have This Role'},status=409)
+                                else:
+                                    UserRole.objects.create(
+                                    user_id = user.id,
+                                    role_id = roles.id,
+                                    )
+                                    return JsonResponse({'message':'Registration Succesfull'},status=201)
+                            else:
+                                return JsonResponse({'message':'religion do not exist'},status = 204)
+                        else:
+                            return JsonResponse({'message':'course do not exist'},status = 204)
+                    else:
+                        return JsonResponse({'message':'subject do not exist'},status = 204)
+                else:
+                    return JsonResponse({'message':'title do not exist'},status = 204)
+            else:
+                return JsonResponse({'message':'department do not exist'},status = 204)
         else:
-            UserRole.objects.create(
-            user_id = user.id,
-            role_id = roles.id,
-            )
-            return JsonResponse({'message':'Registration Succesfull'},status=201)
+            return JsonResponse({'message':'gender do not exist'},status = 204)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
