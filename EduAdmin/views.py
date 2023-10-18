@@ -29,7 +29,7 @@ def register_faculty(request):
                 religion = load.get('religion')
                 
                 if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address or not department or not qualification or not title or not subject or not course or not religion:
-                      return JsonResponse({'message':'all details is mandatory'}, status = 400)
+                      return JsonResponse({'message':'Missing Required Field'}, status = 400)
                 if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None or subject is None or course is None or religion is None:
                     return JsonResponse({'messge':'Missing any key'},status=400) 
                 
@@ -142,6 +142,9 @@ def forgot_password(request):
         username = load_data.get('username')
         old_password = load_data.get('old_password')
         new_password = load_data.get('new_password')
+        if not re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$",new_password):
+            return JsonResponse({'message':'Match Your Password Requirements'},status=400)
+        
         user =  authenticate(username= username, password = old_password)
         if user is not None:
             User.objects.filter(id = request.user.id).update(password = make_password(new_password))
