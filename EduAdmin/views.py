@@ -202,9 +202,9 @@ def register_student(request):
                 else:
                    return JsonResponse({'message':'You Already Have This Role'},status=409)
             else:
-                return JsonResponse({'message':'user is not admin'})
+                return JsonResponse({'message':'user is not admin'},status=403)
          else:
-            return JsonResponse({'message':'user is not authenticated'})
+            return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
@@ -257,7 +257,13 @@ def forgot_password(request):
             User.objects.filter(id = request.user.id).update(password = make_password(new_password))
             return JsonResponse({'message':'Password Updated Successfully'},status=200)
         else:
-            return JsonResponse({'message':'Your Old Password Does Not Matched'},status=401)
+            auth= User.objects.get(email=username.lower()).username
+            user2 = authenticate(username=auth, password= old_password)
+            if user2 is not None:
+                User.objects.filter(id = request.user.id).update(password = make_password(new_password))
+                return JsonResponse({'message':'Password Updated Successfully'},status=200)
+            else:
+                return JsonResponse({'message':'Your Old Password Does Not Matched'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
@@ -336,43 +342,113 @@ def add_role(request):
         return JsonResponse({'message':'invalid request method'},status=405)
 
 
-def add_course(request):
-    
+
+
+def dropdown(request):
     if request.method == 'POST':
-        course_data = json.loads(request.body)
-        course_name = course_data.get('course_name')
-        child_count = course_data.get('child_count')
-        state = course_data.get('state')
-        type = course_data.get('type')
-        if course_name is None or not child_count:
-            return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
+        load = json.loads(request.body)
         if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(role_id = '1').first()
-            user_exist = User.objects.get(pk = request.user.id)
-            course_id = Dropdown.objects.get(name='Courses').pk
-            if not course_id:
-                return JsonResponse({'message':'You Have No Attribute Named Cources'},status=400)
-            if check_admin: 
-                
-                course_exist , created = Dropdown.objects.get_or_create(
-                    name = course_name,
-                    child = child_count,
-                    relation_id = course_id,
-                    added_by = user_exist,
-                    can_update = True,
-                    state = state,
-                    type = type
-                )
-                if created:
-                    return JsonResponse({'message':'Course successfully added'},status=201)
+            check_admin = UserRole.objects.filter(role_id = '1', user_id = request.user.id).first()
+            if check_admin:
+                id = load.get('id')
+                name = load.get('name')
+                parent=Dropdown.objects.filter(id = id, child__gte=0).first()
+                if parent is not None:
+                    dropdown, created=Dropdown.objects.get_or_create(
+                        name= name,
+                        added_by=check_admin.user,
+                        relation_id = parent.pk,
+                        child = int(parent.child) -1,
+                        deleted_status=False
+                    )
+                    if created:
+                        return JsonResponse({'message':'Child added successfully'},status=201)
+                    else:
+                        return JsonResponse({'message':'Child already exist'},status=409)
                 else:
-                  return JsonResponse({'message':'Course already exist'},status=409)
+                    return JsonResponse({'message':'You can not add Child for this Parent'},status=409)
+                
             else:
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
-            return JsonResponse({'message':'user is not authenticated '},status=401)
+            return JsonResponse({'message':'user is not authenticated'},status=401)
+        
+    elif request.method=='PUT':
+        if request.user.is_authenticated:
+            check_admin = UserRole.objects.filter(role_id = '1', user_id = request.user.id).first()
+            if check_admin:
+                load=json.loads(request.body)
+                id = load.get('id')
+                new_name = load.get('new_name')
+                parent=Dropdown.objects.filter(id = id).exists()
+                if parent is not None:
+                    updated=Dropdown.objects.filter(pk=id).update(name=new_name)
+                    
+                    if updated:
+                        return JsonResponse({'message':'Child updated successfully'},status=201)
+                    else:
+                        return JsonResponse({'message':'Child does not exists'},status=204)
+                else:
+                    return JsonResponse({'message':'You can not add child for this Parent'},status=409)
+                
+            else:
+                return JsonResponse({'message':'user is not admin'},status=403)
+        else:
+            return JsonResponse({'message':'user is not authenticated'},status=401)
+        
+    elif request.method=='DELETE':
+        if request.user.is_authenticated:
+            if UserRole.objects.filter(role_id = '1').exists():
+                id=request.GET.get('id')
+                deleted=Dropdown.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.now())
+                if deleted:
+                    return JsonResponse({'message':'Role Deleted Successfully'},status=200)
+                else:
+                    return JsonResponse({'message':'No Role Found'},status=204)
+            else:
+                return JsonResponse({'message':'You Are Not Admin'},status=403)
+        else:
+            return JsonResponse({'message':'You Are Not Logged In'},status=401)
+
     else:
-        return JsonResponse({'message':'invalid request method'},status=405)   
+        return JsonResponse({'message':'Invalid Reqest Method'},status=405)
+    
+
+def subject(request):
+    if request.method =='POST':
+        data = json.loads(request.body)
+        if request.user.is_authenticated:
+            check_admin = UserRole.objects.filter(user= request.user.id, role='1').first()
+            if check_admin:
+                subject_name = data.get('subject_name')
+                subject_code = data.get('subject_code')
+                year = data.get('year')
+                department_id = data.get('department_id')
+                course_id = data.get('course_id')
+                check_mapping = Mapping.objects.filter(department = department_id, course  = course_id).first()         
+                if check_mapping:
+                    subjects , created = Subjects.objects.get_or_create(
+                    subject_name= subject_name,
+                    subject_code=subject_code,
+                    department = check_mapping.department,
+                    course = check_mapping.course,
+                    year = year,
+                    added_by = check_admin.user
+                    ) 
+                    if created:
+                       return JsonResponse({'message':'subject added successfully'})
+                    else:
+                       return JsonResponse({'message':'subject already exist'}, status = 409)
+                else:
+                    return JsonResponse({'message':'department do not exist'}, status=204)
+            else:
+                return JsonResponse({'message':'user is not admin'}, status=403)
+        else:
+            return JsonResponse({'message':'user is not authenticated'}, status=401)
+    else:
+        return JsonResponse({'message':'invalid request method'},status = 405)
+                
+                
 
 def add_departments(request):
     if request.method == 'POST':
@@ -432,86 +508,46 @@ def assign_department_to_course(request):
         else:
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
-        return JsonResponse({'message':'invalid request method'},status=405)
+        return JsonResponse({'message':'invalid request method'},status=405)         
+            
+
+def add_course(request):
     
-
-
-def dropdown(request):
     if request.method == 'POST':
-        load = json.loads(request.body)
+        course_data = json.loads(request.body)
+        course_name = course_data.get('course_name')
+        child_count = course_data.get('child_count')
+        state = course_data.get('state')
+        type = course_data.get('type')
+        if course_name is None or not child_count:
+            return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
         if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(role_id = '1', user_id = request.user.id).first()
-            if check_admin:
-                id = load.get('id')
-                name = load.get('name')
-                parent=Dropdown.objects.filter(id = id, child__gte=0).first()
-                if parent is not None:
-                    dropdown, created=Dropdown.objects.get_or_create(
-                        name= name,
-                        added_by=check_admin.user,
-                        relation_id = parent.pk,
-                        child = int(parent.child) -1,
-                    )
-                    if created:
-                        return JsonResponse({'message':'dropdown added successfully'},status=201)
-                    else:
-                        return JsonResponse({'message':'dropdown already exist'},status=409)
-                else:
-                    return JsonResponse({'message':'You can not add child for this Parent'},status=409)
+            check_admin = UserRole.objects.filter(role_id = '1').first()
+            user_exist = User.objects.get(pk = request.user.id)
+            course_id = Dropdown.objects.get(name='Courses').pk
+            if not course_id:
+                return JsonResponse({'message':'You Have No Attribute Named Cources'},status=400)
+            if check_admin: 
                 
+                course_exist , created = Dropdown.objects.get_or_create(
+                    name = course_name,
+                    child = child_count,
+                    relation_id = course_id,
+                    added_by = user_exist,
+                    can_update = True,
+                    state = state,
+                    type = type
+                )
+                if created:
+                    return JsonResponse({'message':'Course successfully added'},status=201)
+                else:
+                  return JsonResponse({'message':'Course already exist'},status=409)
             else:
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
-            return JsonResponse({'message':'user is not authenticated'},status=401)
-        
-    elif request.method=='PUT':
-        if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(role_id = '1', user_id = request.user.id).first()
-            if check_admin:
-                load=json.loads(request.body)
-                id = load.get('id')
-                new_name = load.get('new_name')
-                parent=Dropdown.objects.filter(id = id).exists()
-                if parent is not None:
-                    updated=Dropdown.objects.filter(pk=id).update(name=new_name)
-                    
-                    if updated:
-                        return JsonResponse({'message':'dropdown updated successfully'},status=201)
-                    else:
-                        return JsonResponse({'message':'dropdown does not exists'},status=204)
-                else:
-                    return JsonResponse({'message':'You can not add child for this Parent'},status=409)
-                
-            else:
-                return JsonResponse({'message':'user is not admin'},status=403)
-        else:
-            return JsonResponse({'message':'user is not authenticated'},status=401)
-        
-    elif request.method=='DELETE':
-        if request.user.is_authenticated:
-            if UserRole.objects.filter(role_id = '1').exists():
-                id=request.GET.get('id')
-                deleted=Dropdown.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.now())
-                if deleted:
-                    return JsonResponse({'message':'Role Deleted Successfully'},status=200)
-                else:
-                    return JsonResponse({'message':'No Role Found'},status=204)
-            else:
-                return JsonResponse({'message':'You Are Not Admin'},status=403)
-        else:
-            return JsonResponse({'message':'You Are Not Logged In'},status=401)
-
+            return JsonResponse({'message':'user is not authenticated '},status=401)
     else:
-        return JsonResponse({'message':'Invalid Reqest Method'},status=405)
-    
-
-                
-                
-                        
-            
-            
-
-        
+        return JsonResponse({'message':'invalid request method'},status=405)         
         
 
 
