@@ -8,11 +8,11 @@ from EduAdmin.models import UserRole,Dropdown,Mapping,Subjects,User
 def sidebar(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
-             check_admin = UserRole.objects.filter(role_id = '1').first()
+             check_user = UserRole.objects.filter(user = request.user.id).first()
              leftpanel = []
              child=[]
-             if check_admin:
-                pannels = Dropdown.objects.filter(pannel=1,deleted_status=False).values('id')
+             if check_user:
+                pannels = Dropdown.objects.filter(pannel=1,deleted_status=False, role = check_user.role).values('id')
                 if not pannels or pannels is None:
                     return JsonResponse({'message':'Missing Required Field or Key'},status=400)
                 for i in pannels:
@@ -126,11 +126,7 @@ def subjects(request):
         course_id=request.GET.get('course_id')
         department_id=request.GET.get('department_id')
         year=request.GET.get('year')
-<<<<<<< HEAD
-        subjects=Subjects.objects.filter(department=department_id,year=year,course=course_id).values('subject_name','id')
-=======
-        subjects=Subjects.objects.filter(department=department_id,year=year,course=course_id,deleted_status=False).values('subject_name')
->>>>>>> f2009bc6996f77ca9a3d6395e46e933ddd22f8c6
+        subjects=Subjects.objects.filter(department=department_id,year=year,course=course_id,deleted_status=False).values('id','subject_name')
         if subjects:
             return JsonResponse(list(subjects),safe=False)
         else:
@@ -140,11 +136,7 @@ def subjects(request):
 
 def gender(request):
     if request.method == 'GET':
-<<<<<<< HEAD
-       gender = Dropdown.objects.filter(relation_id = '44').values('id','name')
-=======
-       gender = Dropdown.objects.filter(relation_id = '44',deleted_status=False).values('name')
->>>>>>> f2009bc6996f77ca9a3d6395e46e933ddd22f8c6
+       gender = Dropdown.objects.filter(relation_id = '44',deleted_status=False).values('id','name')
        if gender:
            gender_data = list(gender)
            
@@ -156,11 +148,7 @@ def gender(request):
 
 def title(request):
     if request.method == 'GET':
-<<<<<<< HEAD
-       title = Dropdown.objects.filter(relation_id = '48').values('id','name')
-=======
-       title = Dropdown.objects.filter(relation_id = '48',deleted_status=False).values('name')
->>>>>>> f2009bc6996f77ca9a3d6395e46e933ddd22f8c6
+       title = Dropdown.objects.filter(relation_id = '48',deleted_status=False).values('id','name')
        if title:
            title_data = list(title)
            
@@ -172,11 +160,7 @@ def title(request):
 
 def religion(request):
     if request.method == 'GET':
-<<<<<<< HEAD
-       religion = Dropdown.objects.filter(relation_id = '40').values('id','name')
-=======
-       religion = Dropdown.objects.filter(relation_id = '40',deleted_status=False).values('name')
->>>>>>> f2009bc6996f77ca9a3d6395e46e933ddd22f8c6
+       religion = Dropdown.objects.filter(relation_id = '40',deleted_status=False).values('id','name')
        if religion:
            religion_data = list(religion)
            
