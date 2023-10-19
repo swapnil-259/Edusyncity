@@ -27,27 +27,13 @@ def register_faculty(request):
                 title = load.get('title')
                 subject =  load.get('subject')
                 course = load.get('course')
-                print(first_name)
-                print(last_name)
-                print(user_name)
-                print(email)
-                print(gender)
-                print(contact)
-                print(age)
-                print(address)
-                print(department)
-                print(qualification)
-                print(title)
-                print(subject)
-                print(course)
-                if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address or not department or not qualification or not title or not subject or not course:
+                
+                if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address or not department or not qualification or not title or not subject or not course :
                       return JsonResponse({'message':'Missing Required Field'}, status = 400)
-                if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None or subject is None or course is None:
+                if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None or subject is None or course is None :
                     return JsonResponse({'messge':'Missing any key'},status=400) 
-                if age is ' ' or age < 0:
+                if age is ' ' or int(age) < 0:
                     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
-                if contact is ' ' or contact < 0:
-                    return JsonResponse({'message':'Contact Can Not Be Negative or blank space'},status=400)
                 if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
                 if not re.match(r'^[6-9]\d{9}$',contact):
@@ -60,8 +46,7 @@ def register_faculty(request):
                     return JsonResponse({'message':'Invalid last_name format'},status=400)
                 if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
                     return JsonResponse({'message':'Match Your email Requirements'},status=400)
-                if int(age) < 0:
-                    return JsonResponse({'message':'Age Can Not Be Negative '},status=400)
+                
                 
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
@@ -110,7 +95,7 @@ def register_faculty(request):
                     added_by = admin_exist.user
                     )
                 if not created:
-                    return JsonResponse({'message':'Registration Successful'},status=409)
+                    return JsonResponse({'message':'Registration Succesfull'},status=409)
                 else:
                     return JsonResponse({'message':'You already have this role'},status=201)
             else:
@@ -119,6 +104,8 @@ def register_faculty(request):
             return JsonResponse({'message':'You are not Authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+
 def register_student(request):
     if request.method == 'POST':
          if request.user.is_authenticated:
@@ -139,10 +126,15 @@ def register_student(request):
                 department = load.get('department')
                 year = load.get('year')
                 religion = load.get('religion')
+
                 if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address or not department or not father_name or not mother_name or not year or not course or not religion:
                               return JsonResponse({'message':'Missing Required Field'}, status = 400)
                 if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or father_name is None or mother_name is None or year is None or course is None or religion is None:
                             return JsonResponse({'messge':'Missing any key'},status=400) 
+                if age is ' ' or int(age) < 0:
+                    return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
+                if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
+                    return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
 
                 if not re.match(r'^[6-9]\d{9}$',contact):
                     return JsonResponse({'message':'Your Contact Can have only 10 digits and in indian Format'},status=400)
@@ -158,8 +150,6 @@ def register_student(request):
                     return JsonResponse({'message':'Invalid last_name format'},status=400)
                 if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
                     return JsonResponse({'message':'Match Your email Requirements'},status=400)
-                if int(age) < 0:
-                    return JsonResponse({'message':'Age Can Not Be Negative '},status=400)
 
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
