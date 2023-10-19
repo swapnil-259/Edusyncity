@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('eduadmin/',include('EduAdmin.urls')),
     path('educore/',include('EduCore.urls')),
+    path('eduexam/',include('EduExam.urls')),
 ]
 if settings.DEBUG:  
         urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)  

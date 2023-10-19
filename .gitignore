@@ -1,5 +1,9 @@
 # Ignore all files in EduSyncity/EduAdmin/migrations folder
 EduAdmin/migrations/*
+EduCore/migrations/*
+EduExam/migrations/*
 
 # But include EduSyncity/EduAdmin/migrations/__init__.py
 !EduAdmin/migrations/__init__.py
+!EduCore/migrations/__init__.py
+!EduExam/migrations/__init__.py

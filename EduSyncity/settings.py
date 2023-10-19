@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'EduCore',
+    'EduExam',
 ]
 
 MIDDLEWARE = [
@@ -97,7 +98,7 @@ DATABASES = {
         'NAME': 'Edusyncity',
         'USER': 'harry',
         'PASSWORD':'Kiet@123',
-        'HOST':'10.21.67.162',
+        'HOST':'10.21.67.185',
         'PORT':'3306',
     }
 }
