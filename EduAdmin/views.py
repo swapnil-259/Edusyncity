@@ -50,7 +50,6 @@ def register_faculty(request):
                     return JsonResponse({'message':'Contact Can Not Be Negative or blank space'},status=400)
                 if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
-                
                 if not re.match(r'^[6-9]\d{9}$',contact):
                     return JsonResponse({'message':'Your Contact Can have only 10 digits and in indian Format'},status=400)
                 if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
@@ -111,7 +110,7 @@ def register_faculty(request):
                     added_by = admin_exist.user
                     )
                 if not created:
-                    return JsonResponse({'message':'Registration Succesfull'},status=409)
+                    return JsonResponse({'message':'Registration Successful'},status=409)
                 else:
                     return JsonResponse({'message':'You already have this role'},status=201)
             else:
