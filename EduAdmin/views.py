@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import JsonResponse,HttpResponse
+from django.http import JsonResponse
 import json
 import re
 from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping, Student,Subjects
@@ -451,10 +451,8 @@ def add_departments(request):
                     state = departement_data.get('state')
                     type = departement_data.get('type')
                     course_exist= Dropdown.objects.filter(pk = course_id).first()
-                    print(course_exist.child)
                     if course_exist:    
                      dept , created =Dropdown.objects.get_or_create(name=name,relation=course_exist,can_delete=False,can_update=True,added_by=user_exist, state=state, type = type)
-                     print(dept.child)
                      if created:
                         childs=course_exist.child
                         childs=int(childs)-1

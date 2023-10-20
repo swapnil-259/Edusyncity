@@ -161,7 +161,7 @@ def sidebar(request):
                     child_data = list(Dropdown.objects.filter(relation_id = i.get('id'),deleted_status=False,role = check_admin.role.id).values('name','state'))
                     child.append(child_data)
                 print(child)
-                    
+                        
                 master_configuration = Dropdown.objects.filter(pannel=1,deleted_status=False,role=check_admin.role.id).values('pk','name','icon','type','state')
                 master_configuration_list = list(master_configuration)
                 for i in range(0, len(master_configuration_list)):
