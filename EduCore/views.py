@@ -1,5 +1,5 @@
 from django.shortcuts import render
-import json
+
 
 from django.http import JsonResponse
 from EduAdmin.models import UserRole,Dropdown,Mapping,Subjects,User
