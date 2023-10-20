@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import json
 from django.http import JsonResponse
-from .models import PaperDetails,Questions
+from .models import PaperDetails,Questions,ExamMapping
 from EduAdmin.models import UserRole,Dropdown,Mapping,Subjects,User
 
 def paper_details(request):
@@ -119,3 +119,46 @@ def exam_info(request):
             return JsonResponse({'message':'No Content'},status=204)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+def exam_mapping(request):
+    if request.method =='POST':
+        if request.user.is_authenticated:
+            load = json.loads(request.body)
+            admin_exist = UserRole.objects.filter(user=request.session.id,role='1').first()
+            exam_type = load.get('exam_type')
+            duration=load.get('duration')
+            marks = load.get('marks')
+            if duration is None or marks is None :
+                return JsonResponse({'message':'Missing value of any key'},status=400)
+            if not duration or not marks or not exam_type :
+                return JsonResponse({'message':'Missing Required Field'},status=400)
+            exam_exist = Dropdown.objects.filter(id = exam_type).first()
+            if exam_exist is None:
+                return JsonResponse({'message':'Course Not an Instance'},status=400)
+            duration_exist = Dropdown.objects.filter(id = duration).first()
+            if duration_exist is None:
+                return JsonResponse({'messgae':'subject is not Instance'})
+            marks_exist = Dropdown.objects.filter(id = marks).first()
+            if marks_exist is None:
+                return JsonResponse({'message':'exam type is not an Instance'})
+            if admin_exist:
+                mapping, created = ExamMapping.objects.get_or_create(
+                    duration=duration_exist,
+                    exam=exam_exist,
+                    marks=marks_exist
+                )
+                if created:
+                    return JsonResponse({'message':'exam is created'})
+                else:
+                    return JsonResponse({'message':'exam already exist'})
+            else:
+                return JsonResponse({'message':'admin not found'})
+        else:
+            return JsonResponse({'message':'user is not authenticated'})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+            
+            
+            
+            
+            
+            
