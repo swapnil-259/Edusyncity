@@ -3,6 +3,13 @@ from EduAdmin.models import BaseModel
 from EduAdmin.models import Dropdown,Subjects,User
 from jsonfield import JSONField
 
+
+class ExamMapping(BaseModel):
+    exam=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='exam_identity')
+    marks=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='marks_identity')
+    duration=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='duration_identity')
+
+
 class PaperDetails(BaseModel):
     course=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='course_idty')
     department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='department_identity')
@@ -19,9 +26,8 @@ class PaperDetails(BaseModel):
     
 class Questions(BaseModel):
     paper=models.ForeignKey(PaperDetails,on_delete=models.SET_NULL,null=True)
-    question_id=models.IntegerField(null=True)
     question=JSONField(max_length=1000,null=True)
-    answer=models.TextField(max_length=1000,blank=True)
+    answer=JSONField(max_length=1000,blank=True)
     obtained_marks=models.PositiveIntegerField(null=True)
     checked_satus=models.BooleanField(default=False)
     checked_time=models.DateTimeField(null=True)
