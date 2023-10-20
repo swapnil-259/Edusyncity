@@ -94,9 +94,28 @@ def question_details(request):
             return JsonResponse({'message':'You are not Authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
-            
-            
-            
-            
     
 
+def exam_type(request):
+    if request.method == 'GET':
+        # shift=Dropdown.objects.filter(deleted_status=False,relation='73')
+        exam_type=Dropdown.objects.filter(deleted_status=False,relation='64').values('pk','name')
+        if exam_type:
+            return JsonResponse(list(exam_type),safe=False)
+        else:
+            return JsonResponse({'message':'No Content'},status=204)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+def exam_info(request):
+    if request.method == 'GET':
+        id=request.GET.get('id')
+        time=Dropdown.objects.filter(deleted_status=False,relation='80').values('name')
+        marks=Dropdown.objects.filter(deleted_status=False,relation=id).values('name')
+        data=[list(time),list(marks)]
+        if time and marks:
+            return JsonResponse(data,safe=False)
+        else:
+            return JsonResponse({'message':'No Content'},status=204)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
