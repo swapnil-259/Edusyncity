@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from .models import PaperDetails,Questions,ExamMapping
 from EduAdmin.models import UserRole,Dropdown,Mapping,Subjects,User
 
+
+
 def paper_details(request):
     if request.method=='POST':
         if request.user.is_authenticated:
@@ -110,10 +112,9 @@ def exam_type(request):
 def exam_info(request):
     if request.method == 'GET':
         id=request.GET.get('id')
-        time=Dropdown.objects.filter(deleted_status=False,relation='80').values('name')
-        marks=Dropdown.objects.filter(deleted_status=False,relation=id).values('name')
-        data=[list(time),list(marks)]
-        if time and marks:
+        data=ExamMapping.objects.filter(deleted_status=False,exam=id).values('marks__name','duration__name')
+        
+        if data:
             return JsonResponse(data,safe=False)
         else:
             return JsonResponse({'message':'No Content'},status=204)
