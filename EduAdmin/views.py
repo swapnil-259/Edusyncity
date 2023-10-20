@@ -27,6 +27,7 @@ def register_faculty(request):
                 title = load.get('title')
                 subject =  load.get('subject')
                 course = load.get('course')
+                print()
                 
                 if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address or not department or not qualification or not title or not subject or not course :
                       return JsonResponse({'message':'Missing Required Field'}, status = 400)
@@ -36,9 +37,6 @@ def register_faculty(request):
                     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
                 if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
-                
-                if not re.match(r'^[6-9]\d{9}$',contact):
-                    return JsonResponse({'message':'Your Contact Can have only 10 digits and in indian Format'},status=400)
                 if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
                     return JsonResponse({'message':'Match Your Username Requirements'},status=400)
                 if not re.match(r'^[A-Za-z\s]+$', first_name):
@@ -47,12 +45,10 @@ def register_faculty(request):
                     return JsonResponse({'message':'Invalid last_name format'},status=400)
                 if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
                     return JsonResponse({'message':'Match Your email Requirements'},status=400)
-                
-                
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
                     return JsonResponse({'message':'Gender Not an instance'},status=400)
-                department_exist = Mapping.objects.filter(id = department).first()
+                department_exist = Mapping.objects.filter(department = department).first()
                 if department_exist is None:
                     return JsonResponse({'message':'Department Not an Instance'},status=400)
                 title_exist = Dropdown.objects.filter(id = title).first()
@@ -115,7 +111,7 @@ def register_student(request):
                 load=json.loads(request.body)
                 first_name = load.get('first_name')
                 last_name = load.get('last_name')
-                user_name =  load.get('username')
+                user_name =  load.get('user_name')
                 father_name = load.get('father_name')
                 mother_name = load.get('mother_name')
                 email =  load.get('email')
@@ -136,9 +132,6 @@ def register_student(request):
                     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
                 if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
-
-                if not re.match(r'^[6-9]\d{9}$',contact):
-                    return JsonResponse({'message':'Your Contact Can have only 10 digits and in indian Format'},status=400)
                 if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
                     return JsonResponse({'message':'Match Your Username Requirements'},status=400)
                 if not re.match(r'^[A-Za-z\s]+$', first_name):
@@ -155,7 +148,7 @@ def register_student(request):
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
                     return JsonResponse({'message':'Gender Not an instance'},status=400)
-                department_exist = Mapping.objects.filter(id = department).first()
+                department_exist = Mapping.objects.filter(department = department).first()
                 if department_exist is None:
                     return JsonResponse({'message':'Department Not an Instance'},status=400)
                 course_exist = Dropdown.objects.filter(id = course).first()
@@ -207,9 +200,7 @@ def register_student(request):
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
-
-
-
+    
 def login_user(request):
     
     if request.method == 'POST':
@@ -340,7 +331,6 @@ def add_role(request):
             return JsonResponse({'message':'You Are Not Logged In'},status=401)
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
-
 
 
 
@@ -547,7 +537,11 @@ def add_course(request):
         else:
             return JsonResponse({'message':'user is not authenticated '},status=401)
     else:
-        return JsonResponse({'message':'invalid request method'},status=405)         
+        return JsonResponse({'message':'invalid request method'},status=405)     
+
+
+
+
         
 
 
