@@ -19,8 +19,9 @@ class PaperDetails(BaseModel):
     paper_code=models.CharField(max_length=30,null=True)
     set=models.CharField(max_length=10,null=True)
     shift=models.CharField(max_length=20,null=True)
-    strart_time=models.DateTimeField(null=True)
-    end_time=models.DateTimeField(null=True)
+    date=models.DateField(null=True)
+    strart_time=models.TimeField(null=True)
+    end_time=models.TimeField(null=True)
     total_marks=models.IntegerField(null=True)
     
     
