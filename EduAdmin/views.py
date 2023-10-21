@@ -403,8 +403,10 @@ def child(request):
 def assign_department_to_course(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             user_exist = User.objects.get(pk = request.user.id)
-            if UserRole.objects.filter(user=request.user.id,role_id = '1').first():
+            if check_admin:
                     load=json.loads(request.body)
                     course_id = load.get('course_id')
                     department_id = load.get('department_id')
@@ -428,6 +430,72 @@ def assign_department_to_course(request):
         return JsonResponse({'message':'invalid request method'},status=405)       
   
             
+
+def left_panel(request):
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+
+            load=json.loads(request.body)
+
+            name=load.get('name')
+            state=load.get('state')
+            icon=load.get('icon')
+            type=load.get('type')
+            role=load.get('role')
+
+            if check_admin:
+                panel,created=Dropdown.objects.get_or_create(name=name,                   
+                state=state,                              
+                icon=icon,                               
+                type=type,                               
+                role=role,                               
+                pannel=1,
+                added_by=check_admin.user
+                )
+                if created:
+                    return JsonResponse({'message':'Created successfully'},status=201)
+                else:
+                    return JsonResponse({'message':'Already created'},status=409)
+            else:
+                return JsonResponse({'message':'You are not autherised'},status=403)
+        else:
+            return JsonResponse({'message':'You are not logged in'},status=401)
+    
+    elif request.method == 'PUT':
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+
+            load=json.loads(request.body)
+
+            id=load.get('id')
+            name=load.get('name')
+            state=load.get('state')
+            icon=load.get('icon')
+            type=load.get('type')
+            role=load.get('role')
+
+            if check_admin:
+                panel,created=Dropdown.objects.filter(pk=id).update(name=name,                   
+                state=state,                              
+                icon=icon,                               
+                type=type,                               
+                role=role,                               
+                )
+                if created:
+                    return JsonResponse({'message':'Updated successfully'},status=200)
+                else:
+                    return JsonResponse({'message':'Already created'},status=409)
+            else:
+                return JsonResponse({'message':'You are not autherised'},status=403)
+        else:
+            return JsonResponse({'message':'You are not logged in'},status=401)
+
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+
 
 
 
