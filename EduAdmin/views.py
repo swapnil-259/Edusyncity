@@ -232,13 +232,13 @@ def forgot_password(request):
         user =  authenticate(username= username, password = old_password)
         if user is not None:
             User.objects.filter(id = request.user.id).update(password = make_password(new_password))
-            return JsonResponse({'message':'Password Updated Successfully'},status=200)
+            return JsonResponse({'message':'Password Updated Successfully'})
         else:
             auth= User.objects.get(email=username.lower()).username
             user2 = authenticate(username=auth, password= old_password)
             if user2 is not None:
                 User.objects.filter(id = request.user.id).update(password = make_password(new_password))
-                return JsonResponse({'message':'Password Updated Successfully'},status=200)
+                return JsonResponse({'message':'Password Updated Successfully'})
             else:
                 return JsonResponse({'message':'Your Old Password Does Not Matched'},status=401)
     else:
@@ -250,7 +250,7 @@ def logout_user(request):
         
         if request.user.is_authenticated:
             logout(request)
-            return JsonResponse({'message':'Logged Out Succesfully'},status=200)
+            return JsonResponse({'message':'Logged Out Succesfully'})
         else:
             return JsonResponse({'message':'User Is Not Authenticated'},status=401) 
     else:
@@ -264,8 +264,6 @@ def add_role(request):
         if request.user.is_authenticated:
             id=Roles.objects.get(role_name='Admin',deleted_status=False)
             check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            # user_exist = User.objects.get(pk = request.user.id)
-            
             roles_data = json.loads(request.body)
             name=roles_data.get('name')
             if name is None or not name:
@@ -279,7 +277,7 @@ def add_role(request):
                     )
                 if created:
                     
-                    return JsonResponse({'message':'role successfully added'},status=201)
+                    return JsonResponse({'message':'role successfully added'})
                 else:
                     return JsonResponse({'message':'role already exist'},status=409)
             else:
@@ -301,7 +299,7 @@ def add_role(request):
     
             if check_admin:
                 Roles.objects.filter(pk=role_id).update(role_name=new_name)
-                return JsonResponse({'message':'Role Updated Successfully'},status=200)
+                return JsonResponse({'message':'Role Updated Successfully'})
             else:
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
@@ -315,7 +313,7 @@ def add_role(request):
                 id=request.GET.get('id')
                 deleted=Roles.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.today())
                 if deleted:
-                    return JsonResponse({'message':'Role Deleted Successfully'},status=200)
+                    return JsonResponse({'message':'Role Deleted Successfully'})
                 else:
                     return JsonResponse({'message':'No Role Found'},status=204)
             else:
@@ -336,7 +334,7 @@ def child(request):
             if check_admin:
                 id = load.get('id')
                 name = load.get('name')
-                parent=Dropdown.objects.filter(id = id, child__gte=0).first()
+                parent=Dropdown.objects.filter(id = id, child__gt=0).first()
                 if parent is not None:
                     dropdown, created=Dropdown.objects.get_or_create(
                         name= name,
@@ -346,7 +344,7 @@ def child(request):
                         deleted_status=False
                     )
                     if created:
-                        return JsonResponse({'message':'Child added successfully'},status=201)
+                        return JsonResponse({'message':'Child added successfully'})
                     else:
                         return JsonResponse({'message':'Child already exist'},status=409)
                 else:
@@ -389,7 +387,7 @@ def child(request):
                 id=request.GET.get('id')
                 deleted=Dropdown.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.now())
                 if deleted:
-                    return JsonResponse({'message':'Role Deleted Successfully'},status=200)
+                    return JsonResponse({'message':'Role Deleted Successfully'})
                 else:
                     return JsonResponse({'message':'No Role Found'},status=204)
             else:
@@ -427,7 +425,8 @@ def assign_department_to_course(request):
         else:
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
-        return JsonResponse({'message':'invalid request method'},status=405)         
+        return JsonResponse({'message':'invalid request method'},status=405)       
+  
             
 
 

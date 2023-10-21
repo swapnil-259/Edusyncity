@@ -3,6 +3,7 @@ import json
 from django.http import JsonResponse
 from .models import QuestionPaper,PaperResponse,ExamMapping
 from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles
+from EduCore.models import SubjectMapping
 # from EduExam.models import Subjects
 from datetime import datetime,date
 
@@ -13,30 +14,27 @@ def question_paper(request):
         if request.user.is_authenticated:
             id=Roles.objects.get(role_name='Teacher',deleted_status=False)
             faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
-            print(faculty.user)
-            
             load=json.loads(request.body)
-            
             date=load.get('date')
             question=load.get('questions')
             exam_type=load.get('exam_type')
-            # subject=load.get('subject')
+            subject=load.get('subject')
             paper_code=load.get('paper_code')
             start_time=load.get('start_time')
             if date is None or question is None or exam_type is None or paper_code is None or start_time is None:
                 return JsonResponse({'message':'Missing value of any key'},status=400)
             if not date or not question or not exam_type or not paper_code or not start_time:
                 return JsonResponse({'message':'Missing Required Field'},status=400)
-            # subject_exist = Subjects.objects.filter(id = subject).first()
-            # if subject_exist is None:
-                # return JsonResponse({'messgae':'subject is not Instance'})
+            subject_exist = SubjectMapping.objects.filter(id = subject).first()
+            if subject_exist is None:
+                return JsonResponse({'messgae':'subject is not Instance'})
             exam_exist = Dropdown.objects.filter(id = exam_type).first()
             if exam_exist is None:
                 return JsonResponse({'message':'exam type is not an Instance'})
             if faculty:
                 QuestionPaper.objects.create(
                                             exam_type=exam_exist,
-                                            # subject=subject_exist,
+                                            subject=subject_exist,
                                             title="KIET Group Of Institutions",
                                             paper_code=paper_code,
                                             questions=question,
@@ -175,13 +173,14 @@ def paper_evaluation(request):
             evaluation=load.get('evaluation')
 
             if faculty:
-                evaluated=PaperResponse.objects.filter(pk=paper_id,deleted_status=False).update(evaluation=evaluation,
-                                                                                      checked_status=True,
-                                                                                      checked_time=datetime.now(),
-                                                                                      checked_by=faculty.user
-                                                                                      )
+                evaluated=PaperResponse.objects.filter(pk=paper_id,deleted_status=False).update(
+                evaluation=evaluation,
+                checked_status=True,
+                checked_time=datetime.now(),
+                checked_by=faculty.user
+                )
                 if evaluated:
-                    return JsonResponse({'message':'Paper checked'},status=201)
+                    return JsonResponse({'message':'Paper checked'})
                 else:
                     return JsonResponse({'message':'No content'},status=204)
             else:
@@ -204,7 +203,7 @@ def paper_evaluation(request):
                                                                                       checked_time=datetime.now(),
                                                                                       )
                 if evaluated:
-                    return JsonResponse({'message':'Paper edited'},status=200)
+                    return JsonResponse({'message':'Paper edited'})
                 else:
                     return JsonResponse({'message':'No content'},status=204)
             else:
@@ -222,7 +221,7 @@ def paper_evaluation(request):
             if faculty:
                 deleted=QuestionPaper.objects.filter(pk=paper_id,deleted_status=False).update(deleted_status=True,deleted_time=datetime.now())
                 if deleted:
-                    return JsonResponse({'message':'Deleted Succesfully'},status=200)
+                    return JsonResponse({'message':'Deleted Succesfully'})
                 else:
                     return JsonResponse({'message':'No content'},status=204)
             else:
@@ -294,13 +293,13 @@ def exam_mapping(request):
                 if created:
                     return JsonResponse({'message':'exam is created'})
                 else:
-                    return JsonResponse({'message':'exam already exist'})
+                    return JsonResponse({'message':'exam already exist'},status=409)
             else:
-                return JsonResponse({'message':'admin not found'})
+                return JsonResponse({'message':'admin not found'},status=204)
         else:
-            return JsonResponse({'message':'user is not authenticated'})
+            return JsonResponse({'message':'user is not authenticated'},status=403)
     else:
-        return JsonResponse({'message':'invalid request method'})
+        return JsonResponse({'message':'invalid request method'},status=405)
 
 
 # def student_paper(request):

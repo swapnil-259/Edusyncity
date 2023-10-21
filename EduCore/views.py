@@ -42,10 +42,11 @@ def parents(request):
             child = load.get('child')
             parent, created = Dropdown.objects.get_or_create(
                 name=name,
-                defaults={'child':child, 'added_by':check_admin.user,'can_delete':False,'can_update':True}
+                added_by=check_admin.user,
+                defaults={'child':child,'can_delete':False,'can_update':True}
             )
             if created:
-                return JsonResponse({'message':'parent created successfully'})
+                return JsonResponse({'message':'parent created successfully'},status=201)
             else:
                 return JsonResponse({'message':'This parent already exist'},status=409)
         else:
@@ -125,9 +126,9 @@ def gender(request):
            
            return JsonResponse(gender_data, safe=False)
        else:
-           return JsonResponse({'message':'data not found'})
+           return JsonResponse({'message':'data not found'},status=204)
     else:
-        return JsonResponse({'message':'invalid request method'})
+        return JsonResponse({'message':'invalid request method'},status=405)
 
 def title(request):
     if request.method == 'GET':
@@ -138,9 +139,9 @@ def title(request):
            
            return JsonResponse(title_data, safe=False)
        else:
-           return JsonResponse({'message':'data not found'})
+           return JsonResponse({'message':'data not found'},status=204)
     else:
-        return JsonResponse({'message':'invalid request method'})
+        return JsonResponse({'message':'invalid request method'},status=405)
 
 def religion(request):
     if request.method == 'GET':
@@ -151,27 +152,23 @@ def religion(request):
            
            return JsonResponse(religion_data, safe=False)
        else:
-           return JsonResponse({'message':'data not found'})
+           return JsonResponse({'message':'data not found'},status=204)
     else:
-         return JsonResponse({'message':'invalid request method'})
+         return JsonResponse({'message':'invalid request method'},status=405)
      
 def sidebar(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
              check_admin = UserRole.objects.filter(user =request.user.id).first()
-             print(check_admin.role.id)
              leftpanel = []
              child=[]
              if check_admin:
                 pannels = Dropdown.objects.filter(pannel=1,deleted_status=False, role = check_admin.role.id).values('id')
-                print(pannels)
                 if not pannels or pannels is None:
                     return JsonResponse({'message':'Missing Required Field or Key'},status=400)
                 for i in pannels:
                     child_data = list(Dropdown.objects.filter(relation_id = i.get('id'),deleted_status=False,role = check_admin.role.id).values('name','state'))
                     child.append(child_data)
-                print(child)
-
                 master_configuration = Dropdown.objects.filter(pannel=1,deleted_status=False,role=check_admin.role.id).values('pk','name','icon','type','state')
                 master_configuration_list = list(master_configuration)
                 for i in range(0, len(master_configuration_list)):
@@ -204,7 +201,7 @@ def subject(request):
                 
                 ) 
                 if created:
-                   return JsonResponse({'message':'subject added successfully'})
+                   return JsonResponse({'message':'subject added successfully'},status=201)
                 else:
                    return JsonResponse({'message':'subject already exist'}, status = 409)
             else:
