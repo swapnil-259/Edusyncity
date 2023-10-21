@@ -14,5 +14,6 @@ urlpatterns = [
     path('title/', views.title, name='title'),
     path('religion/', views.religion, name='religion'),
     path('parents/',views.parents,name='parents'),
-    path('subject_mapping/',views.subject_mapping, name='subject_mapping')
+    path('subject_mapping/',views.subject_mapping, name='subject_mapping'),
+    path('subject_teacher_mapping/',views.subject_teacher_mapping, name='subject_teacher_mapping')
 ]

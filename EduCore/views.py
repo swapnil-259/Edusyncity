@@ -46,11 +46,11 @@ def parents(request):
             if created:
                 return JsonResponse({'message':'parent created successfully'})
             else:
-                return JsonResponse({'message':'This parent already exist'})
+                return JsonResponse({'message':'This parent already exist'},status=409)
         else:
-            return JsonResponse({'message':'user is not authenticated'})
+            return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
-        return JsonResponse({'message':'invalid request method'})
+        return JsonResponse({'message':'invalid request method'},status=405)
             
             
 
@@ -198,7 +198,11 @@ def subject(request):
             check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             if check_admin:
                 subject_name = data.get('subject_name')
-                subject_code = data.get('subject_code')        
+                subject_code = data.get('subject_code')   
+                if not subject_name or not subject_code:
+                    return JsonResponse({'message':'missing required field'},status=400)   
+                if subject_code is None or subject_name is None :
+                    return JsonResponse({'message':'missing any key'},status=400)
                 subjects , created = Subject.objects.get_or_create(
                 subject_name= subject_name,
                 subject_code=subject_code,
@@ -225,6 +229,10 @@ def subject_mapping(request):
                 subject = data.get('subject_id')
                 department = data.get('department_id')
                 year = data.get('year')
+                if not subject or not department or not year:
+                    return JsonResponse({'message':'missing required field'},status=400)   
+                if subject is None or department is None or year is None:
+                    return JsonResponse({'message':'missing any key'},status=400)
                 subject_exist = Subject.objects.filter(id = subject).first()
                 if subject_exist is None:
                     return JsonResponse({'message':'subject is not found'},status=204)
@@ -256,6 +264,10 @@ def subject_teacher_mapping(request):
             if check_admin:
                 sub_mapping = data.get('sub_mapping')
                 faculty = data.get('faculty')
+                if not sub_mapping or not faculty:
+                    return JsonResponse({'message':'missing required field'},status=400)   
+                if sub_mapping is None or faculty is None :
+                    return JsonResponse({'message':'missing any key'},status=400)
                 sub_mapping_exist = SubjectMapping.objects.filter(id = sub_mapping).first()
                 if sub_mapping_exist is None:
                     return JsonResponse({'message':'mapping is not found'}, status =204)
