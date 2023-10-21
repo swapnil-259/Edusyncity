@@ -60,8 +60,41 @@ def question_paper(request):
                                             # set=set_exist.pk,
                                             # shift=shift_exist.pk,
                                             date=date,
-                                            strart_time=start_time,
+                                            start_time=start_time,
                                             added_by = faculty.user
+                                            )
+                
+                return JsonResponse({'message':'Created succesfully'},status=201)
+            else:
+                return JsonResponse({'message':'You are not a Teacher'},status=403)
+        else:
+            return JsonResponse({'message':'You are not Authenticated'},status=401)
+        
+
+    if request.method=='PUT':
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
+            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            admin=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            
+            load=json.loads(request.body)
+            
+            date=load.get('date')
+            question=load.get('questions')
+            paper_code=load.get('paper_code')
+            start_time=load.get('start_time')
+            if date is None or question is None or paper_code is None or start_time is None:
+                return JsonResponse({'message':'Missing value of any key'},status=400)
+            if not date or not question or not paper_code or not start_time:
+                return JsonResponse({'message':'Missing Required Field'},status=400)
+           
+            if faculty or admin:
+                QuestionPaper.objects.filter().update(
+                                            paper_code=paper_code,
+                                            questions=question,
+                                            date=date,
+                                            start_time=start_time,
                                             )
                 
                 return JsonResponse({'message':'Created succesfully'},status=201)

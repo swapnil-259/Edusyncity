@@ -10,7 +10,7 @@ class ExamMapping(BaseModel):
 
 
 class QuestionPaper(BaseModel):
-    exam_type=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='exam_type')
+    exam_type=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exam_type')
     subject=models.ForeignKey(Subjects,on_delete=models.SET_NULL,null=True)
     title=models.TextField(max_length=100,null=True)
     paper_code=models.CharField(max_length=30,null=True)
