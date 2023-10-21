@@ -478,21 +478,17 @@ def left_panel(request):
             role=load.get('role')
 
             if check_admin:
-                panel,created=Dropdown.objects.filter(pk=id).update(name=name,                   
+                update_panel=Dropdown.objects.filter(pk=id).update(name=name,                   
                 state=state,                              
                 icon=icon,                               
                 type=type,                               
                 role=role,                               
                 )
-                if created:
-                    return JsonResponse({'message':'Updated successfully'},status=200)
-                else:
-                    return JsonResponse({'message':'Already created'},status=409)
+                return JsonResponse({'message':'Updated successfully'},status=200)
             else:
                 return JsonResponse({'message':'You are not autherised'},status=403)
         else:
             return JsonResponse({'message':'You are not logged in'},status=401)
-
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
