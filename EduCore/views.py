@@ -1,8 +1,9 @@
 from django.shortcuts import render
 
-
+import json
 from django.http import JsonResponse
-from EduAdmin.models import UserRole,Dropdown,Mapping,Subjects,User
+from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles
+
 
 
 
@@ -21,9 +22,9 @@ def logged_in(request):
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 
-def parents(request):
+def get_parents(request):
     if request.method == 'GET':
-        data=Dropdown.objects.filter(deleted_status=False).values('id','name')
+        data=Dropdown.objects.filter(deleted_status=False,child__gt=0,pannel=0).values('id','name','child')
         if data is None:
             return JsonResponse({'message':'Courses Not Found'},status=204)
         else:
@@ -31,21 +32,37 @@ def parents(request):
             
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
-
-def childs(request):
-    if request.method == 'GET':
+def parents(request):
+    if request.method=='POST':
         if request.user.is_authenticated:
-            if UserRole.objects.filter(role_id='1').exists():
-                parent_id=request.GET.get('parent_id')
-                data=Dropdown.objects.filter(relation=parent_id,deleted_status=False).values('id','name')
-                if data is None:
-                    return JsonResponse({'message':'Courses Not Found'},status=204)
-                else:
-                    return JsonResponse(list(data),safe=False)
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            load = json.loads(request.body)
+            name = load.get('name')
+            child = load.get('child')
+            parent, created = Dropdown.objects.get_or_create(
+                name=name,
+                defaults={'child':child, 'added_by':check_admin.user,'can_delete':False,'can_update':True}
+            )
+            if created:
+                return JsonResponse({'message':'parent created successfully'})
             else:
-                return JsonResponse({'message':'You Are Not Admin'},status=403)
+                return JsonResponse({'message':'This parent already exist'})
         else:
-            return JsonResponse({'message':'You are not authenticated'},status=401)
+            return JsonResponse({'message':'user is not authenticated'})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+            
+            
+
+def get_childs(request):
+    if request.method == 'GET':
+        parent_id=request.GET.get('parent_id')
+        data=Dropdown.objects.filter(relation=parent_id,deleted_status=False).values('id','name')
+        if data is None:
+            return JsonResponse({'message':'Courses Not Found'},status=204)
+        else:
+            return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
     
@@ -96,18 +113,18 @@ def years(request):
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 
-def subjects(request):
-    if request.method == 'GET':
-        course_id=request.GET.get('course_id')
-        department_id=request.GET.get('department_id')
-        year=request.GET.get('year')
-        subjects=Subjects.objects.filter(department=department_id,year=year,course=course_id,deleted_status=False).values('id','subject_name')
-        if subjects:
-            return JsonResponse(list(subjects),safe=False)
-        else:
-            return JsonResponse({'message':'Subject Not avialable'},status=204)
-    else:
-        return JsonResponse({'message':'Invalid Request Method'},status=405)
+# def subjects(request):
+#     if request.method == 'GET':
+#         course_id=request.GET.get('course_id')
+#         department_id=request.GET.get('department_id')
+#         year=request.GET.get('year')
+#         subjects=Subjects.objects.filter(department=department_id,year=year,course=course_id,deleted_status=False).values('id','subject_name')
+#         if subjects:
+#             return JsonResponse(list(subjects),safe=False)
+#         else:
+#             return JsonResponse({'message':'Subject Not avialable'},status=204)
+#     else:
+#         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 def gender(request):
     if request.method == 'GET':
