@@ -4,7 +4,8 @@ from EduExam import views
 urlpatterns = [
     path('examtype/',views.exam_type, name='examtype'),
     path('examinfo/',views.exam_info, name='examinfo'),
-  path('paper_details/',views.paper_details, name ='paper_details'),
+  path('questionpaper/',views.question_paper, name ='questionpper'),
+  path('paper_response/',views.paper_response, name ='paper_response'),
   path('exam_mapping/',views.exam_mapping, name='exam_mapping')
     
 ]

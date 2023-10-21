@@ -10,9 +10,7 @@ class ExamMapping(BaseModel):
     duration=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='duration_identity')
 
 
-class PaperDetails(BaseModel):
-    course=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='course_idty')
-    department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='department_identity')
+class QuestionPaper(BaseModel):
     exam_type=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='exam_type')
     subject=models.ForeignKey(Subjects,on_delete=models.SET_NULL,null=True)
     title=models.TextField(max_length=100,null=True)
@@ -21,19 +19,17 @@ class PaperDetails(BaseModel):
     shift=models.CharField(max_length=20,null=True)
     date=models.DateField(null=True)
     strart_time=models.TimeField(null=True)
-    end_time=models.TimeField(null=True)
-    total_marks=models.IntegerField(null=True)
+    questions=JSONField(max_length=1000,null=True)
     
     
-class Questions(BaseModel):
-    paper=models.ForeignKey(PaperDetails,on_delete=models.SET_NULL,null=True)
-    question=JSONField(max_length=1000,null=True)
+    
+class PaperResponse(BaseModel):
+    paper=models.ForeignKey(QuestionPaper,on_delete=models.SET_NULL,null=True)
     answer=JSONField(max_length=1000,blank=True)
-    obtained_marks=models.PositiveIntegerField(null=True)
+    obtained_marks=JSONField(max_length=1000,blank=True)
     checked_satus=models.BooleanField(default=False)
     checked_time=models.DateTimeField(null=True)
     checked_by=models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='checked_by')
 
-# class QuestionOptions(BaseModel):
-#     question=models.ForeignKey(Questions,on_delete=models.SET_NULL,null=True)
-#     option=models.TextField(max_length=200,null=True)
+
+    
