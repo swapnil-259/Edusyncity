@@ -11,7 +11,8 @@ from datetime import datetime,date
 def register_faculty(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
-            admin_exist = UserRole.objects.filter(user=request.user.id,role_id = '1').first()
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            admin_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             if admin_exist:
                 load= json.loads(request.body)
                 first_name = load.get('firstname')
@@ -27,7 +28,6 @@ def register_faculty(request):
                 title = load.get('title')
                 subject =  load.get('subject')
                 course = load.get('course')
-                print()
                 
                 if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address or not department or not qualification or not title or not subject or not course :
                       return JsonResponse({'message':'Missing Required Field'}, status = 400)
@@ -106,7 +106,8 @@ def register_faculty(request):
 def register_student(request):
     if request.method == 'POST':
          if request.user.is_authenticated:
-            admin_exist = UserRole.objects.filter(user=request.user.id,role_id = '1').first()
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            admin_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             if admin_exist:
                 load=json.loads(request.body)
                 first_name = load.get('first_name')
@@ -275,13 +276,16 @@ def logout_user(request):
 def add_role(request):
     
     if request.method =='POST':
-        roles_data = json.loads(request.body)
-        name=roles_data.get('name')
-        if name is None or not name:
-            return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
         if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(role_id = '1').first()
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             user_exist = User.objects.get(pk = request.user.id)
+            
+            roles_data = json.loads(request.body)
+            name=roles_data.get('name')
+            if name is None or not name:
+                return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
+
             if check_admin: 
                 role_exist , created= Roles.objects.get_or_create(
                     role_name = name,
@@ -299,14 +303,16 @@ def add_role(request):
             return JsonResponse({'message':'user is not authenticated '},status=401)
         
     elif request.method == "PUT":
-        load = json.loads(request.body)
-        new_name=load.get('new_name')
-        role_id=load.get('role_id')
-        if new_name is None or role_id is None or not new_name or not role_id:
-            return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
         if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(role_id = '1').first()
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             user_exist = User.objects.get(pk = request.user.id)
+
+            load = json.loads(request.body)
+            new_name=load.get('new_name')
+            role_id=load.get('role_id')
+            if new_name is None or role_id is None or not new_name or not role_id:
+                return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
     
             if check_admin:
                 Roles.objects.filter(pk=role_id).update(role_name=new_name)
@@ -318,7 +324,9 @@ def add_role(request):
 
     elif request.method=='DELETE':
         if request.user.is_authenticated:
-            if UserRole.objects.filter(role_id = '1').exists():
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            if check_admin:
                 id=request.GET.get('id')
                 deleted=Roles.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.today())
                 if deleted:
@@ -338,7 +346,8 @@ def dropdown(request):
     if request.method == 'POST':
         load = json.loads(request.body)
         if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(role_id = '1', user_id = request.user.id).first()
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             if check_admin:
                 id = load.get('id')
                 name = load.get('name')
@@ -365,7 +374,8 @@ def dropdown(request):
         
     elif request.method=='PUT':
         if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(role_id = '1', user_id = request.user.id).first()
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(role_id = id.pk,deleted_status=False).first()
             if check_admin:
                 load=json.loads(request.body)
                 id = load.get('id')
@@ -388,7 +398,9 @@ def dropdown(request):
         
     elif request.method=='DELETE':
         if request.user.is_authenticated:
-            if UserRole.objects.filter(role_id = '1').exists():
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(role_id = id.pk,deleted_status=False).first()
+            if check_admin:
                 id=request.GET.get('id')
                 deleted=Dropdown.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.now())
                 if deleted:
@@ -408,7 +420,8 @@ def subject(request):
     if request.method =='POST':
         data = json.loads(request.body)
         if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(user= request.user.id, role='1').first()
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             if check_admin:
                 subject_name = data.get('subject_name')
                 subject_code = data.get('subject_code')
