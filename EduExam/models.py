@@ -1,6 +1,7 @@
 from django.db import models
-from EduAdmin.models import BaseModel,Dropdown,Subjects,User
+from EduAdmin.models import BaseModel,Dropdown,Faculty,User
 from jsonfield import JSONField
+from EduCore.models import SubjectMapping
 
 
 class ExamMapping(BaseModel):
@@ -11,7 +12,7 @@ class ExamMapping(BaseModel):
 
 class QuestionPaper(BaseModel):
     exam_type=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exam_type')
-    subject=models.ForeignKey(Subjects,on_delete=models.SET_NULL,null=True)
+    subject=models.ForeignKey(SubjectMapping,on_delete=models.SET_NULL,null=True)
     title=models.TextField(max_length=100,null=True)
     paper_code=models.CharField(max_length=30,null=True)
     set=models.CharField(max_length=10,null=True)
@@ -28,7 +29,7 @@ class PaperResponse(BaseModel):
     obtained_marks=JSONField(max_length=1000,blank=True)
     checked_satus=models.BooleanField(default=False)
     checked_time=models.DateTimeField(null=True)
-    checked_by=models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='checked_by')
+    checked_by=models.ForeignKey(Faculty,on_delete=models.SET_NULL, null=True,related_name='checked_by')
 
 
     

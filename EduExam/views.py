@@ -2,8 +2,10 @@ from django.shortcuts import render
 import json
 from django.http import JsonResponse
 from .models import QuestionPaper,PaperResponse,ExamMapping
-from EduAdmin.models import UserRole,Dropdown,Mapping,Subjects,User,Roles
+from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles
+# from EduExam.models import Subjects
 from datetime import datetime,date
+
 
 
 def question_paper(request):
@@ -17,43 +19,23 @@ def question_paper(request):
             date=load.get('date')
             question=load.get('questions')
             exam_type=load.get('exam_type')
-            subject=load.get('subject')
-            # title=load.get('title')
+            # subject=load.get('subject')
             paper_code=load.get('paper_code')
-            # set=load.get('set')
-            # shift=load.get('shift')
             start_time=load.get('start_time')
-            # end_time=load.get('end_time')
-            # total_marks=load.get('total_marks')
-            if date is None or question is None or exam_type is None or subject is None or paper_code is None or start_time is None:
+            if date is None or question is None or exam_type is None or paper_code is None or start_time is None:
                 return JsonResponse({'message':'Missing value of any key'},status=400)
-            if not date or not question or not exam_type or not subject  or not paper_code or not start_time:
+            if not date or not question or not exam_type or not paper_code or not start_time:
                 return JsonResponse({'message':'Missing Required Field'},status=400)
-            # department_exist = Mapping.objects.filter(department = department).first()
-            # if department_exist is None:
-            #     return JsonResponse({'message':'Department Not an Instance'},status=400)
-            # course_exist = Dropdown.objects.filter(id = course).first()
-            # if course_exist is None:
-            #     return JsonResponse({'message':'Course Not an Instance'},status=400)
-            subject_exist = Subjects.objects.filter(id = subject).first()
-            if subject_exist is None:
-                return JsonResponse({'messgae':'subject is not Instance'})
+            # subject_exist = Subjects.objects.filter(id = subject).first()
+            # if subject_exist is None:
+                # return JsonResponse({'messgae':'subject is not Instance'})
             exam_exist = Dropdown.objects.filter(id = exam_type).first()
             if exam_exist is None:
                 return JsonResponse({'message':'exam type is not an Instance'})
-            # set_exist = Dropdown.objects.filter(id = set).first()
-            # if set_exist is None:
-            #     return JsonResponse({'message':'exam type is not an Instance'})
-            # shift_exist = Dropdown.objects.filter(id = shift).first()
-            # if shift_exist is None:
-            #     return JsonResponse({'message':'exam type is not an Instance'})
-            # marks = Dropdown.objects.filter(relation = exam_type).first()
-            # if marks is None:
-            #     return JsonResponse({'message':'exam type is not an Instance'})
             if faculty:
                 QuestionPaper.objects.create(
                                             exam_type=exam_exist,
-                                            subject=subject_exist,
+                                            # subject=subject_exist,
                                             title="KIET Group Of Institutions",
                                             paper_code=paper_code,
                                             questions=question,
