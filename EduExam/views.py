@@ -13,6 +13,7 @@ def question_paper(request):
         if request.user.is_authenticated:
             id=Roles.objects.get(role_name='Teacher',deleted_status=False)
             faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            print(faculty.user)
             
             load=json.loads(request.body)
             
@@ -43,7 +44,7 @@ def question_paper(request):
                                             # shift=shift_exist.pk,
                                             date=date,
                                             start_time=start_time,
-                                            added_by = faculty.user
+                                            added_by = faculty.user.id
                                             )
                 
                 return JsonResponse({'message':'Created succesfully'},status=201)
@@ -106,9 +107,23 @@ def question_paper(request):
         else:
             return JsonResponse({'message':'You are not logged in'},status=401)
         
-    # elif request.method == 'GET':
-
-
+    elif request.method == 'GET':
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
+            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            admin=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            paper_id=request.GET.get('paper_id')
+            if faculty or admin:
+                paper=QuestionPaper.objects.filter(deleted_status=False,pk=paper_id).values()
+                if paper:
+                    return JsonResponse(list(paper),safe=False)
+                else:
+                    return JsonResponse({'message':'No content'},status=204)
+            else:
+                return JsonResponse({'message':'You are not autherised'},status=403)
+        else:
+            return JsonResponse({'message':'You are not logged in'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
@@ -196,6 +211,25 @@ def paper_evaluation(request):
                 return JsonResponse({'message':'You are not autherised'},status=403)
         else:
             return JsonResponse({'message':'You are not logged in'},status=401)
+        
+    elif request.method == 'DELETE':
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
+            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+
+            paper_id=request.GET.get('papper_id')
+
+            if faculty:
+                deleted=QuestionPaper.objects.filter(pk=paper_id,deleted_status=False).update(deleted_status=True,deleted_time=datetime.now())
+                if deleted:
+                    return JsonResponse({'message':'Deleted Succesfully'},status=200)
+                else:
+                    return JsonResponse({'message':'No content'},status=204)
+            else:
+                return JsonResponse({'message':'You are not autherised'},status=403)
+        else:
+            return JsonResponse({'message':'You are not logged in'},status=401)
+
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 

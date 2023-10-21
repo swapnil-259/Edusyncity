@@ -4,6 +4,7 @@ import json
 from django.http import JsonResponse
 from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles
 from datetime import datetime,date
+from .models import Subject
 
 
 
@@ -87,8 +88,7 @@ def departments(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
             if UserRole.objects.filter(role_id='1').exists():
-                course_id=request.GET.get('course_id')
-                data=Mapping.objects.filter(course=course_id,deleted_status=False).values('department__name', 'department_id')
+                data=Mapping.objects.filter(deleted_status=False).values('department__name', 'course__name')
                 if data is None:
                     return JsonResponse({'message':'Courses Not Found'},status=204)
                 else:
@@ -113,18 +113,18 @@ def years(request):
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 
-# def subjects(request):
-#     if request.method == 'GET':
-#         course_id=request.GET.get('course_id')
-#         department_id=request.GET.get('department_id')
-#         year=request.GET.get('year')
-#         subjects=Subjects.objects.filter(department=department_id,year=year,course=course_id,deleted_status=False).values('id','subject_name')
-#         if subjects:
-#             return JsonResponse(list(subjects),safe=False)
-#         else:
-#             return JsonResponse({'message':'Subject Not avialable'},status=204)
-#     else:
-#         return JsonResponse({'message':'Invalid Request Method'},status=405)
+def subjects(request):
+    if request.method == 'GET':
+        # course_id=request.GET.get('course_id')
+        # department_id=request.GET.get('department_id')
+        # year=request.GET.get('year')
+        subjects=Subject.objects.filter(deleted_status=False).values('id','subject_name','subject_code')
+        if subjects:
+            return JsonResponse(list(subjects),safe=False)
+        else:
+            return JsonResponse({'message':'Subject Not avialable'},status=204)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 def gender(request):
     if request.method == 'GET':
