@@ -8,6 +8,7 @@ from django.contrib.auth.hashers import make_password
 from datetime import datetime,date
 
 
+
 def register_faculty(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
@@ -23,12 +24,8 @@ def register_faculty(request):
                 contact =  load.get('contact')
                 age =  load.get('age')
                 address =  load.get('address')
-                # department =  load.get('department')
                 qualification = load.get('qualification')
                 title = load.get('title')
-                # subject =  load.get('subject')
-                # course = load.get('course')
-                
                 if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address  or not qualification or not title :
                       return JsonResponse({'message':'Missing Required Field'}, status = 400)
                 if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None :
@@ -48,18 +45,9 @@ def register_faculty(request):
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
                     return JsonResponse({'message':'Gender Not an instance'},status=400)
-                # department_exist = Mapping.objects.filter(department = department).first()
-                # if department_exist is None:
-                    # return JsonResponse({'message':'Department Not an Instance'},status=400)
                 title_exist = Dropdown.objects.filter(id = title).first()
                 if title_exist is None:
                     return JsonResponse({'message':'Title Not an Instance'},status=400)
-                # subject_exist = Subjects.objects.filter(id = subject).first()
-                # if subject_exist is None:
-                    # return JsonResponse({'message':'Subject Not an Instance'},status=400)
-                # course_exist = Dropdown.objects.filter(id = course).first()
-                # if course_exist is None:
-                    # return JsonResponse({'message':'Course Not an Instance'},status=400)
                 if User.objects.filter(username=user_name).exists():
                     return JsonResponse({'message':'Username Already exists'},status=409)
                 elif User.objects.filter(email=email).exists():
@@ -77,7 +65,6 @@ def register_faculty(request):
                 qualification = qualification,
                 address = address,
                 title = title_exist,
-                # course = course_exist,
                 contact= contact,
                 added_by = admin_exist.user,
                 age = age,
@@ -414,74 +401,7 @@ def child(request):
         return JsonResponse({'message':'Invalid Reqest Method'},status=405)
     
 
-# def subject(request):
-#     if request.method =='POST':
-#         data = json.loads(request.body)
-#         if request.user.is_authenticated:
-#             id=Roles.objects.get(role_name='Admin',deleted_status=False)
-#             check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-#             if check_admin:
-#                 subject_name = data.get('subject_name')
-#                 subject_code = data.get('subject_code')
-#                 year = data.get('year')
-#                 department_id = data.get('department_id')
-#                 course_id = data.get('course_id')
-#                 check_mapping = Mapping.objects.filter(department = department_id, course  = course_id).first()         
-#                 if check_mapping:
-#                     subjects , created = Subjects.objects.get_or_create(
-#                     subject_name= subject_name,
-#                     subject_code=subject_code,
-#                     department = check_mapping.department,
-#                     course = check_mapping.course,
-#                     year = year,
-#                     added_by = check_admin.user
-#                     ) 
-#                     if created:
-#                        return JsonResponse({'message':'subject added successfully'})
-#                     else:
-#                        return JsonResponse({'message':'subject already exist'}, status = 409)
-#                 else:
-#                     return JsonResponse({'message':'department do not exist'}, status=204)
-#             else:
-#                 return JsonResponse({'message':'user is not admin'}, status=403)
-#         else:
-#             return JsonResponse({'message':'user is not authenticated'}, status=401)
-#     else:
-#         return JsonResponse({'message':'invalid request method'},status = 405)
-                
-                
-
-def add_departments(request):
-    if request.method == 'POST':
-        if request.user.is_authenticated:
-            user_exist = User.objects.get(pk = request.user.id)
-            if UserRole.objects.filter(user=request.user.id,role_id = '1').first():
-                    departement_data=json.loads(request.body)
-                    course_id = departement_data.get('id')
-                    name=departement_data.get('name')
-                    state = departement_data.get('state')
-                    type = departement_data.get('type')
-                    course_exist= Dropdown.objects.filter(pk = course_id).first()
-                    if course_exist:    
-                     dept , created =Dropdown.objects.get_or_create(name=name,relation=course_exist,can_delete=False,can_update=True,added_by=user_exist, state=state, type = type)
-                     if created:
-                        childs=course_exist.child
-                        childs=int(childs)-1
-                        course_exist.child= childs
-                        course_exist.save()
-                       
-                        return JsonResponse({'message':'Department added Successfully'},status=409)
-                     else:
-                        return JsonResponse({'message':'Department already exist'},status=201)
-            else:
-                return JsonResponse({'message': 'You Are Not Authorised'},status=403)   
-        else:
-            return JsonResponse({'message': 'User not logged in'},status=401) 
-    else:
-        return JsonResponse({'message':'Invalid Request Method'},status=405)   
-    
-    
-      
+                  
 def assign_department_to_course(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
@@ -509,44 +429,6 @@ def assign_department_to_course(request):
     else:
         return JsonResponse({'message':'invalid request method'},status=405)         
             
-
-def add_course(request):
-    
-    if request.method == 'POST':
-        course_data = json.loads(request.body)
-        course_name = course_data.get('course_name')
-        child_count = course_data.get('child_count')
-        state = course_data.get('state')
-        type = course_data.get('type')
-        if course_name is None or not child_count:
-            return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
-        if request.user.is_authenticated:
-            check_admin = UserRole.objects.filter(role_id = '1').first()
-            user_exist = User.objects.get(pk = request.user.id)
-            course_id = Dropdown.objects.get(name='Courses').pk
-            if not course_id:
-                return JsonResponse({'message':'You Have No Attribute Named Cources'},status=400)
-            if check_admin: 
-                
-                course_exist , created = Dropdown.objects.get_or_create(
-                    name = course_name,
-                    child = child_count,
-                    relation_id = course_id,
-                    added_by = user_exist,
-                    can_update = True,
-                    state = state,
-                    type = type
-                )
-                if created:
-                    return JsonResponse({'message':'Course successfully added'},status=201)
-                else:
-                  return JsonResponse({'message':'Course already exist'},status=409)
-            else:
-                return JsonResponse({'message':'user is not admin'},status=403)
-        else:
-            return JsonResponse({'message':'user is not authenticated '},status=401)
-    else:
-        return JsonResponse({'message':'invalid request method'},status=405)     
 
 
 
