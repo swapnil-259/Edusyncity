@@ -484,14 +484,7 @@ def left_panel(request):
                 type=type,                               
                 role=role,                               
                 )
-<<<<<<< HEAD
-                if created:
-                    return JsonResponse({'message':'Updated successfully'},status=200)
-                else:
-                    return JsonResponse({'message':'Already created'},status=409) 
-=======
                 return JsonResponse({'message':'Updated successfully'},status=200)
->>>>>>> 66479e19eba4c4f13a4c7ad848b67fb59baf0a8b
             else:
                 return JsonResponse({'message':'You are not autherised'},status=403)
         else:
