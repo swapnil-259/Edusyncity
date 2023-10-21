@@ -2,11 +2,10 @@ from django.shortcuts import render
 
 import json
 from django.http import JsonResponse
-from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles
+from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty
 from datetime import datetime,date
 from .models import Subject
-
-
+from EduCore.models import Subject,SubjectMapping,SubjectTeacherMapping
 
 def logged_in(request):
     if request.method == 'GET':
@@ -69,34 +68,25 @@ def get_childs(request):
     
 def courses(request):
     if request.method == 'GET':
-        if request.user.is_authenticated:
-            if UserRole.objects.filter(role_id='1').exists():
-                data=Dropdown.objects.filter(relation='2',deleted_status=False).values('id','name')
-                if data is None:
-                    return JsonResponse({'message':'Courses Not Found'},status=204)
-                else:
-                    return JsonResponse(list(data),safe=False)
-            else:
-                return JsonResponse({'message':'You Are Not Admin'},status=403)
+        id=Dropdown.objects.get(deleted_status=False,name='Courses')
+        data=Dropdown.objects.filter(relation=id.relation,deleted_status=False).values('id','name')
+        if data is None:
+            return JsonResponse({'message':'Courses Not Found'},status=204)
         else:
-            return JsonResponse({'message':'You are not authenticated'},status=401)
+            return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 
 def departments(request):
     if request.method == 'GET':
-        if request.user.is_authenticated:
-            if UserRole.objects.filter(role_id='1').exists():
-                data=Mapping.objects.filter(deleted_status=False).values('department__name', 'course__name')
-                if data is None:
-                    return JsonResponse({'message':'Courses Not Found'},status=204)
-                else:
-                    return JsonResponse(list(data),safe=False)
-            else:
-                return JsonResponse({'message':'You Are Not Admin'},status=403)
+        
+        data=Mapping.objects.filter(deleted_status=False).values('department__name', 'course__name')
+        if data is None:
+            return JsonResponse({'message':'Courses Not Found'},status=204)
         else:
-            return JsonResponse({'message':'You are not authenticated'},status=401)
+            return JsonResponse(list(data),safe=False)
+           
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
@@ -128,7 +118,8 @@ def subjects(request):
 
 def gender(request):
     if request.method == 'GET':
-       gender = Dropdown.objects.filter(relation_id = '44',deleted_status=False).values('id','name')
+       id=Dropdown.objects.get(deleted_status=False,name='Gender')
+       gender = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
        if gender:
            gender_data = list(gender)
            
@@ -140,7 +131,8 @@ def gender(request):
 
 def title(request):
     if request.method == 'GET':
-       title = Dropdown.objects.filter(relation_id = '48',deleted_status=False).values('id','name')
+       id=Dropdown.objects.get(deleted_status=False,name='Title')
+       title = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
        if title:
            title_data = list(title)
            
@@ -152,7 +144,8 @@ def title(request):
 
 def religion(request):
     if request.method == 'GET':
-       religion = Dropdown.objects.filter(relation_id = '40',deleted_status=False).values('id','name')
+       id=Dropdown.objects.get(deleted_status=False,name='Religion')
+       religion = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
        if religion:
            religion_data = list(religion)
            
@@ -191,6 +184,99 @@ def sidebar(request):
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
+def subject(request):
+    if request.method =='POST':
+        data = json.loads(request.body)
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            if check_admin:
+                subject_name = data.get('subject_name')
+                subject_code = data.get('subject_code')        
+                subjects , created = Subject.objects.get_or_create(
+                subject_name= subject_name,
+                subject_code=subject_code,
+                added_by=check_admin.user
+                
+                ) 
+                if created:
+                   return JsonResponse({'message':'subject added successfully'})
+                else:
+                   return JsonResponse({'message':'subject already exist'}, status = 409)
+            else:
+                return JsonResponse({'message':'user is not admin'}, status=403)
+        else:
+            return JsonResponse({'message':'user is not authenticated'}, status=401)
+    else:
+        return JsonResponse({'message':'invalid request method'},status = 405)
+def subject_mapping(request):
+    if request.method=='POST':
+        data = json.loads(request.body)
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            if check_admin:
+                subject = data.get('subject_id')
+                department = data.get('department_id')
+                year = data.get('year')
+                subject_exist = Subject.objects.filter(id = subject).first()
+                if subject_exist is None:
+                    return JsonResponse({'message':'subject is not found'},status=204)
+                department_exist = Mapping.objects.filter(department = department).first()
+                if department_exist is None:
+                    return JsonResponse({'message':'department not found'},status=204)
+                subject_mapping, created=SubjectMapping.objects.get_or_create(
+                    subject=subject_exist,
+                    department=department_exist,
+                    year=year,
+                    added_by=check_admin.user
+                )
+                if created:
+                    return JsonResponse({'message':'subject mapping successfully done'})
+                else:
+                    return JsonResponse({'message':'mapping already exist'},status=409)
+            else:
+                    return JsonResponse({'messgae':'user is not admin'},status=403)
+        else:
+            return JsonResponse({'message':'user is not authenticated'},status=401)
+    else:
+        return JsonResponse({'message':'invalid request method'},status=405)
+def subject_teacher_mapping(request):
+    if request.method=='POST':
+        data = json.loads(request.body)
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            if check_admin:
+                sub_mapping = data.get('sub_mapping')
+                faculty = data.get('faculty')
+                sub_mapping_exist = SubjectMapping.objects.filter(id = sub_mapping).first()
+                if sub_mapping_exist is None:
+                    return JsonResponse({'message':'mapping is not found'}, status =204)
+                faculty_exist = Faculty.objects.filter(id = faculty).first()
+                if faculty_exist is None:
+                    return JsonResponse({'message':'faculty not found'},status=204)
+                teacher_mapping, created = SubjectTeacherMapping.objects.get_or_create(
+                faculty=faculty_exist,
+                subject=sub_mapping_exist,
+                added_by = check_admin.user
+                )
+                if created:
+                    return JsonResponse({'message':'mapping done successfully'})
+                else:
+                    return JsonResponse({'message':'mapping already exist'},status=409)
+            else:
+                return JsonResponse({'message':'user is not admin'},status=403)
+        else:
+            return JsonResponse({'message':'user is not authenticated'},status=401)
+    else:
+        return JsonResponse({'message':'invalid request method'},status=405)
+        
+                
+                
+            
+            
+
 
     
     

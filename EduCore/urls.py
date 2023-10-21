@@ -9,9 +9,10 @@ urlpatterns = [
     path('courses/',views.courses, name='courses'),
     path('departments/',views.departments, name='departments'),
     path('years/',views.years, name='years'),
-    # path('subjects/', views.subjects,name='subjects'),
+    path('subject/', views.subject,name='subject'),
     path('gender/', views.gender, name='gender'),
     path('title/', views.title, name='title'),
     path('religion/', views.religion, name='religion'),
-    path('parents/',views.parents,name='parents')
+    path('parents/',views.parents,name='parents'),
+    path('subject_mapping/',views.subject_mapping, name='subject_mapping')
 ]
