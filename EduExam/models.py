@@ -1,6 +1,5 @@
 from django.db import models
-from EduAdmin.models import BaseModel
-from EduAdmin.models import Dropdown,Subjects,User
+from EduAdmin.models import BaseModel,Dropdown,Subjects,User
 from jsonfield import JSONField
 
 
@@ -18,7 +17,7 @@ class QuestionPaper(BaseModel):
     set=models.CharField(max_length=10,null=True)
     shift=models.CharField(max_length=20,null=True)
     date=models.DateField(null=True)
-    strart_time=models.TimeField(null=True)
+    start_time=models.TimeField(null=True)
     questions=JSONField(max_length=1000,null=True)
     
     
