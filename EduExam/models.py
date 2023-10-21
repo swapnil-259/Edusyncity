@@ -26,7 +26,7 @@ class QuestionPaper(BaseModel):
 class PaperResponse(BaseModel):
     paper=models.ForeignKey(QuestionPaper,on_delete=models.SET_NULL,null=True)
     answer=JSONField(max_length=1000,blank=True)
-    obtained_marks=JSONField(max_length=1000,blank=True)
+    evaluation=JSONField(max_length=1000,blank=True)
     checked_satus=models.BooleanField(default=False)
     checked_time=models.DateTimeField(null=True)
     checked_by=models.ForeignKey(Faculty,on_delete=models.SET_NULL, null=True,related_name='checked_by')

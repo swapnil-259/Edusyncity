@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+# from EduExam.models import SubjectMapping
 
 class User(AbstractUser):
     pass
@@ -36,27 +37,16 @@ class Roles(BaseModel):
 
 class UserRole(BaseModel):
     user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='user_identity')
-    # department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True)
     role=models.ForeignKey(Roles,on_delete=models.SET_NULL,null=True)
     
-# class Subjects(BaseModel):
-#     course=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True,related_name='course_identity')
-#     department=models.ForeignKey(Dropdown,on_delete=models.SET_NULL, null=True)
-#     year = models.PositiveIntegerField(null=True)
-#     subject_name = models.CharField(max_length=100, null=True)
-#     subject_code = models.CharField(max_length=50, null=True)
 
 class Faculty(BaseModel):
     user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name="faculty_identity")
-    # course = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True, related_name='faculty_course')
-    # department=models.ForeignKey(Mapping,on_delete=models.SET_NULL, null=True)
-    # subject=models.ForeignKey(Subjects,on_delete=models.SET_NULL,null=True)
     age = models.PositiveIntegerField(null= True)
     gender = models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='faculty_gender')
-    # qualification=models.CharField(null=True,max_length=100)
+    qualification=models.CharField(null=True,max_length=100)
     address = models.CharField(max_length=200, blank=True)
     contact = models.BigIntegerField(null=True)
-    # religion = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True,related_name="faculty_religion")
     title = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True, related_name='identify_title')
    
 class Student(BaseModel):
