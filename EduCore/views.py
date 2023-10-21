@@ -4,6 +4,7 @@ import json
 from django.http import JsonResponse
 from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty
 from datetime import datetime,date
+from .models import Subject
 from EduCore.models import Subject,SubjectMapping,SubjectTeacherMapping
 
 def logged_in(request):
@@ -67,35 +68,25 @@ def get_childs(request):
     
 def courses(request):
     if request.method == 'GET':
-        if request.user.is_authenticated:
-            if UserRole.objects.filter(role_id='1').exists():
-                data=Dropdown.objects.filter(relation='2',deleted_status=False).values('id','name')
-                if data is None:
-                    return JsonResponse({'message':'Courses Not Found'},status=204)
-                else:
-                    return JsonResponse(list(data),safe=False)
-            else:
-                return JsonResponse({'message':'You Are Not Admin'},status=403)
+        id=Dropdown.objects.get(deleted_status=False,name='Courses')
+        data=Dropdown.objects.filter(relation=id.relation,deleted_status=False).values('id','name')
+        if data is None:
+            return JsonResponse({'message':'Courses Not Found'},status=204)
         else:
-            return JsonResponse({'message':'You are not authenticated'},status=401)
+            return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 
 def departments(request):
     if request.method == 'GET':
-        if request.user.is_authenticated:
-            if UserRole.objects.filter(role_id='1').exists():
-                course_id=request.GET.get('course_id')
-                data=Mapping.objects.filter(course=course_id,deleted_status=False).values('department__name', 'department_id')
-                if data is None:
-                    return JsonResponse({'message':'Courses Not Found'},status=204)
-                else:
-                    return JsonResponse(list(data),safe=False)
-            else:
-                return JsonResponse({'message':'You Are Not Admin'},status=403)
+        
+        data=Mapping.objects.filter(deleted_status=False).values('department__name', 'course__name')
+        if data is None:
+            return JsonResponse({'message':'Courses Not Found'},status=204)
         else:
-            return JsonResponse({'message':'You are not authenticated'},status=401)
+            return JsonResponse(list(data),safe=False)
+           
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
@@ -112,22 +103,23 @@ def years(request):
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 
-# def subjects(request):
-#     if request.method == 'GET':
-#         course_id=request.GET.get('course_id')
-#         department_id=request.GET.get('department_id')
-#         year=request.GET.get('year')
-#         subjects=Subjects.objects.filter(department=department_id,year=year,course=course_id,deleted_status=False).values('id','subject_name')
-#         if subjects:
-#             return JsonResponse(list(subjects),safe=False)
-#         else:
-#             return JsonResponse({'message':'Subject Not avialable'},status=204)
-#     else:
-#         return JsonResponse({'message':'Invalid Request Method'},status=405)
+def subjects(request):
+    if request.method == 'GET':
+        # course_id=request.GET.get('course_id')
+        # department_id=request.GET.get('department_id')
+        # year=request.GET.get('year')
+        subjects=Subject.objects.filter(deleted_status=False).values('id','subject_name','subject_code')
+        if subjects:
+            return JsonResponse(list(subjects),safe=False)
+        else:
+            return JsonResponse({'message':'Subject Not avialable'},status=204)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 def gender(request):
     if request.method == 'GET':
-       gender = Dropdown.objects.filter(relation_id = '44',deleted_status=False).values('id','name')
+       id=Dropdown.objects.get(deleted_status=False,name='Gender')
+       gender = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
        if gender:
            gender_data = list(gender)
            
@@ -139,7 +131,8 @@ def gender(request):
 
 def title(request):
     if request.method == 'GET':
-       title = Dropdown.objects.filter(relation_id = '48',deleted_status=False).values('id','name')
+       id=Dropdown.objects.get(deleted_status=False,name='Title')
+       title = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
        if title:
            title_data = list(title)
            
@@ -151,7 +144,8 @@ def title(request):
 
 def religion(request):
     if request.method == 'GET':
-       religion = Dropdown.objects.filter(relation_id = '40',deleted_status=False).values('id','name')
+       id=Dropdown.objects.get(deleted_status=False,name='Religion')
+       religion = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
        if religion:
            religion_data = list(religion)
            
