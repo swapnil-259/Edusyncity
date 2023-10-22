@@ -2,16 +2,21 @@ from django.db import models
 from EduAdmin.models import BaseModel,Dropdown,Faculty,User
 from jsonfield import JSONField
 from EduCore.models import SubjectMapping
+from EduAdmin.models import Mapping
 
 
 class ExamMapping(BaseModel):
     exam=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='exam_identity')
     marks=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='marks_identity')
     duration=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='duration_identity')
-    mapping_type=models.ForeignKey(Dropdown,null=True,on_delete=models.SET_NULL,related_name='exam_type_mapping')
+    
+    
+
+    
 
 class QuestionPaper(BaseModel):
     exam_type=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exam_type')
+    department=models.ForeignKey(Mapping,null=True,on_delete=models.SET_NULL,related_name='department_identity')
     subject=models.ForeignKey(SubjectMapping,on_delete=models.SET_NULL,null=True)
     title=models.TextField(max_length=100,null=True)
     paper_code=models.CharField(max_length=30,null=True)

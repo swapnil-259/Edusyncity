@@ -10,9 +10,8 @@ class SubjectMapping(BaseModel):
     subject = models.ForeignKey(Subject,on_delete=models.SET_NULL,null=True,related_name='identify_subject')
     department=models.ForeignKey(Mapping,on_delete=models.SET_NULL, null=True)
     year=models.PositiveIntegerField(null=True)
-    mapping_type=models.ForeignKey(Dropdown,null=True,on_delete=models.SET_NULL,related_name='subject_type_map')
 
 class SubjectTeacherMapping(BaseModel):
     subject = models.ForeignKey(SubjectMapping,on_delete=models.SET_NULL,null=True,related_name='identify_mapped_subjects')
     faculty = models.ForeignKey(Faculty,on_delete=models.SET_NULL,null=True)
-    mapping_type=models.ForeignKey(Dropdown,null=True,on_delete=models.SET_NULL,related_name='sub_faculty')
+    
