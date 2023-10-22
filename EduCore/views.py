@@ -86,7 +86,7 @@ def courses(request):
 def departments(request):
     if request.method == 'GET':
         id = request.GET.get('course_id')
-        data=Mapping.objects.filter(deleted_status=False, course=id).values('department__name')
+        data=Mapping.objects.filter(deleted_status=False, course=id).values('department__name','department_id')
         if data is None:
             return JsonResponse({'message':'Courses Not Found'},status=204)
         else:
@@ -121,44 +121,44 @@ def subjects(request):
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
-def gender(request):
-    if request.method == 'GET':
-       id=Dropdown.objects.get(deleted_status=False,name='Gender')
-       gender = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
-       if gender:
-           gender_data = list(gender)
+# def gender(request):
+#     if request.method == 'GET':
+#        id=Dropdown.objects.get(deleted_status=False,name='Gender')
+#        gender = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
+#        if gender:
+#            gender_data = list(gender)
            
-           return JsonResponse(gender_data, safe=False)
-       else:
-           return JsonResponse({'message':'data not found'},status=204)
-    else:
-        return JsonResponse({'message':'invalid request method'},status=405)
+#            return JsonResponse(gender_data, safe=False)
+#        else:
+#            return JsonResponse({'message':'data not found'},status=204)
+#     else:
+#         return JsonResponse({'message':'invalid request method'},status=405)
 
-def title(request):
-    if request.method == 'GET':
-       id=Dropdown.objects.get(deleted_status=False,name='Title')
-       title = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
-       if title:
-           title_data = list(title)
+# def title(request):
+#     if request.method == 'GET':
+#        id=Dropdown.objects.get(deleted_status=False,name='Title')
+#        title = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
+#        if title:
+#            title_data = list(title)
            
-           return JsonResponse(title_data, safe=False)
-       else:
-           return JsonResponse({'message':'data not found'},status=204)
-    else:
-        return JsonResponse({'message':'invalid request method'},status=405)
+#            return JsonResponse(title_data, safe=False)
+#        else:
+#            return JsonResponse({'message':'data not found'},status=204)
+#     else:
+#         return JsonResponse({'message':'invalid request method'},status=405)
 
-def religion(request):
-    if request.method == 'GET':
-       id=Dropdown.objects.get(deleted_status=False,name='Religion')
-       religion = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
-       if religion:
-           religion_data = list(religion)
+# def religion(request):
+#     if request.method == 'GET':
+#        id=Dropdown.objects.get(deleted_status=False,name='Religion')
+#        religion = Dropdown.objects.filter(relation_id = id.relation,deleted_status=False).values('id','name')
+#        if religion:
+#            religion_data = list(religion)
            
-           return JsonResponse(religion_data, safe=False)
-       else:
-           return JsonResponse({'message':'data not found'},status=204)
-    else:
-         return JsonResponse({'message':'invalid request method'},status=405)
+#            return JsonResponse(religion_data, safe=False)
+#        else:
+#            return JsonResponse({'message':'data not found'},status=204)
+#     else:
+#          return JsonResponse({'message':'invalid request method'},status=405)
      
 def sidebar(request):
     if request.method == 'GET':
@@ -301,6 +301,7 @@ def dropdown_option(request,dropdown):
         elif dropdown =='select_mapping':
             name = 'Mapping'
             return dropdown_value(name)
+        
     else:
         return JsonResponse({'message':'invalid request method'})
 def dropdown_value(name):
@@ -311,6 +312,13 @@ def dropdown_value(name):
                  return JsonResponse(mapping_data, safe=False)
          else:
                  return JsonResponse({'messgae':'gender is not found'})
+def get_courses(request):
+    if request.method =='GET':
+        if request.user.is_authenticated:
+            id = Dropdown.objects.filter(deleted_status=False,name='Course-')
+            
+
+             
                 
                 
             
