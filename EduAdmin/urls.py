@@ -10,6 +10,6 @@ urlpatterns = [
     path('add_role/', views.add_role, name = 'add_role'),
     path('child/', views.child, name='child'),
     # path('subject/',views.subject, name = 'subject'),
-    path('assign_department/',views.assign_department_to_course, name='assign_department_to_course'),
+    # path('assign_department/',views.assign_department_to_course, name='assign_department_to_course'),
 ]
   

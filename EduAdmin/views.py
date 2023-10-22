@@ -12,7 +12,15 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
 
-
+def validation(name,email):
+     if not re.match(r'^[A-Za-z\s]+$', ):
+        return JsonResponse({'message':'Invalid first_name format'},status=400)
+     if not re.match(r'^[A-Za-z\s]+$', name):
+        return JsonResponse({'message':'Invalid last_name format'},status=400)
+     if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
+        return JsonResponse({'message':'Match Your email Requirements'},status=400)
+    
+    
 
 
 def register_faculty(request):
@@ -42,12 +50,13 @@ def register_faculty(request):
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
                 # if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
                 #     return JsonResponse({'message':'Match Your Username Requirements'},status=400)
-                if not re.match(r'^[A-Za-z\s]+$', first_name):
-                    return JsonResponse({'message':'Invalid first_name format'},status=400)
-                if not re.match(r'^[A-Za-z\s]+$', last_name):
-                    return JsonResponse({'message':'Invalid last_name format'},status=400)
-                if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
-                    return JsonResponse({'message':'Match Your email Requirements'},status=400)
+                validation(name=first_name , email=email)
+                # if not re.match(r'^[A-Za-z\s]+$', first_name):
+                #     return JsonResponse({'message':'Invalid first_name format'},status=400)
+                # if not re.match(r'^[A-Za-z\s]+$', last_name):
+                #     return JsonResponse({'message':'Invalid last_name format'},status=400)
+                # if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
+                #     return JsonResponse({'message':'Match Your email Requirements'},status=400)
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
                     return JsonResponse({'message':'Gender Not an instance'},status=400)
@@ -392,40 +401,7 @@ def child(request):
             return JsonResponse({'message':'You Are Not Logged In'},status=401)
 
     else:
-        return JsonResponse({'message':'Invalid Reqest Method'},status=405)
-    
-
-                  
-def assign_department_to_course(request):
-    if request.method == 'POST':
-        if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            user_exist = User.objects.get(pk = request.user.id)
-            if check_admin:
-                    load=json.loads(request.body)
-                    course_id = load.get('course_id')
-                    department_id = load.get('department_id')
-                    mapping, created = Mapping.objects.get_or_create(course= course_id, department = department_id, added_by = user_exist )
-                    if created:
-                        course_exist= Dropdown.objects.filter(pk = course_id).first()
-                        department_exist = Dropdown.objects.filter(pk = department_id).first()
-                    if course_exist is not None and department_exist is not None:
-                        mapping, created = Mapping.objects.get_or_create(course= course_exist, department = department_exist, added_by = user_exist )
-                        if created:
-                            return JsonResponse({'message':'successfully department added to course'},status=201)
-                        else:
-                            return JsonResponse({'message':'departemnt already assigned to this course'},status=409)
-                    else:
-                        return JsonResponse({'message':'course/departemnt not exist'},status=204)
-            else:
-                return JsonResponse({'message':'user is not Admin'},status=403)
-        else:
-            return JsonResponse({'message':'user is not authenticated'},status=401)
-    else:
-        return JsonResponse({'message':'invalid request method'},status=405)       
-  
-            
+        return JsonResponse({'message':'Invalid Reqest Method'},status=405)            
 
 def left_panel(request):
     if request.method == 'POST':
