@@ -309,6 +309,22 @@ def get_departments(request):
             return JsonResponse({'message':'data not found'})
     else:
         return JsonResponse({'message':'invalid request method'})
+def get_years(request):
+    if request.method =='GET':
+        id = request.GET.get('dept_mapped_id')
+        mapping_exist = Mapping.objects.filter(id = id).first()
+        if mapping_exist:
+            year = mapping_exist.course.year
+            print(year)
+            years=[]
+            for i in range(1,int(year)+1):
+                years.append(i)
+            return JsonResponse(years,safe=False)
+        else:
+            return JsonResponse({'message':'mapping not exist'})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+            
         
         
     

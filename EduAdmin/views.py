@@ -13,10 +13,9 @@ from django.core.exceptions import ValidationError
 
 
 def validation(name,email):
-     if not re.match(r'^[A-Za-z\s]+$', ):
+     if not re.match(r'^[A-Za-z\s]+$', name ):
         return JsonResponse({'message':'Invalid first_name format'},status=400)
-     if not re.match(r'^[A-Za-z\s]+$', name):
-        return JsonResponse({'message':'Invalid last_name format'},status=400)
+    
      if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
         return JsonResponse({'message':'Match Your email Requirements'},status=400)
     
@@ -51,6 +50,7 @@ def register_faculty(request):
                 # if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
                 #     return JsonResponse({'message':'Match Your Username Requirements'},status=400)
                 validation(name=first_name , email=email)
+                
                 # if not re.match(r'^[A-Za-z\s]+$', first_name):
                 #     return JsonResponse({'message':'Invalid first_name format'},status=400)
                 # if not re.match(r'^[A-Za-z\s]+$', last_name):
@@ -334,35 +334,34 @@ def add_role(request):
 
 
 def child(request):
-        
-    if request.user.is_authenticated:
-        return JsonResponse({'message':'user is not authenticated'},status=401)
-    id=Roles.objects.get(role_name='Admin',deleted_status=False)
-    check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-    if check_admin:
-        return JsonResponse({'message':'user is not admin'},status=403)
-    
     if request.method == 'POST':
-        load = json.loads(request.body)
-        id = load.get('id')
-        name = load.get('name')
-        parent=Dropdown.objects.filter(id = id, child__gt=0).first()
-        if parent is not None:
-            dropdown, created=Dropdown.objects.get_or_create(
-                name= name,
-                added_by=check_admin.user,
-                relation_id = parent.pk,
-                child = int(parent.child) -1,
-                deleted_status=False
-            )
-            if created:
-                return JsonResponse({'message':'Child added successfully'})
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            if check_admin:   
+                load = json.loads(request.body)
+                id = load.get('id')
+                name = load.get('name')
+                parent=Dropdown.objects.filter(id = id, child__gt=0).first()
+                if parent is not None:
+                    dropdown, created=Dropdown.objects.get_or_create(
+                        name= name,
+                        added_by=check_admin.user,
+                        relation_id = parent.pk,
+                        child = int(parent.child) -1,
+                        deleted_status=False
+                    )
+                    if created:
+                        return JsonResponse({'message':'Child added successfully'})
+                    else:
+                        return JsonResponse({'message':'Child already exist'},status=409)
+                else:
+                    return JsonResponse({'message':'You can not add Child for this Parent'},status=409)
             else:
-                return JsonResponse({'message':'Child already exist'},status=409)
+                return JsonResponse({'message':'user is not admin'})
         else:
-            return JsonResponse({'message':'You can not add Child for this Parent'},status=409)
-                
-        
+            return JsonResponse({'message':'user is not authenticated'})
+    
     elif request.method=='PUT':
         if request.user.is_authenticated:
             id=Roles.objects.get(role_name='Admin',deleted_status=False)

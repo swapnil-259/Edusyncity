@@ -98,8 +98,8 @@ DATABASES = {
         'NAME': 'Edusyncity',
         'USER': 'harry',
         'PASSWORD':'Kiet@123',
-        'HOST':'10.21.67.7',
-        'PORT':'3306',
+        'HOST':'0.tcp.in.ngrock.io',
+        'PORT':'11424',
     }
     #  'default': {
     #     'ENGINE': 'django.db.backends.mysql',
