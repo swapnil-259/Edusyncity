@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty
 from datetime import datetime,date
 from .models import Subject
@@ -81,8 +81,8 @@ def courses(request):
 
 def departments(request):
     if request.method == 'GET':
-        
-        data=Mapping.objects.filter(deleted_status=False).values('department__name', 'course__name')
+        id = request.GET.get('course_id')
+        data=Mapping.objects.filter(deleted_status=False, course=id).values('department__name')
         if data is None:
             return JsonResponse({'message':'Courses Not Found'},status=204)
         else:
@@ -280,7 +280,33 @@ def subject_teacher_mapping(request):
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
-        
+def dropdown_option(request,dropdown):
+    if request.method =='GET':
+        if dropdown =='gender':
+            name = 'Gender'
+            return dropdown_value(name)
+        elif dropdown =='title':
+            name = 'Title'
+            return dropdown_value(name)
+        elif dropdown =='courses':
+            name = 'Courses'
+            return dropdown_value(name)
+        elif dropdown =='religion':
+            name = 'Religion'
+            return dropdown_value(name)
+        elif dropdown =='select_mapping':
+            name = 'Mapping'
+            return dropdown_value(name)
+    else:
+        return JsonResponse({'message':'invalid request method'})
+def dropdown_value(name):
+         id=Dropdown.objects.filter(deleted_status=False,name=name,pannel=0).first() 
+         mapping = Dropdown.objects.filter(relation_id = id.pk,deleted_status=False).values('id','name')
+         if mapping:
+                 mapping_data = list(mapping)
+                 return JsonResponse(mapping_data, safe=False)
+         else:
+                 return JsonResponse({'messgae':'gender is not found'})
                 
                 
             
