@@ -100,6 +100,14 @@ DATABASES = {
         'PASSWORD':'Kiet@123',
         'HOST':'10.21.67.7',
         'PORT':'3306',
+    # }
+    #  'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'Edusyncity',
+    #     'USER': 'harry',
+    #     'PASSWORD':'Kiet@123',
+    #     'HOST':'0.tcp.in.ngrok.io',
+    #     'PORT':'19640',
     }
 }
 

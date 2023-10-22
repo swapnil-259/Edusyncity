@@ -32,27 +32,31 @@ def get_parents(request):
             
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+
 def parents(request):
-    if request.method=='POST':
-        if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            load = json.loads(request.body)
-            name = load.get('name')
-            child = load.get('child')
-            parent, created = Dropdown.objects.get_or_create(
-                name=name,
-                added_by=check_admin.user,
-                defaults={'child':child,'can_delete':False,'can_update':True}
-            )
-            if created:
-                return JsonResponse({'message':'parent created successfully'},status=201)
+    if request.user.is_authenticated:
+        id=Roles.objects.get(role_name='Admin',deleted_status=False)
+        check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+        if check_admin:
+            if request.method=='POST':
+                load = json.loads(request.body)
+                name = load.get('name')
+                child = load.get('child')
+                parent, created = Dropdown.objects.get_or_create(
+                    name=name,
+                    added_by=check_admin.user,
+                    defaults={'child':child,'can_delete':False,'can_update':True}
+                )
+                if created:
+                    return JsonResponse({'message':'parent created successfully'},status=201)
+                else:
+                    return JsonResponse({'message':'This parent already exist'},status=409)
             else:
-                return JsonResponse({'message':'This parent already exist'},status=409)
+                return JsonResponse({'message':'invalid request method'},status=405)
         else:
-            return JsonResponse({'message':'user is not authenticated'},status=401)
+            return JsonResponse({'message':'You are not autherised'},status=403)
     else:
-        return JsonResponse({'message':'invalid request method'},status=405)
+        return JsonResponse({'message':'You not authenticated'},status=401)
             
             
 
