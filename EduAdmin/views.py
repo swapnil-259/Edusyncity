@@ -40,12 +40,12 @@ def register_faculty(request):
                 address =  load.get('address')
                 qualification = load.get('qualification')
                 title = load.get('title')
+                if age is ' ' or int(age) <= 0:
+                    return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
                 if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address  or not qualification or not title :
                       return JsonResponse({'message':'Missing Required Field'}, status = 400)
                 if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None :
                     return JsonResponse({'messge':'Missing any key'},status=400) 
-                if age is ' ' or int(age) < 0:
-                    return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
                 if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
                 # if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
@@ -112,7 +112,7 @@ def register_student(request):
                 load=json.loads(request.body)
                 first_name = load.get('first_name')
                 last_name = load.get('last_name')
-                user_name =  load.get('user_name')
+                user_name =  load.get('username')
                 father_name = load.get('father_name')
                 mother_name = load.get('mother_name')
                 email =  load.get('email')
@@ -124,13 +124,15 @@ def register_student(request):
                 department = load.get('department')
                 year = load.get('year')
                 religion = load.get('religion')
+                
+                if age is ' ' or int(age) <= 0:
+                    return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
 
                 if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address or not department or not father_name or not mother_name or not year or not course or not religion:
                               return JsonResponse({'message':'Missing Required Field'}, status = 400)
                 if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or father_name is None or mother_name is None or year is None or course is None or religion is None:
                             return JsonResponse({'messge':'Missing any key'},status=400) 
-                if age is ' ' or int(age) < 0:
-                    return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
+             
                 if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
                 # if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
@@ -202,8 +204,9 @@ def register_student(request):
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
+
+
 def login_user(request):
-    
     if request.method == 'POST':
 
         load=json.loads(request.body)
@@ -331,34 +334,34 @@ def add_role(request):
 
 
 def child(request):
+        
+    if request.user.is_authenticated:
+        return JsonResponse({'message':'user is not authenticated'},status=401)
+    id=Roles.objects.get(role_name='Admin',deleted_status=False)
+    check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+    if check_admin:
+        return JsonResponse({'message':'user is not admin'},status=403)
+    
     if request.method == 'POST':
         load = json.loads(request.body)
-        if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            if check_admin:
-                id = load.get('id')
-                name = load.get('name')
-                parent=Dropdown.objects.filter(id = id, child__gt=0).first()
-                if parent is not None:
-                    dropdown, created=Dropdown.objects.get_or_create(
-                        name= name,
-                        added_by=check_admin.user,
-                        relation_id = parent.pk,
-                        child = int(parent.child) -1,
-                        deleted_status=False
-                    )
-                    if created:
-                        return JsonResponse({'message':'Child added successfully'})
-                    else:
-                        return JsonResponse({'message':'Child already exist'},status=409)
-                else:
-                    return JsonResponse({'message':'You can not add Child for this Parent'},status=409)
-                
+        id = load.get('id')
+        name = load.get('name')
+        parent=Dropdown.objects.filter(id = id, child__gt=0).first()
+        if parent is not None:
+            dropdown, created=Dropdown.objects.get_or_create(
+                name= name,
+                added_by=check_admin.user,
+                relation_id = parent.pk,
+                child = int(parent.child) -1,
+                deleted_status=False
+            )
+            if created:
+                return JsonResponse({'message':'Child added successfully'})
             else:
-                return JsonResponse({'message':'user is not admin'},status=403)
+                return JsonResponse({'message':'Child already exist'},status=409)
         else:
-            return JsonResponse({'message':'user is not authenticated'},status=401)
+            return JsonResponse({'message':'You can not add Child for this Parent'},status=409)
+                
         
     elif request.method=='PUT':
         if request.user.is_authenticated:

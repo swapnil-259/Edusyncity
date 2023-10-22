@@ -7,6 +7,7 @@ urlpatterns = [
     path('get_parents/',views.get_parents, name='get_parents'),
     path('get_childs/',views.get_childs, name='get_childs'),
     path('departments/',views.departments, name='departments'),
+    path('subjects/',views.subjects),
     path('years/',views.years, name='years'),
     path('subject/', views.subject,name='subject'),
     

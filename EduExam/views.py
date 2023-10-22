@@ -2,8 +2,8 @@ from django.shortcuts import render
 import json
 from django.http import JsonResponse
 from .models import QuestionPaper,PaperResponse,ExamMapping
-from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles
-from EduCore.models import SubjectMapping
+from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty
+from EduCore.models import SubjectMapping,SubjectTeacherMapping
 # from EduExam.models import Subjects
 from datetime import datetime,date
 
@@ -13,36 +13,43 @@ def question_paper(request):
     if request.method=='POST':
         if request.user.is_authenticated:
             id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            faculty_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first()
+            print(faculty_exist.user)
             load=json.loads(request.body)
-            date=load.get('date')
-            question=load.get('questions')
+            # date=load.get('date')
+            questions=load.get('questions')
             exam_type=load.get('exam_type')
             subject=load.get('subject')
-            paper_code=load.get('paper_code')
-            start_time=load.get('start_time')
-            if date is None or question is None or exam_type is None or paper_code is None or start_time is None:
+            # paper_code=load.get('paper_code')
+            department=load.get('department')
+
+          
+
+            if  exam_type is None or subject is None or department is None or questions is None:
                 return JsonResponse({'message':'Missing value of any key'},status=400)
-            if not date or not question or not exam_type or not paper_code or not start_time:
+            if not subject or not questions or not exam_type or not  department:
                 return JsonResponse({'message':'Missing Required Field'},status=400)
             subject_exist = SubjectMapping.objects.filter(id = subject).first()
             if subject_exist is None:
-                return JsonResponse({'messgae':'subject is not Instance'})
-            exam_exist = Dropdown.objects.filter(id = exam_type).first()
+                return JsonResponse({'messgae':'subject is not Instance'},status=400)
+            exam_exist = ExamMapping.objects.filter(exam = exam_type).first()
             if exam_exist is None:
-                return JsonResponse({'message':'exam type is not an Instance'})
-            if faculty:
+                return JsonResponse({'message':'exam type is not an Instance'},status=400)
+            department_exist = Mapping.objects.filter(id = department).first()
+            if department_exist is None:
+                return JsonResponse({'message':'department is not an Instance'},status=400)
+            if faculty_exist:
                 QuestionPaper.objects.create(
                                             exam_type=exam_exist,
                                             subject=subject_exist,
                                             title="KIET Group Of Institutions",
-                                            paper_code=paper_code,
-                                            questions=question,
-                                            # set=set_exist.pk,
+                                            # paper_code=paper_code,
+                                            questions=questions,
+                                            department=department_exist,
                                             # shift=shift_exist.pk,
-                                            date=date,
-                                            start_time=start_time,
-                                            added_by = faculty.user.id
+                                            # date=date,
+                                            # start_time=start_time,
+                                            added_by = faculty_exist.user
                                             )
                 
                 return JsonResponse({'message':'Created succesfully'},status=201)
@@ -302,11 +309,33 @@ def exam_mapping(request):
         return JsonResponse({'message':'invalid request method'},status=405)
 
 
-# def student_paper(request):
-    # if 
+def department_course(request):
+    if request.method == 'GET':
+        id=Faculty.objects.filter(user=request.user.id).first()
+        # if not id :
+        #     return JsonResponse()
+        data=SubjectTeacherMapping.objects.filter(deleted_status=False,faculty=id).values('subject__department__pk','subject__department__department__name','subject__department__course__name')
+        if data:
+            return JsonResponse(list(data),safe=False)
+        else:
+            return JsonResponse({'message':'No Content'},status=204)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
             
             
-            
+def subject_year(request):
+    if request.method == 'GET':
+
+        department_id=request.GET.get('dept_id')
+        if department_id is None:
+            return JsonResponse({'message':'You are not sending department_id'})
+        data=SubjectMapping.objects.filter(deleted_status=False,department=department_id).values('subject__pk','year','subject__subject_name','subject__subject_code')
+        if data:
+            return JsonResponse(list(data),safe=False)
+        else:
+            return JsonResponse({'message':'No Content'},status=204)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
             
             
             
