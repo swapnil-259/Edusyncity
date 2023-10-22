@@ -14,7 +14,6 @@ def question_paper(request):
         if request.user.is_authenticated:
             id=Roles.objects.get(role_name='Teacher',deleted_status=False)
             faculty_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first()
-            print(faculty_exist.user)
             load=json.loads(request.body)
             # date=load.get('date')
             questions=load.get('questions')
@@ -338,4 +337,10 @@ def subject_year(request):
         return JsonResponse({'message':'Invalid Request Method'},status=405)
             
             
-            
+def access_question(request):
+    if request.method=='GET':
+        id=request.GET.get('id') 
+        data=QuestionPaper.objects.filter(pk=7).values()
+        return JsonResponse(list(data),safe=False)
+    else:
+        return JsonResponse({'message':'Invalid'},status=405)     

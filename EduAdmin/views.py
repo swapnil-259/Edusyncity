@@ -406,20 +406,17 @@ def child(request):
         return JsonResponse({'message':'Invalid Reqest Method'},status=405)            
 
 def left_panel(request):
-    if request.method == 'POST':
-        if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-
-            load=json.loads(request.body)
-
-            name=load.get('name')
-            state=load.get('state')
-            icon=load.get('icon')
-            type=load.get('type')
-            role=load.get('role')
-
-            if check_admin:
+    if request.user.is_authenticated:
+        id=Roles.objects.get(role_name='Admin',deleted_status=False)
+        check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+        if check_admin:
+            if request.method == 'POST':
+                load=json.loads(request.body)
+                name=load.get('name')
+                state=load.get('state')
+                icon=load.get('icon')
+                type=load.get('type')
+                role=load.get('role')
                 panel,created=Dropdown.objects.get_or_create(name=name,                   
                 state=state,                              
                 icon=icon,                               
@@ -432,39 +429,39 @@ def left_panel(request):
                     return JsonResponse({'message':'Created successfully'},status=201)
                 else:
                     return JsonResponse({'message':'Already created'},status=409)
-            else:
-                return JsonResponse({'message':'You are not autherised'},status=403)
-        else:
-            return JsonResponse({'message':'You are not logged in'},status=401)
+            
+            elif request.method == 'PUT':
+                load=json.loads(request.body)
+
+                id=load.get('id')
+                name=load.get('name')
+                state=load.get('state')
+                icon=load.get('icon')
+                type=load.get('type')
+                role=load.get('role')
     
-    elif request.method == 'PUT':
-        if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-
-            load=json.loads(request.body)
-
-            id=load.get('id')
-            name=load.get('name')
-            state=load.get('state')
-            icon=load.get('icon')
-            type=load.get('type')
-            role=load.get('role')
-
-            if check_admin:
-                update_panel=Dropdown.objects.filter(pk=id).update(name=name,                   
+                
+                update_panel=Dropdown.objects.filter(pk=id,deleted_status=False).update(name=name,                   
                 state=state,                              
                 icon=icon,                               
                 type=type,                               
                 role=role,                               
                 )
-                return JsonResponse({'message':'Updated successfully'},status=200)
+                if update_panel:
+                    return JsonResponse({'message':'Updated successfully'},status=200)
+                else:
+                    return JsonResponse({'message':'Panel not found'},status=400)
+    
             else:
-                return JsonResponse({'message':'You are not autherised'},status=403)
+                return JsonResponse({'message':'Invalid Request Method'},status=405)
         else:
-            return JsonResponse({'message':'You are not logged in'},status=401)
+                return JsonResponse({'message':'You are not autherised'},status=403)
     else:
-        return JsonResponse({'message':'Invalid Request Method'},status=405)
+        return JsonResponse({'message':'You are not logged in'},status=401)
+    
+    
+
+    
 
 
 
