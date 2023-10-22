@@ -7,8 +7,13 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
 from datetime import datetime,date
 
+from django.db.models import Q
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+
+
+
+
 
 def register_faculty(request):
     if request.method == 'POST':
@@ -35,8 +40,8 @@ def register_faculty(request):
                     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
                 if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
-                if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
-                    return JsonResponse({'message':'Match Your Username Requirements'},status=400)
+                # if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
+                #     return JsonResponse({'message':'Match Your Username Requirements'},status=400)
                 if not re.match(r'^[A-Za-z\s]+$', first_name):
                     return JsonResponse({'message':'Invalid first_name format'},status=400)
                 if not re.match(r'^[A-Za-z\s]+$', last_name):
@@ -119,8 +124,8 @@ def register_student(request):
                     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
                 if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
-                if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
-                    return JsonResponse({'message':'Match Your Username Requirements'},status=400)
+                # if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
+                #     return JsonResponse({'message':'Match Your Username Requirements'},status=400)
                 if not re.match(r'^[A-Za-z\s]+$', first_name):
                     return JsonResponse({'message':'Invalid first_name format'},status=400)
                 if not re.match(r'^[A-Za-z\s]+$', father_name):
@@ -187,7 +192,6 @@ def register_student(request):
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
-from django.db.models import Q
 
 def login_user(request):
     

@@ -31,7 +31,8 @@ class Dropdown(BaseModel):
 class Mapping(BaseModel):
     course = models.ForeignKey(Dropdown, null=True, on_delete=models.SET_NULL, related_name='course_name')
     department = models.ForeignKey(Dropdown, null=True, on_delete=models.SET_NULL, related_name='department_name')
-    
+    mapping_type=models.ForeignKey(Dropdown,null=True,on_delete=models.SET_NULL,related_name='mapping_type')
+
 class Roles(BaseModel):
     role_name=models.CharField(max_length=50,null=True)
 
