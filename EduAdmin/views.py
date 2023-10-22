@@ -7,7 +7,8 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
 from datetime import datetime,date
 
-
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 def register_faculty(request):
     if request.method == 'POST':
@@ -186,7 +187,8 @@ def register_student(request):
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
-    
+from django.db.models import Q
+
 def login_user(request):
     
     if request.method == 'POST':
@@ -194,53 +196,43 @@ def login_user(request):
         load=json.loads(request.body)
         user_name = load.get('username')
         password = load.get('password')
-       
+
         if user_name is None or password is None:
             return JsonResponse({'message': 'Missing any Key.'}, status=400)
         
         if not user_name or not password:
             return JsonResponse({'message': 'Missing Required field.'}, status=400)
         
-        user=authenticate(username=user_name,password=password)
-        if user is not None:
+        user=User.objects.filter(Q(username=user_name)|Q(email=user_name)).first()
+
+        if user is not None and user.check_password(password):
             login(request,user)
             user_exist = UserRole.objects.filter(user_id = request.user.id).values('role','role__role_name')
             user_data = list(user_exist)
             return JsonResponse(user_data, safe=False)
         else:
-            auth= User.objects.get(email=user_name.lower()).username
-            user2 = authenticate(username=auth, password= password)
-            if user2 is not None:
-                login(request, user2)
-                user_exist2 = UserRole.objects.filter(user_id = request.user.id).values('role','role__role_name')
-                user_data2 = list(user_exist2)
-                return JsonResponse(user_data2, safe=False)
-            else:
-                return JsonResponse({'message':'Incorrect Username/Email Or password'},status=401)
+            return JsonResponse({'message':'You are not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
-def forgot_password(request):
+def change_password(request):
     if request.method == 'POST':
         load_data=json.loads(request.body)
         username = load_data.get('username')
         old_password = load_data.get('old_password')
         new_password = load_data.get('new_password')
+        
         if not re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$",new_password):
             return JsonResponse({'message':'Match Your Password Requirements'},status=400)
         
-        user =  authenticate(username= username, password = old_password)
-        if user is not None:
-            User.objects.filter(id = request.user.id).update(password = make_password(new_password))
+        # user =  authenticate(username= username, password = old_password)
+        user=User.objects.filter(Q(username=username)|Q(email=username)).first()
+        if user is not None and user.check_password(old_password):
+            user.set_password(new_password)
+            user.save()
             return JsonResponse({'message':'Password Updated Successfully'})
         else:
-            auth= User.objects.get(email=username.lower()).username
-            user2 = authenticate(username=auth, password= old_password)
-            if user2 is not None:
-                User.objects.filter(id = request.user.id).update(password = make_password(new_password))
-                return JsonResponse({'message':'Password Updated Successfully'})
-            else:
-                return JsonResponse({'message':'Your Old Password Does Not Matched'},status=401)
+            return JsonResponse({'message':'Incorrect username or password'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 

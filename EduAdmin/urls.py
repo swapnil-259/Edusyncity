@@ -5,7 +5,7 @@ urlpatterns = [
     path('register_faculty/', views.register_faculty, name='register_faculty'),
     path('register_student/', views.register_student, name = 'register_student'),
     path('login/', views.login_user, name = 'login'),
-    path('forgot_password/',views.forgot_password, name = 'forgot_password'),
+    path('change_password/',views.change_password, name = 'change_password'),
     path('logout/', views.logout_user),
     path('add_role/', views.add_role, name = 'add_role'),
     path('child/', views.child, name='child'),
