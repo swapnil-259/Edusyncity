@@ -364,11 +364,6 @@ def datesheet_maping(request):
                 shift=load.get('shift')
                 date=load.get('date')
                 start_time=load.get('start_time')
-                print(subject)
-                print(exam_map)
-                print(shift)
-                print(date)
-                print(start_time)
 
                 if subject is None or exam_map is None or shift is None or date is None or start_time is None:
                     return JsonResponse({'message':'Missing any key'},status=400)
@@ -379,7 +374,6 @@ def datesheet_maping(request):
                 if exam_exist is None:
                     return JsonResponse({'message':'Exam_mapping is not an instance'},status=400)
                 subject_exist=SubjectMapping.objects.filter(pk=subject,deleted_status=False).first()
-                print(subject_exist)
                 if subject_exist is None:
                     return JsonResponse({'message':'Subject is not an instance'},status=400)
                 shift_exist=Dropdown.objects.filter(pk=shift,deleted_status=False).first()
