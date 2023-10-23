@@ -348,7 +348,10 @@ def get_question_paper(request):
         return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid'},status=405)
-    
+
+import re   
+
+
 
 def datesheet_maping(request):
     if request.user.is_authenticated:
@@ -358,12 +361,27 @@ def datesheet_maping(request):
             if request.method == 'POST':
 
                 load=json.loads(request.body)
-    
+                
+
                 subject=load.get('subject')
                 exam_map=load.get('exam_map')
                 shift=load.get('shift')
                 date=load.get('date')
                 start_time=load.get('start_time')
+
+                print(subject)
+                print(exam_map)
+                print(shift)
+                print(date)
+                print(start_time)
+
+                # date_format = r'\d{4}-\d{2}-\d{2}'
+                # if not re.match(date_format, date):
+                #     return JsonResponse({'message': 'Invalid date format. Use YYYY-MM-DD'}, status=400)
+
+                # time_format = r'\d{2}:\d{2}:\d{2}'
+                # if not re.match(time_format, start_time):
+                #     return JsonResponse({'message': 'Invalid time format. Use HH:MM:SS'}, status=400)
 
                 if subject is None or exam_map is None or shift is None or date is None or start_time is None:
                     return JsonResponse({'message':'Missing any key'},status=400)
@@ -438,5 +456,19 @@ def datesheet_maping(request):
             return JsonResponse({'message':'You are not autherised'},status=403)
     else:
         return JsonResponse({'message':'You are not logged in'},status=401)
-                
-                
+
+# from django.db.models.functions import Trim 
+             
+# def get_question_paper(request):
+#     if request.method=='POST':
+#         name='  hello'.strip()
+#         # bj=Trim(name)
+#         print(name)
+#         load=json.loads(request.body)
+#         subject_id=load.get('id')
+#         print(subject_id)
+#         student=Student.objects.filter(user=request.user.id).first()
+#         data=QuestionPaper.objects.filter(department=student.department,subject=subject_id).values()
+#         return JsonResponse(list(data),safe=False)
+#     else:
+#         return JsonResponse({'message':'Invalid'},status=405)             
