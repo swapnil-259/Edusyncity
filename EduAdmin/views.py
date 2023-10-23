@@ -6,22 +6,27 @@ from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping, Student
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
 from datetime import datetime,date
-
 from django.db.models import Q
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
 
-
-def validation(name,email):
-     if not re.match(r'^[A-Za-z\s]+$', name ):
-        return JsonResponse({'message':'Invalid first_name format'},status=400)
-    
-     if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
+def validation(email = None,firstname = None,lastname = None,fathername = None, mothername = None):
+     print(email,firstname,lastname)
+     if firstname is not None:
+         if not re.match(r'^[A-Za-z\s]+$',firstname):
+           return JsonResponse({'message':'Invalid firstname format'},status=400)
+     if lastname is not None:
+      if not re.match(r'^[A-Za-z\s]+$',lastname):
+        return JsonResponse({'message':'Invalid lastname format'},status=400)
+     if fathername is not None:
+      if not re.match(r'^[A-Za-z\s]+$',fathername):
+        return JsonResponse({'message':'Invalid fathername format'},status=400)
+     if mothername is not None:
+      if not re.match(r'^[A-Za-z\s]+$',mothername):
+        return JsonResponse({'message':'Invalid mother_name format'},status=400)
+     if email is not None:
+      if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
         return JsonResponse({'message':'Match Your email Requirements'},status=400)
     
     
-
-
 def register_faculty(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
@@ -29,8 +34,8 @@ def register_faculty(request):
             admin_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             if admin_exist:
                 load= json.loads(request.body)
-                first_name = load.get('firstname')
-                last_name = load.get('lastname')
+                firstname = load.get('firstname')
+                lastname = load.get('lastname')
                 user_name =  load.get('username')
                 email =  load.get('email')
                 gender =  load.get('gender')
@@ -39,17 +44,20 @@ def register_faculty(request):
                 address =  load.get('address')
                 qualification = load.get('qualification')
                 title = load.get('title')
+                print(firstname,lastname)
                 if age is ' ' or int(age) <= 0:
                     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
-                if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address  or not qualification or not title :
+                if not user_name or not firstname or not lastname or not email or not gender or not contact or not age or not address  or not qualification or not title :
                       return JsonResponse({'message':'Missing Required Field'}, status = 400)
-                if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None :
+                if user_name is None or email is None or firstname is None or lastname is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None :
                     return JsonResponse({'messge':'Missing any key'},status=400) 
-                if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
+                if user_name is ' ' or email is ' ' or firstname is ' ' or lastname is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
+                print(firstname,lastname)
                 # if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
                 #     return JsonResponse({'message':'Match Your Username Requirements'},status=400)
-                validation(name=first_name , email=email)
+                validation(email,firstname,lastname)
+              
                 
                 # if not re.match(r'^[A-Za-z\s]+$', first_name):
                 #     return JsonResponse({'message':'Invalid first_name format'},status=400)
@@ -63,16 +71,16 @@ def register_faculty(request):
                 title_exist = Dropdown.objects.filter(id = title).first()
                 if title_exist is None:
                     return JsonResponse({'message':'Title Not an Instance'},status=400)
-                if User.objects.filter(username=user_name).exists():
+                if User.objects.filter(username=user_name).first():
                     return JsonResponse({'message':'Username Already exists'},status=409)
-                elif User.objects.filter(email=email).exists():
+                elif User.objects.filter(email=email).first():
                     return JsonResponse({'message':'Email Already exists'},status=409)
                 
                 user=  User.objects.create_user(
                 username = user_name,
                 password = "Kiet@123",
-                first_name=first_name,
-                last_name=last_name,
+                first_name=firstname,
+                last_name=lastname,
                 email=email
                 ) 
                 Faculty.objects.create(
@@ -91,10 +99,6 @@ def register_faculty(request):
                     role_id = roles.id,
                     added_by = admin_exist.user
                     )
-                if not created:
-                    return JsonResponse({'message':'Registration Succesfull'},status=409)
-                else:
-                    return JsonResponse({'message':'You already have this role'},status=201)
             else:
                 return JsonResponse({'message':'You are not Admin'},status=403)
         else:
@@ -110,8 +114,8 @@ def register_student(request):
             admin_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             if admin_exist:
                 load=json.loads(request.body)
-                first_name = load.get('first_name')
-                last_name = load.get('last_name')
+                firstname = load.get('first_name')
+                lastname = load.get('last_name')
                 user_name =  load.get('username')
                 father_name = load.get('father_name')
                 mother_name = load.get('mother_name')
@@ -128,25 +132,26 @@ def register_student(request):
                 if age is ' ' or int(age) <= 0:
                     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
 
-                if not user_name or not first_name or not last_name or not email or not gender or not contact or not age or not address or not department or not father_name or not mother_name or not year or not course or not religion:
+                if not user_name or not firstname or not lastname or not email or not gender or not contact or not age or not address or not department or not father_name or not mother_name or not year or not course or not religion:
                               return JsonResponse({'message':'Missing Required Field'}, status = 400)
-                if user_name is None or email is None or first_name is None or last_name is None or  age is None or gender is None or contact is None or address is None or father_name is None or mother_name is None or year is None or course is None or religion is None:
+                if user_name is None or email is None or firstname is None or lastname is None or  age is None or gender is None or contact is None or address is None or father_name is None or mother_name is None or year is None or course is None or religion is None:
                             return JsonResponse({'messge':'Missing any key'},status=400) 
              
-                if user_name is ' ' or email is ' ' or first_name is ' ' or last_name is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
+                if user_name is ' ' or email is ' ' or firstname is ' ' or lastname is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
                 # if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
                 #     return JsonResponse({'message':'Match Your Username Requirements'},status=400)
-                if not re.match(r'^[A-Za-z\s]+$', first_name):
-                    return JsonResponse({'message':'Invalid first_name format'},status=400)
-                if not re.match(r'^[A-Za-z\s]+$', father_name):
-                    return JsonResponse({'message':'Invalid first_name format'},status=400)
-                if not re.match(r'^[A-Za-z\s]+$', mother_name):
-                    return JsonResponse({'message':'Invalid first_name format'},status=400)
-                if not re.match(r'^[A-Za-z\s]+$', last_name):
-                    return JsonResponse({'message':'Invalid last_name format'},status=400)
-                if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
-                    return JsonResponse({'message':'Match Your email Requirements'},status=400)
+                # if not re.match(r'^[A-Za-z\s]+$', first_name):
+                #     return JsonResponse({'message':'Invalid first_name format'},status=400)
+                # if not re.match(r'^[A-Za-z\s]+$', father_name):
+                #     return JsonResponse({'message':'Invalid first_name format'},status=400)
+                # if not re.match(r'^[A-Za-z\s]+$', mother_name):
+                #     return JsonResponse({'message':'Invalid first_name format'},status=400)
+                # if not re.match(r'^[A-Za-z\s]+$', last_name):
+                #     return JsonResponse({'message':'Invalid last_name format'},status=400)
+                # if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
+                #     return JsonResponse({'message':'Match Your email Requirements'},status=400)
+                
 
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
@@ -167,8 +172,8 @@ def register_student(request):
 
 
                 user = User.objects.create_user(
-                    first_name= first_name,
-                    last_name=last_name,
+                    first_name= firstname,
+                    last_name=lastname,
                     username = user_name,
                     email=email,
                     password = "Kiet@123"
@@ -193,11 +198,8 @@ def register_student(request):
                     role_id = roles.id,
                     added_by = admin_exist.user
                     )
-                if   not created:
-                    return JsonResponse({'message':'Registration Succesfull'},status=201) 
-                else:
-                   return JsonResponse({'message':'You Already Have This Role'},status=409)
-            else:
+                return JsonResponse({'message':'registration Successful'})
+            else:   
                 return JsonResponse({'message':'user is not admin'},status=403)
          else:
             return JsonResponse({'message':'user is not authenticated'},status=401)
@@ -285,9 +287,9 @@ def add_role(request):
                     )
                 if created:
                     
-                    return JsonResponse({'message':'role successfully added'})
+                    return JsonResponse({'message':f'{name} added successfully as role'})
                 else:
-                    return JsonResponse({'message':'role already exist'},status=409)
+                    return JsonResponse({'message':f'{name} already exist as Role'},status=409)
             else:
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
@@ -304,10 +306,13 @@ def add_role(request):
             role_id=load.get('role_id')
             if new_name is None or role_id is None or not new_name or not role_id:
                 return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
-    
             if check_admin:
-                Roles.objects.filter(pk=role_id).update(role_name=new_name)
-                return JsonResponse({'message':'Role Updated Successfully'})
+                role_check=Roles.objects.filter(pk=role_id).first()
+                if role_check:
+                    Roles.objects.filter(pk=role_id).update(role_name=new_name)
+                    return JsonResponse({'message':f'{role_check.role_name} updates with {new_name}'})
+                else:
+                    return JsonResponse({'message':'data not found '},status=204)
             else:
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
@@ -319,15 +324,16 @@ def add_role(request):
             check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             if check_admin:
                 id=request.GET.get('id')
-                deleted=Roles.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.today())
+                deleted=Roles.objects.filter(pk=id).first()
                 if deleted:
-                    return JsonResponse({'message':'Role Deleted Successfully'})
+                    Roles.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.today())
+                    return JsonResponse({'message':f'{deleted.role_name} deleted Successfully'})
                 else:
-                    return JsonResponse({'message':'No Role Found'},status=204)
+                    return JsonResponse({'message':'Any role for this id cannot present'},status=204)
             else:
                 return JsonResponse({'message':'You Are Not Admin'},status=403)
         else:
-            return JsonResponse({'message':'You Are Not Logged In'},status=401)
+            return JsonResponse({'message':'You Are Not Authenticated'},status=401)
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
 
@@ -352,11 +358,11 @@ def child(request):
                         deleted_status=False
                     )
                     if created:
-                        return JsonResponse({'message':'Child added successfully'})
+                        return JsonResponse({'message':f'{name} successfully added for {parent.name}'})
                     else:
-                        return JsonResponse({'message':'Child already exist'},status=409)
+                        return JsonResponse({'message':f'{name} already exist for this {parent.name}'},status=409)
                 else:
-                    return JsonResponse({'message':'You can not add Child for this Parent'},status=409)
+                    return JsonResponse({'message':f'Child cannot be added for this parent'},status=409)
             else:
                 return JsonResponse({'message':'user is not admin'})
         else:
@@ -370,17 +376,12 @@ def child(request):
                 load=json.loads(request.body)
                 id = load.get('id')
                 new_name = load.get('new_name')
-                parent=Dropdown.objects.filter(id = id).exists()
-                if parent is not None:
-                    updated=Dropdown.objects.filter(pk=id).update(name=new_name)
-                    
-                    if updated:
-                        return JsonResponse({'message':'Child updated successfully'},status=201)
-                    else:
-                        return JsonResponse({'message':'Child does not exists'},status=204)
+                parent=Dropdown.objects.filter(id = id).first()
+                if parent:
+                    Dropdown.objects.filter(pk=id).update(name=new_name)
+                    return JsonResponse({'message':f'{parent.name} updates with {new_name}'},status=201)
                 else:
-                    return JsonResponse({'message':'You can not add child for this Parent'},status=409)
-                
+                    return JsonResponse({'message':'data not found'},status=409)
             else:
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
@@ -392,11 +393,12 @@ def child(request):
             check_admin=UserRole.objects.filter(role_id = id.pk,deleted_status=False).first()
             if check_admin:
                 id=request.GET.get('id')
-                deleted=Dropdown.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.now())
+                deleted=Dropdown.objects.filter(pk=id).first()
                 if deleted:
-                    return JsonResponse({'message':'Role Deleted Successfully'})
+                    Dropdown.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.now())
+                    return JsonResponse({'message':f'{deleted.name} deleted Successfully'})
                 else:
-                    return JsonResponse({'message':'No Role Found'},status=204)
+                    return JsonResponse({'message':'No child Found'},status=204)
             else:
                 return JsonResponse({'message':'You Are Not Admin'},status=403)
         else:
@@ -423,16 +425,16 @@ def left_panel(request):
                 type=type,                               
                 role=role,                               
                 pannel=1,
-                added_by=check_admin.user
+                defaults={ "added_by":check_admin.user}
+               
                 )
                 if created:
-                    return JsonResponse({'message':'Created successfully'},status=201)
+                    return JsonResponse({'message':f'{name} successfully added for SideBar'},status=201)
                 else:
-                    return JsonResponse({'message':'Already created'},status=409)
+                    return JsonResponse({'message':f'Already Exist {name}'},status=409)
             
             elif request.method == 'PUT':
                 load=json.loads(request.body)
-
                 id=load.get('id')
                 name=load.get('name')
                 state=load.get('state')
