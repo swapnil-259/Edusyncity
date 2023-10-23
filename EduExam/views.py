@@ -37,20 +37,22 @@ def question_paper(request):
             if department_exist is None:
                 return JsonResponse({'message':'department is not an Instance'},status=400)
             if faculty_exist:
-                QuestionPaper.objects.create(
+                paper,created=QuestionPaper.objects.get_or_create(
                                             exam_type=exam_exist,
                                             subject=subject_exist,
                                             title="KIET Group Of Institutions",
-                                            # paper_code=paper_code,
-                                            questions=questions,
+                                            
                                             department=department_exist,
-                                            # shift=shift_exist.pk,
                                             # date=date,
                                             # start_time=start_time,
-                                            added_by = faculty_exist.user
+                                            defaults={"added_by" : faculty_exist.user,"questions":questions}
+                                            
                                             )
+                if created:
+                    return JsonResponse({'message':'Created succesfully'},status=201)
+                else:
+                    return JsonResponse({'message':f'Question peper already created for {{department_exists__department__name}}'},status=409)
                 
-                return JsonResponse({'message':'Created succesfully'},status=201)
             else:
                 return JsonResponse({'message':'You are not a Teacher'},status=403)
         else:
@@ -110,23 +112,16 @@ def question_paper(request):
         else:
             return JsonResponse({'message':'You are not logged in'},status=401)
         
-    elif request.method == 'GET':
-        if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            admin=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
-            paper_id=request.GET.get('paper_id')
-            if faculty or admin:
-                paper=QuestionPaper.objects.filter(deleted_status=False,pk=paper_id).values()
-                if paper:
-                    return JsonResponse(list(paper),safe=False)
-                else:
-                    return JsonResponse({'message':'No content'},status=204)
-            else:
-                return JsonResponse({'message':'You are not autherised'},status=403)
-        else:
-            return JsonResponse({'message':'You are not logged in'},status=401)
+    elif request.method=='GET':
+        subject_id=request.GET.get('id') 
+        if subject_id is None or not subject_id:
+            return JsonResponse({'message':'You are not sending subject id'},status=400)
+        student=Student.objects.filter(user=request.user.id).first()
+        if student is None:
+            return JsonResponse({'message':''})
+        print(student)
+        data=QuestionPaper.objects.filter(department=student.department,subject=subject_id).values()
+        return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
