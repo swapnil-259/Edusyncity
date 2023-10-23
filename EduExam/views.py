@@ -1,12 +1,11 @@
 from django.shortcuts import render
 import json
 from django.http import JsonResponse
-from .models import QuestionPaper,PaperResponse,ExamMapping
-from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty
+from .models import QuestionPaper,PaperResponse,ExamMapping,DateSheet
+from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty,Student
 from EduCore.models import SubjectMapping,SubjectTeacherMapping
 # from EduExam.models import Subjects
 from datetime import datetime,date
-
 
 
 def question_paper(request):
@@ -38,20 +37,22 @@ def question_paper(request):
             if department_exist is None:
                 return JsonResponse({'message':'department is not an Instance'},status=400)
             if faculty_exist:
-                QuestionPaper.objects.create(
+                paper,created=QuestionPaper.objects.get_or_create(
                                             exam_type=exam_exist,
                                             subject=subject_exist,
                                             title="KIET Group Of Institutions",
-                                            # paper_code=paper_code,
-                                            questions=questions,
+                                            
                                             department=department_exist,
-                                            # shift=shift_exist.pk,
                                             # date=date,
                                             # start_time=start_time,
-                                            added_by = faculty_exist.user
+                                            defaults={"added_by" : faculty_exist.user,"questions":questions}
+                                            
                                             )
+                if created:
+                    return JsonResponse({'message':'Created succesfully'},status=201)
+                else:
+                    return JsonResponse({'message':f'Question peper already created for {{department_exists__department__name}}'},status=409)
                 
-                return JsonResponse({'message':'Created succesfully'},status=201)
             else:
                 return JsonResponse({'message':'You are not a Teacher'},status=403)
         else:
@@ -111,23 +112,16 @@ def question_paper(request):
         else:
             return JsonResponse({'message':'You are not logged in'},status=401)
         
-    elif request.method == 'GET':
-        if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            admin=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
-            paper_id=request.GET.get('paper_id')
-            if faculty or admin:
-                paper=QuestionPaper.objects.filter(deleted_status=False,pk=paper_id).values()
-                if paper:
-                    return JsonResponse(list(paper),safe=False)
-                else:
-                    return JsonResponse({'message':'No content'},status=204)
-            else:
-                return JsonResponse({'message':'You are not autherised'},status=403)
-        else:
-            return JsonResponse({'message':'You are not logged in'},status=401)
+    elif request.method=='GET':
+        subject_id=request.GET.get('id') 
+        if subject_id is None or not subject_id:
+            return JsonResponse({'message':'You are not sending subject id'},status=400)
+        student=Student.objects.filter(user=request.user.id).first()
+        if student is None:
+            return JsonResponse({'message':''})
+        print(student)
+        data=QuestionPaper.objects.filter(department=student.department,subject=subject_id).values()
+        return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
@@ -338,18 +332,110 @@ def subject_year(request):
             
 def access_question(request):
     if request.method=='GET':
-        id=request.GET.get('id') 
-        data=QuestionPaper.objects.filter(pk=7).values('')
+        student=Student.objects.filter(user=request.user.id).first()
+        print(student.department)
+        data=SubjectMapping.objects.filter(department=student.department).values('pk','subject__subject_name')
         return JsonResponse(list(data),safe=False)
     else:
-        return JsonResponse({'message':'Invalid'},status=405)    
+        return JsonResponse({'message':'Invalid'},status=405)     
 
-def course_dept_mapping(request):
-    if request.method =='GET':
-        data = Mapping.objects.filter(deleted_status=False).values('id','course_id__name','department_id__name')   
-        return JsonResponse(list(data), safe=False)
+def get_question_paper(request):
+    if request.method=='GET':
+        subject_id=request.GET.get('id') 
+        student=Student.objects.filter(user=request.user.id).first()
+        data=QuestionPaper.objects.filter(department=student.department,subject=subject_id).values()
+        return JsonResponse(list(data),safe=False)
     else:
-        return JsonResponse({'message':'invalid request method'})    
+        return JsonResponse({'message':'Invalid'},status=405)
+    
 
- 
+def datesheet_maping(request):
+    if request.user.is_authenticated:
+        id=Roles.objects.get(role_name='Admin',deleted_status=False)
+        admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+        if admin:
+            if request.method == 'POST':
 
+                load=json.loads(request.body)
+    
+                subject=load.get('subject')
+                exam_map=load.get('exam_map')
+                shift=load.get('shift')
+                date=load.get('date')
+                start_time=load.get('start_time')
+
+                if subject is None or exam_map is None or shift is None or date is None or start_time is None:
+                    return JsonResponse({'message':'Missing any key'},status=400)
+                if not subject or not exam_map or not shift or not date or not start_time:
+                    return JsonResponse({'message':'Missing required field'},status=400)
+                
+                exam_exist=ExamMapping.objects.filter(pk=exam_map,deleted_status=False).first()
+                if exam_exist is None:
+                    return JsonResponse({'message':'Exam_mapping is not an instance'},status=400)
+                subject_exist=SubjectMapping.objects.filter(pk=subject,deleted_status=False).first()
+                if subject_exist is None:
+                    return JsonResponse({'message':'Subject is not an instance'},status=400)
+                shift_exist=Dropdown.objects.filter(pk=shift,deleted_status=False).first()
+                if shift_exist is None:
+                    return JsonResponse({'message':'Shift is not an instance'},status=400)
+                
+                datesheet,created=DateSheet.objects.get_or_create(subject=subject_exist,
+                exam_mapping=exam_exist,
+                shift=shift_exist,
+                date=date,
+                start_time=start_time,
+                defaults={"added_by":admin.user}
+                )
+                if created:
+                    return JsonResponse({'message':'Exam mapped succesfully'},status=201)
+                else:
+                    return JsonResponse({'message':'Exam mapping already exist'},status=409)
+            
+            elif request.method == 'PUT':
+                load=json.loads(request.body)
+        
+                datesheet_it=load.get('id')
+                shift=load.get('shift')
+                date=load.get('date')
+                start_time=load.get('start_time')
+    
+                if datesheet_it is None or shift is None or date is None or start_time:
+                    return JsonResponse({'message':'Missing any key'},status=400)
+                if datesheet_it or not shift or not date or not start_time:
+                    return JsonResponse({'message':'Missing required field'},status=400)
+                
+                datesheet_exist=DateSheet.objects.filter(pk=exam_map).first()
+                if exam_exist is None:
+                    return JsonResponse({'message':'Datesheet is not an instance'},status=400)
+                shift_exist=Dropdown.objects.filter(pk=shift).first()
+                if shift_exist is None:
+                    return JsonResponse({'message':'Shift is not an instance'},status=400)
+                
+                updated=DateSheet.objects.filter(pk=datesheet_exist.pk).update(
+                shift=shift_exist.pk,
+                date=date,
+                start_time=start_time,
+                )
+
+                if updated:
+                    return JsonResponse({'message':'Updated succesfuly'},status=200)
+                else:
+                    return JsonResponse({'message':'Datesheet not found'},status=400)
+                
+            elif request.method == 'DELETE':
+                datesheet_it=request.GET.get('id')
+                if datesheet_it is None:
+                    return JsonResponse({'message':'You are not sending datesheet id'},status=400)
+                deleted=DateSheet.objects.filter(pk=datesheet_it,deleted_status=False).update(deleted_status=True,deleted_time=datetime.now())
+                if deleted:
+                    return JsonResponse({'message':'Deleted succesfully'},status=200)
+                else:
+                    return JsonResponse({'message':'Datesheet not found'},status=400)
+            else:
+                return JsonResponse({'message':'Invalid Request Method'},status=405)
+        else:
+            return JsonResponse({'message':'You are not autherised'},status=403)
+    else:
+        return JsonResponse({'message':'You are not logged in'},status=401)
+                
+                

@@ -10,16 +10,20 @@ class ExamMapping(BaseModel):
     marks=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='marks_identity')
     duration=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='duration_identity')
     
+class DateSheet(BaseModel):
+    subject=models.ForeignKey(SubjectMapping,on_delete=models.SET_NULL,null=True)
+    exam_mapping=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True)
+    shift=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='shift_identity')
+    date=models.DateField(null=True)
+    start_time=models.TimeField(null=True)
+
     
+
 class QuestionPaper(BaseModel):
+    date_sheet=models.ForeignKey(DateSheet,on_delete=models.SET_NULL,null=True)
     exam_type=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exam_type')
     department=models.ForeignKey(Mapping,null=True,on_delete=models.SET_NULL,related_name='department_identity')
-    subject=models.ForeignKey(SubjectMapping,on_delete=models.SET_NULL,null=True)
-    title=models.TextField(max_length=100,null=True)
-    paper_code=models.CharField(max_length=30,null=True)
-    set=models.CharField(max_length=10,null=True)
-    shift=models.CharField(max_length=20,null=True)
-    date=models.DateField(null=True)
+    set=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='set_identity')
     start_time=models.TimeField(null=True)
     questions=JSONField(max_length=1000,null=True)
     
