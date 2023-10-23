@@ -340,22 +340,24 @@ def add_role(request):
 
 
 def child(request):
-    if request.method == 'POST':
-        if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            if check_admin:   
+    if request.user.is_authenticated:
+        id=Roles.objects.get(role_name='Admin',deleted_status=False)
+        check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+        if check_admin:   
+            if request.method == 'POST':
                 load = json.loads(request.body)
                 id = load.get('id')
                 name = load.get('name')
+                if id is None or name is None or not id or not name:
+                    return JsonResponse({'message':'Missing required field or key'},status=400)
                 parent=Dropdown.objects.filter(id = id, child__gt=0).first()
                 if parent is not None:
                     dropdown, created=Dropdown.objects.get_or_create(
                         name= name,
-                        added_by=check_admin.user,
                         relation_id = parent.pk,
                         child = int(parent.child) -1,
-                        deleted_status=False
+                        deleted_status=False,
+                        defaults={"added_by":check_admin.user}
                     )
                     if created:
                         return JsonResponse({'message':f'{name} successfully added for {parent.name}'})
@@ -363,53 +365,44 @@ def child(request):
                         return JsonResponse({'message':f'{name} already exist for this {parent.name}'},status=409)
                 else:
                     return JsonResponse({'message':f'Child cannot be added for this parent'},status=409)
-            else:
-                return JsonResponse({'message':'user is not admin'})
-        else:
-            return JsonResponse({'message':'user is not authenticated'})
-    
-    elif request.method=='PUT':
-        if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(role_id = id.pk,deleted_status=False).first()
-            if check_admin:
+            
+            elif request.method == 'PUT':
                 load=json.loads(request.body)
                 id = load.get('id')
                 new_name = load.get('new_name')
+                
+                if id is None or new_name is None or not id or not new_name:
+                    return JsonResponse({'message':'Missing nany key or field'},status=400)
+
                 parent=Dropdown.objects.filter(id = id).first()
                 if parent:
                     Dropdown.objects.filter(pk=id).update(name=new_name)
                     return JsonResponse({'message':f'{parent.name} updates with {new_name}'},status=201)
                 else:
-                    return JsonResponse({'message':'data not found'},status=409)
-            else:
-                return JsonResponse({'message':'user is not admin'},status=403)
-        else:
-            return JsonResponse({'message':'user is not authenticated'},status=401)
-        
-    elif request.method=='DELETE':
-        if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(role_id = id.pk,deleted_status=False).first()
-            if check_admin:
+                    return JsonResponse({'message':'Parent not match'},status=400)
+            
+            elif request.method == 'DELETE':
                 id=request.GET.get('id')
+                if id is None or not id:
+                    return JsonResponse({'message':'Expecting an id'},status=400)
                 deleted=Dropdown.objects.filter(pk=id).first()
                 if deleted:
                     Dropdown.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.now())
                     return JsonResponse({'message':f'{deleted.name} deleted Successfully'})
                 else:
                     return JsonResponse({'message':'No child Found'},status=204)
-            else:
-                return JsonResponse({'message':'You Are Not Admin'},status=403)
-        else:
-            return JsonResponse({'message':'You Are Not Logged In'},status=401)
 
+            else:
+                return JsonResponse({'message':'Invalid Reqest Method'},status=405)
+        else:
+            return JsonResponse({'message':'You are not autherised'},status=403)
     else:
-        return JsonResponse({'message':'Invalid Reqest Method'},status=405)            
+        return JsonResponse({'message':'You are not authenticated'},status=401)
+    
 
 def left_panel(request):
     if request.user.is_authenticated:
-        id=Roles.objects.get(role_name='Admin',deleted_status=False)
+        id=Roles.objects.filter(role_name='Admin',deleted_status=False).first()
         check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
         if check_admin:
             if request.method == 'POST':
@@ -419,13 +412,18 @@ def left_panel(request):
                 icon=load.get('icon')
                 type=load.get('type')
                 role=load.get('role')
+
+                if name is None or state is None or icon is None or type is None or role is None:
+                    return JsonResponse({'return':'Missing any key'},status=400)
+                if not name or not state or not icon or not type or not role:
+                    return JsonResponse({'message':'Missing required field'},status=400)
+
                 panel,created=Dropdown.objects.get_or_create(name=name,                   
-                state=state,                              
-                icon=icon,                               
+                state=state,                                                             
                 type=type,                               
                 role=role,                               
                 pannel=1,
-                defaults={ "added_by":check_admin.user}
+                defaults={ "added_by":check_admin.user,"role":role}
                
                 )
                 if created:
@@ -441,7 +439,11 @@ def left_panel(request):
                 icon=load.get('icon')
                 type=load.get('type')
                 role=load.get('role')
-    
+                
+                if name is None or state is None or icon is None or type is None or role is None:
+                    return JsonResponse({'return':'Missing any key'},status=400)
+                if not name or not state or not icon or not type or not role:
+                    return JsonResponse({'message':'Missing required field'},status=400)
                 
                 update_panel=Dropdown.objects.filter(pk=id,deleted_status=False).update(name=name,                   
                 state=state,                              

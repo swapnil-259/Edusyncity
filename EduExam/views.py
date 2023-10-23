@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import json
 from django.http import JsonResponse
-from .models import QuestionPaper,PaperResponse,ExamMapping
+from .models import QuestionPaper,PaperResponse,ExamMapping,DateSheet
 from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty,Student
 from EduCore.models import SubjectMapping,SubjectTeacherMapping
 # from EduExam.models import Subjects
@@ -348,3 +348,54 @@ def get_question_paper(request):
         return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid'},status=405)
+    
+
+def datesheet_maping(request):
+    if request.user.is_authenticated:
+        id=Roles.objects.get(role_name='Admin',deleted_status=False)
+        admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+        if admin:
+            if request.method == 'POST':
+
+                load=json.loads(request.body)
+    
+                subject=load.get('subject')
+                exam_map=load.get('exam_map')
+                shift=load.get('shift')
+                date=load.get('date')
+                start_time=load.get('start_time')
+    
+                if subject is None or exam_map is None or shift is None or date is None or start_time:
+                    return JsonResponse({'message':'Missing any key'},status=400)
+                if not subject or not exam_map or not shift or not date or not start_time:
+                    return JsonResponse({'message':'Missing required field'},status=400)
+                
+                exam_exist=ExamMapping.objects.filter(pk=exam_map).first()
+                if exam_exist is None:
+                    return JsonResponse({'message':'Exam_mapping is not an instance'},status=400)
+                subject_exist=SubjectMapping.objects.filter(pk=subject).first()
+                if subject_exist is None:
+                    return JsonResponse({'message':'Subject is not an instance'},status=400)
+                shift_exist=Dropdown.objects.filter(pk=shift).first()
+                if shift_exist is None:
+                    return JsonResponse({'message':'Shift is not an instance'},status=400)
+                
+                datesheet,created=DateSheet.objects.get_or_create(subject=subject_exist.pk,
+                exam_mapping=exam_exist.pk,
+                shift=shift_exist.pk,
+                date=date,
+                start_time=start_time,
+                defaults={"added_by":admin.user}
+                )
+                if created:
+                    return JsonResponse({'message':'Exam mapped succesfully'},status=201)
+                else:
+                    return JsonResponse({'message':'Exam mapping already exist'},status=409)
+            else:
+                return JsonResponse({'message':'Invalid Request Method'},status=405)
+        else:
+            return JsonResponse({'message':'You are not autherised'},status=403)
+    else:
+        return JsonResponse({'message':'You are not logged in'},status=401)
+                
+                
