@@ -364,25 +364,31 @@ def datesheet_maping(request):
                 shift=load.get('shift')
                 date=load.get('date')
                 start_time=load.get('start_time')
-    
-                if subject is None or exam_map is None or shift is None or date is None or start_time:
+                print(subject)
+                print(exam_map)
+                print(shift)
+                print(date)
+                print(start_time)
+
+                if subject is None or exam_map is None or shift is None or date is None or start_time is None:
                     return JsonResponse({'message':'Missing any key'},status=400)
                 if not subject or not exam_map or not shift or not date or not start_time:
                     return JsonResponse({'message':'Missing required field'},status=400)
                 
-                exam_exist=ExamMapping.objects.filter(pk=exam_map).first()
+                exam_exist=ExamMapping.objects.filter(pk=exam_map,deleted_status=False).first()
                 if exam_exist is None:
                     return JsonResponse({'message':'Exam_mapping is not an instance'},status=400)
-                subject_exist=SubjectMapping.objects.filter(pk=subject).first()
+                subject_exist=SubjectMapping.objects.filter(pk=subject,deleted_status=False).first()
+                print(subject_exist)
                 if subject_exist is None:
                     return JsonResponse({'message':'Subject is not an instance'},status=400)
-                shift_exist=Dropdown.objects.filter(pk=shift).first()
+                shift_exist=Dropdown.objects.filter(pk=shift,deleted_status=False).first()
                 if shift_exist is None:
                     return JsonResponse({'message':'Shift is not an instance'},status=400)
                 
-                datesheet,created=DateSheet.objects.get_or_create(subject=subject_exist.pk,
-                exam_mapping=exam_exist.pk,
-                shift=shift_exist.pk,
+                datesheet,created=DateSheet.objects.get_or_create(subject=subject_exist,
+                exam_mapping=exam_exist,
+                shift=shift_exist,
                 date=date,
                 start_time=start_time,
                 defaults={"added_by":admin.user}
@@ -391,6 +397,47 @@ def datesheet_maping(request):
                     return JsonResponse({'message':'Exam mapped succesfully'},status=201)
                 else:
                     return JsonResponse({'message':'Exam mapping already exist'},status=409)
+            
+            elif request.method == 'PUT':
+                load=json.loads(request.body)
+        
+                datesheet_it=load.get('id')
+                shift=load.get('shift')
+                date=load.get('date')
+                start_time=load.get('start_time')
+    
+                if datesheet_it is None or shift is None or date is None or start_time:
+                    return JsonResponse({'message':'Missing any key'},status=400)
+                if datesheet_it or not shift or not date or not start_time:
+                    return JsonResponse({'message':'Missing required field'},status=400)
+                
+                datesheet_exist=DateSheet.objects.filter(pk=exam_map).first()
+                if exam_exist is None:
+                    return JsonResponse({'message':'Datesheet is not an instance'},status=400)
+                shift_exist=Dropdown.objects.filter(pk=shift).first()
+                if shift_exist is None:
+                    return JsonResponse({'message':'Shift is not an instance'},status=400)
+                
+                updated=DateSheet.objects.filter(pk=datesheet_exist.pk).update(
+                shift=shift_exist.pk,
+                date=date,
+                start_time=start_time,
+                )
+
+                if updated:
+                    return JsonResponse({'message':'Updated succesfuly'},status=200)
+                else:
+                    return JsonResponse({'message':'Datesheet not found'},status=400)
+                
+            elif request.method == 'DELETE':
+                datesheet_it=request.GET.get('id')
+                if datesheet_it is None:
+                    return JsonResponse({'message':'You are not sending datesheet id'},status=400)
+                deleted=DateSheet.objects.filter(pk=datesheet_it,deleted_status=False).update(deleted_status=True,deleted_time=datetime.now())
+                if deleted:
+                    return JsonResponse({'message':'Deleted succesfully'},status=200)
+                else:
+                    return JsonResponse({'message':'Datesheet not found'},status=400)
             else:
                 return JsonResponse({'message':'Invalid Request Method'},status=405)
         else:
