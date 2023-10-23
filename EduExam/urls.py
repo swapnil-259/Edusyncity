@@ -9,7 +9,8 @@ urlpatterns = [
   path('exam_mapping/',views.exam_mapping, name='exam_mapping'),
   path('department_course/',views.department_course, name='department_course'),
   path('subject_year/',views.subject_year, name='subject_year'),
-  path('accesquestion/',views.access_question, name='acces_question'),
+  path('access_question/',views.access_question, name='access_question'),
+  path('get_question_paper/',views.get_question_paper,name='get_question_paper')
 
   
     

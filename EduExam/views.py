@@ -2,11 +2,10 @@ from django.shortcuts import render
 import json
 from django.http import JsonResponse
 from .models import QuestionPaper,PaperResponse,ExamMapping
-from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty
+from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty,Student
 from EduCore.models import SubjectMapping,SubjectTeacherMapping
 # from EduExam.models import Subjects
 from datetime import datetime,date
-
 
 
 def question_paper(request):
@@ -339,8 +338,18 @@ def subject_year(request):
             
 def access_question(request):
     if request.method=='GET':
-        id=request.GET.get('id') 
-        data=QuestionPaper.objects.filter(pk=7).values()
+        student=Student.objects.filter(user=request.user.id).first()
+        print(student.department)
+        data=SubjectMapping.objects.filter(department=student.department).values('pk','subject__subject_name')
         return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid'},status=405)     
+
+def get_question_paper(request):
+    if request.method=='GET':
+        subject_id=request.GET.get('id') 
+        student=Student.objects.filter(user=request.user.id).first()
+        data=QuestionPaper.objects.filter(department=student.department,subject=subject_id).values()
+        return JsonResponse(list(data),safe=False)
+    else:
+        return JsonResponse({'message':'Invalid'},status=405)
