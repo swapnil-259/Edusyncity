@@ -10,6 +10,8 @@ urlpatterns = [
   path('department_course/',views.department_course, name='department_course'),
   path('subject_year/',views.subject_year, name='subject_year'),
   path('accesquestion/',views.access_question, name='acces_question'),
+  path('exam_mapping/',views.exam_mapping, name='exam_mapping'),
+  path('course_dept_mapping/', views.course_dept_mapping)
 
   
     

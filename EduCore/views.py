@@ -119,7 +119,7 @@ def sidebar(request):
                 if not pannels or pannels is None:
                     return JsonResponse({'message':'Missing Required Field or Key'},status=400)
                 for i in pannels:
-                    child_data = list(Dropdown.objects.filter(relation_id = i.get('id'),deleted_status=False,role = check_admin.role.id).values('name','state'))
+                    child_data = list(Dropdown.objects.filter(relation_id = i.get('id'),deleted_status=False,role = check_admin.role.id).values('name','state','icon').order_by('order_by'))
                     child.append(child_data)
                 master_configuration = Dropdown.objects.filter(pannel=1,deleted_status=False,role=check_admin.role.id).values('pk','name','icon','type','state')
                 master_configuration_list = list(master_configuration)

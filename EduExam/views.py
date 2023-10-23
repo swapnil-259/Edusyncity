@@ -267,41 +267,41 @@ def exam_info(request):
 def exam_mapping(request):
     if request.method =='POST':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            load = json.loads(request.body)
-            admin_exist = UserRole.objects.filter(user=request.user.id,role='1').first()
-            exam_type = load.get('exam_type')
-            duration=load.get('duration')
-            marks = load.get('marks')
-            if duration is None or marks is None :
-                return JsonResponse({'message':'Missing value of any key'},status=400)
-            if not duration or not marks or not exam_type :
-                return JsonResponse({'message':'Missing Required Field'},status=400)
-            exam_exist = Dropdown.objects.filter(pk = exam_type).first()
-            if exam_exist is None:
-                return JsonResponse({'message':'exam_type Not an Instance'},status=400)
-            duration_exist = Dropdown.objects.filter(pk = duration).first()
-            if duration_exist is None:
-                return JsonResponse({'messgae':'duration is not Instance'})
-            marks_exist = Dropdown.objects.filter(pk = marks).first()
-            if marks_exist is None:
-                return JsonResponse({'message':'marks is not an Instance'})
-            if admin_exist:
-                return JsonResponse({'message':'exam type is not an Instance'})
-            if faculty:
-                mapping, created = ExamMapping.objects.get_or_create(
-                    duration=duration_exist,
-                    exam=exam_exist,
-                    marks=marks_exist,
-                    added_by=admin_exist.user
-                )
-                if created:
-                    return JsonResponse({'message':'exam is created'})
+            id=Roles.objects.filter(role_name='Admin',deleted_status=False).first()
+            if id:
+                admin_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+                load = json.loads(request.body)
+                exam_type = load.get('exam_type_id')
+                duration=load.get('duration')
+                marks = load.get('marks')
+                print(admin_exist.user.id)
+                if duration is None or marks is None or exam_type is None :
+                    return JsonResponse({'message':'Missing value of any key'},status=400)
+                if not duration or not marks or not exam_type :
+                    return JsonResponse({'message':'Missing Required Field'},status=400)
+                exam_exist = Dropdown.objects.filter(pk = exam_type).first()
+                if exam_exist is None:
+                    return JsonResponse({'message':'exam_type Not an Instance'},status=400)
+                duration_exist = Dropdown.objects.filter(pk = duration).first()
+                if duration_exist is None:
+                    return JsonResponse({'messgae':'duration is not an Instance'})
+                marks_exist = Dropdown.objects.filter(pk = marks).first()
+                if marks_exist is None:
+                    return JsonResponse({'message':'marks is not an Instance'})
+                if admin_exist:
+                    mapping, created = ExamMapping.objects.get_or_create(
+                        duration=duration_exist,
+                        exam=exam_exist,
+                        marks=marks_exist,
+                        added_by=admin_exist.user
+                    )
+                    if created:
+                        # return JsonResponse({'message':f'{exam_exist.name} conduct for {marks_exist.name} marks for {duration_exist.name} minutes'})
+                        return JsonResponse({'message':'Exam Mapping successfully done'})
+                    else:
+                        return JsonResponse({'message':'exam already exist'},status=409)
                 else:
-                    return JsonResponse({'message':'exam already exist'},status=409)
-            else:
-                return JsonResponse({'message':'admin not found'},status=204)
+                    return JsonResponse({'message':'admin not found'},status=204)
         else:
             return JsonResponse({'message':'user is not authenticated'},status=403)
     else:
@@ -313,7 +313,7 @@ def department_course(request):
         id=Faculty.objects.filter(user=request.user.id).first()
         # if not id :
         #     return JsonResponse()
-        data=SubjectTeacherMapping.objects.filter(deleted_status=False,faculty=id).values('subject__department__pk','subject__department__department__name','subject__department__course__name')
+        data=SubjectTeacherMapping.objects.filter(deleted_status=False,faculty=id).values('subject__department__pk','subject__department__department__name','subject__department__course__name').distinct()
         if data:
             return JsonResponse(list(data),safe=False)
         else:
@@ -324,7 +324,6 @@ def department_course(request):
             
 def subject_year(request):
     if request.method == 'GET':
-
         department_id=request.GET.get('dept_id')
         if department_id is None:
             return JsonResponse({'message':'You are not sending department_id'})
@@ -343,4 +342,14 @@ def access_question(request):
         data=QuestionPaper.objects.filter(pk=7).values('')
         return JsonResponse(list(data),safe=False)
     else:
-        return JsonResponse({'message':'Invalid'},status=405)     
+        return JsonResponse({'message':'Invalid'},status=405)    
+
+def course_dept_mapping(request):
+    if request.method =='GET':
+        data = Mapping.objects.filter(deleted_status=False).values('id','course_id__name','department_id__name')   
+        return JsonResponse(list(data), safe=False)
+    else:
+        return JsonResponse({'message':'invalid request method'})    
+
+ 
+
