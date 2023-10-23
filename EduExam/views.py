@@ -340,7 +340,7 @@ def subject_year(request):
 def access_question(request):
     if request.method=='GET':
         id=request.GET.get('id') 
-        data=QuestionPaper.objects.filter(pk=7).values()
+        data=QuestionPaper.objects.filter(pk=7).values('')
         return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid'},status=405)     

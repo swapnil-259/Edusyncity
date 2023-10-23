@@ -269,7 +269,6 @@ def logout_user(request):
     
           
 def add_role(request):
-    
     if request.method =='POST':
         if request.user.is_authenticated:
             id=Roles.objects.get(role_name='Admin',deleted_status=False)
@@ -426,7 +425,6 @@ def left_panel(request):
                 role=role,                               
                 pannel=1,
                 defaults={ "added_by":check_admin.user}
-               
                 )
                 if created:
                     return JsonResponse({'message':f'{name} successfully added for SideBar'},status=201)

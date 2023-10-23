@@ -11,9 +11,6 @@ class ExamMapping(BaseModel):
     duration=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='duration_identity')
     
     
-
-    
-
 class QuestionPaper(BaseModel):
     exam_type=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exam_type')
     department=models.ForeignKey(Mapping,null=True,on_delete=models.SET_NULL,related_name='department_identity')
