@@ -29,7 +29,6 @@ def get_parents(request):
             return JsonResponse({'message':'Courses Not Found'},status=204)
         else:
             return JsonResponse(list(data),safe=False)
-            
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
     
@@ -49,15 +48,15 @@ def parents(request):
                     defaults={'child':child,'can_delete':False,'can_update':True}
                 )
                 if created:
-                    return JsonResponse({'message':'parent created successfully'},status=201)
+                    return JsonResponse({'message':f'{name} created successfully as Parent'},status=201)
                 else:
-                    return JsonResponse({'message':'This parent already exist'},status=409)
+                    return JsonResponse({'message':f'This {name} already exist as Parent'},status=409)
             else:
                 return JsonResponse({'message':'invalid request method'},status=405)
         else:
-            return JsonResponse({'message':'You are not autherised'},status=403)
+            return JsonResponse({'message':'You are not Admin'},status=403)
     else:
-        return JsonResponse({'message':'You not authenticated'},status=401)
+        return JsonResponse({'message':'You not not Authenticated'},status=401)
             
             
 
@@ -66,7 +65,7 @@ def get_childs(request):
         parent_id=request.GET.get('parent_id')
         data=Dropdown.objects.filter(relation=parent_id,deleted_status=False).values('id','name')
         if data is None:
-            return JsonResponse({'message':'Courses Not Found'},status=204)
+            return JsonResponse({'message':'Childs Not Found'},status=204)
         else:
             return JsonResponse(list(data),safe=False)
     else:
@@ -89,9 +88,11 @@ def departments(request):
 def years(request):
     if request.method == 'GET':
         course_id=request.GET.get('course_id')
-        data=Dropdown.objects.get(pk=course_id,deleted_status=False)
+        data=Dropdown.objects.filter(pk=course_id,deleted_status=False).first()
+        year_data = data.year
+        print(year_data)
         years=[]
-        for i in range(1,data.year+1):
+        for i in range(1,int(year_data)+1):
             years.append(i)
         return JsonResponse(years,safe=False)
     else:
@@ -104,7 +105,7 @@ def subjects(request):
         if subjects:
             return JsonResponse(list(subjects),safe=False)
         else:
-            return JsonResponse({'message':'Subject Not Available'},status=204)
+            return JsonResponse({'message':'Subject Not Found'},status=204)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
@@ -156,9 +157,9 @@ def subject(request):
                 
                 ) 
                 if created:
-                   return JsonResponse({'message':'subject added successfully'},status=201)
+                   return JsonResponse({'message':f'{subject_name} added successfully'},status=201)
                 else:
-                   return JsonResponse({'message':'subject already exist'}, status = 409)
+                   return JsonResponse({'message':f'{subject_name} already exist'}, status = 409)
             else:
                 return JsonResponse({'message':'user is not admin'}, status=403)
         else:
@@ -194,7 +195,7 @@ def subject_mapping(request):
                     added_by=check_admin.user
                 )
                 if created:
-                    return JsonResponse({'message':f'{subject_exist.subject_name} mapped with {department_exist.department.name} department for this {year}rd year'})
+                    return JsonResponse({'message':f'{subject_exist.subject_name} mapped successfully with {department_exist.department.name} department for this {year}rd year'})
                 else:
                     return JsonResponse({'message':f'{subject_exist.subject_name} is already mapped with this {department_exist.department.name} for {year}rd yaer'},status=409)
             else:
@@ -230,9 +231,9 @@ def subject_teacher_mapping(request):
                 added_by = check_admin.user
                 )
                 if created:
-                    return JsonResponse({'message':'mapping done successfully'})
+                    return JsonResponse({'message':f'{sub_mapping_exist.subject.subject_name} mapped successfully with {faculty_exist.title.name} {faculty_exist.user.first_name} {faculty_exist.user.last_name}'})
                 else:
-                    return JsonResponse({'message':'mapping already exist'},status=409)
+                    return JsonResponse({'message':f'{sub_mapping_exist.subject.subject_name} already mapped for {faculty_exist.title.name} {faculty_exist.user.first_name} {faculty_exist.user.last_name}'},status=409)
             else:
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
@@ -258,8 +259,20 @@ def dropdown_option(request,dropdown):
         elif dropdown =='select_mapping':
             name = 'Mapping'
             return dropdown_value(name)
+        elif dropdown=='shift':
+            name = 'Shift'
+            return dropdown_value(name)
+        elif dropdown=='examtype':
+            name = 'Exam Type'
+            return dropdown_value(name)
+        elif dropdown =='duration':
+            name = 'Duration'
+            return dropdown_value(name)
+        elif dropdown =='marks':
+            name='Marks'
+            return dropdown_value(name)
         else:
-            return JsonResponse({"message":"no url found"})
+            return JsonResponse({"message":"no url found"},status=404)
     else:
         return JsonResponse({'message':'invalid request method'})
     
@@ -271,7 +284,7 @@ def dropdown_value(name):
             mapping_data = list(mapping)
             return JsonResponse(mapping_data, safe=False)
     else:
-                 return JsonResponse({'message':'gender is not found'})
+        return JsonResponse({'message':'data is not found'},status=204)
              
              
 def assign_department_to_course(request):
@@ -290,9 +303,9 @@ def assign_department_to_course(request):
                     if course_exist is not None and department_exist is not None:
                         mapping, created = Mapping.objects.get_or_create(course= course_exist, department = department_exist, defaults={"added_by" : user_exist} )
                         if created:
-                            return JsonResponse({'message':'successfully department added to course'},status=201)
+                            return JsonResponse({'message':f'{department_exist.name} successfully mapped with {course_exist.name}'},status=201)
                         else:
-                            return JsonResponse({'message':'departemnt already assigned to this course'},status=409)
+                            return JsonResponse({'message':f'{department_exist.name} already mapped for this {course_exist.name}'},status=409)
                     else:
                         return JsonResponse({'message':'course/departemnt not exist'},status=204)
             else:

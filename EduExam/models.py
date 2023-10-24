@@ -26,18 +26,13 @@ class DateSheet(BaseModel):
     date=models.DateField(null=True)
     start_time=models.TimeField(null=True)
 
-   
-
-    
-
 class QuestionPaper(BaseModel):
-    exam_type=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exam_type')
     date_sheet=models.ForeignKey(DateSheet,on_delete=models.SET_NULL,null=True)
+    exam_type=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exam_type')
     department=models.ForeignKey(Mapping,null=True,on_delete=models.SET_NULL,related_name='department_identity')
-    subject=models.ForeignKey(SubjectMapping,on_delete=models.SET_NULL,null=True)
     set=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='set_identity')
+    start_time=models.TimeField(null=True)
     questions=JSONField(max_length=1000,null=True)
-    
     
     
 class PaperResponse(BaseModel):
