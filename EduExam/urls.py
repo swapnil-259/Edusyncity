@@ -13,7 +13,8 @@ urlpatterns = [
     path('get_question_paper/',views.get_question_paper),
     path('datesheet_mapping/',views.datesheet_maping),
     path('course_dept_mapping/',views.course_dept_mapping),
-    path('all_exam_mapping/', views.all_exam_mapping)
+    path('all_exam_mapping/', views.all_exam_mapping),
+    path('conduct_datesheet', views.conduct_datesheet)
 
   
     

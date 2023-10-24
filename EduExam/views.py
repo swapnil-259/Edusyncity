@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import json
 from django.http import JsonResponse
-from .models import QuestionPaper,PaperResponse,ExamMapping,DateSheet
+from .models import QuestionPaper,PaperResponse,ExamMapping,DateSheet, DateSheetMapping
 from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty,Student
 from EduCore.models import SubjectMapping,SubjectTeacherMapping
 # from EduExam.models import Subjects
@@ -19,9 +19,6 @@ def question_paper(request):
             exam_type=load.get('exam_type')
             subject=load.get('subject')
             department=load.get('department')
-
-          
-
             if  exam_type is None or subject is None or department is None or questions is None:
                 return JsonResponse({'message':'Missing value of any key'},status=400)
             if not subject or not questions or not exam_type or not  department:
@@ -48,7 +45,6 @@ def question_paper(request):
                     return JsonResponse({'message':'Created succesfully'},status=201)
                 else:
                     return JsonResponse({'message':f'Question peper already created for {{department_exists__department__name}}'},status=409)
-                
             else:
                 return JsonResponse({'message':'You are not a Teacher'},status=403)
         else:
@@ -384,13 +380,6 @@ def datesheet_maping(request):
                 date=load.get('date')
                 start_time=load.get('start_time')
 
-                print(subject)
-                print(exam_map)
-                print(shift)
-                print(date)
-                print(start_time)
-
-
                 if subject is None or exam_map is None or shift is None or date is None or start_time is None:
                     return JsonResponse({'message':'Missing any key'},status=400)
                 if not subject or not exam_map or not shift or not date or not start_time:
@@ -476,5 +465,52 @@ def all_exam_mapping(request):
         all_data = ExamMapping.objects.filter(deleted_status=False).values('id','duration_id__name','exam_id__name','marks_id__name')
         return JsonResponse(list(all_data), safe=False)
     else:
-        return JsonResponse({'messgae':'invalid request method'},status=405)                
+        return JsonResponse({'messgae':'invalid request method'},status=405)      
+def conduct_datesheet(request):
+    if request.method=='POST':
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            if admin:
+                load = json.loads(request.body)
+                exam_mapping_id = load.get('exam_mapping_id')
+                course_dept_id = load.get('course_dept_id')
+                year = load.get('year')
+                start_date = load.get('start_date')
+                end_date = load.get('end_date')                 
+                if exam_mapping_id is None or course_dept_id is None or year is None or start_date is None or end_date is None:
+                    return JsonResponse({'message':'missing any key'}, status=400)
+                if not exam_mapping_id or not course_dept_id or not year or not start_date or not end_date:
+                    return JsonResponse({'message':'Missing Required Field'})
+                exam_exist = ExamMapping.objects.filter(id = exam_mapping_id).first()
+                if exam_exist is None:
+                    return JsonResponse({'messgae':'existing query do not match, data not found'}, status=204)
+                course_dept_exist = Mapping.objects.filter(id = course_dept_id).first()
+                if course_dept_exist:
+                    return JsonResponse({'message':'existing query do not match, data not found'}, status=204)
+                
+                datesheet_mapping, created = DateSheetMapping.objects.get_or_create(
+                    exam_mapping = exam_exist,
+                    course_department=course_dept_exist,
+                    year=year,
+                    start_date=start_date,
+                    end_date=end_date
+                    
+                )
+                if created:
+                    return JsonResponse({'message':'Successfully Conduct Examination '})
+                else:
+                    return JsonResponse({'message':'Existing Query already present'}, status=409)
+            else:
+                return JsonResponse({'message':'user is not admin'}, status=401)
+        else:
+            return JsonResponse({'message':'user is not authenticated'}, status=403)
+    else:
+        return JsonResponse({'message':'invalid request method'}, status=405)
+
+                
+                
+                
+
+                  
                 

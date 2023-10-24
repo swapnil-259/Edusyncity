@@ -88,9 +88,11 @@ def departments(request):
 def years(request):
     if request.method == 'GET':
         course_id=request.GET.get('course_id')
-        data=Dropdown.objects.get(pk=course_id,deleted_status=False)
+        data=Dropdown.objects.filter(pk=course_id,deleted_status=False).first()
+        year_data = data.year
+        print(year_data)
         years=[]
-        for i in range(1,data.year+1):
+        for i in range(1,int(year_data)+1):
             years.append(i)
         return JsonResponse(years,safe=False)
     else:
@@ -282,7 +284,7 @@ def dropdown_value(name):
             mapping_data = list(mapping)
             return JsonResponse(mapping_data, safe=False)
     else:
-                 return JsonResponse({'message':'gender is not found'})
+        return JsonResponse({'message':'data is not found'},status=204)
              
              
 def assign_department_to_course(request):
