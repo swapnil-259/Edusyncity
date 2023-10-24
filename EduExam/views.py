@@ -344,7 +344,19 @@ def get_question_paper(request):
         return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid'},status=405)
-    
+
+import re   
+
+# def validation(load):
+#     key=['subject','exam_map','shift','date','start_time']
+#     for key in load:
+#         if not key:
+#             return JsonResponse({'message':f'{key} is none'},status=400)
+#         if not load[key] :
+#             return JsonResponse({'meassage':f'Value of {key} is missing'},status=400)
+
+#     return None
+
 
 def datesheet_maping(request):
     if request.user.is_authenticated:
@@ -354,12 +366,30 @@ def datesheet_maping(request):
             if request.method == 'POST':
 
                 load=json.loads(request.body)
-    
+                # load_data = validation(load)
+                # if load_data:
+                #     return load_data
+                # else:
+                #     return JsonResponse({'message':'correct'})
+                
+                # key=['subject','exam_map','shift','date','start_time']
+                # for key in load:
+                #     if not key :
+                #         return JsonResponse({'meassage':f'{key} is missing'},status=400)
+                # return None
+                
                 subject=load.get('subject')
                 exam_map=load.get('exam_map')
                 shift=load.get('shift')
                 date=load.get('date')
                 start_time=load.get('start_time')
+
+                print(subject)
+                print(exam_map)
+                print(shift)
+                print(date)
+                print(start_time)
+
 
                 if subject is None or exam_map is None or shift is None or date is None or start_time is None:
                     return JsonResponse({'message':'Missing any key'},status=400)
