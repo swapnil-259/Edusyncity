@@ -8,17 +8,16 @@ from EduCore.models import SubjectMapping,SubjectTeacherMapping
 from datetime import datetime,date
 
 
+
 def question_paper(request):
     if request.method=='POST':
         if request.user.is_authenticated:
             id=Roles.objects.get(role_name='Teacher',deleted_status=False)
             faculty_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first()
             load=json.loads(request.body)
-            # date=load.get('date')
             questions=load.get('questions')
             exam_type=load.get('exam_type')
             subject=load.get('subject')
-            # paper_code=load.get('paper_code')
             department=load.get('department')
 
           
@@ -41,10 +40,7 @@ def question_paper(request):
                                             exam_type=exam_exist,
                                             subject=subject_exist,
                                             title="KIET Group Of Institutions",
-                                            
                                             department=department_exist,
-                                            # date=date,
-                                            # start_time=start_time,
                                             defaults={"added_by" : faculty_exist.user,"questions":questions}
                                             
                                             )
@@ -268,32 +264,33 @@ def exam_mapping(request):
                 exam_type = load.get('exam_type_id')
                 duration=load.get('duration')
                 marks = load.get('marks')
-                print(admin_exist.user.id)
+                print(exam_type,duration, marks)
                 if duration is None or marks is None or exam_type is None :
                     return JsonResponse({'message':'Missing value of any key'},status=400)
                 if not duration or not marks or not exam_type :
                     return JsonResponse({'message':'Missing Required Field'},status=400)
                 exam_exist = Dropdown.objects.filter(pk = exam_type).first()
                 if exam_exist is None:
-                    return JsonResponse({'message':'exam_type Not an Instance'},status=400)
+                    return JsonResponse({'message':'Given data do not match with Existing Query'},status=400)
                 duration_exist = Dropdown.objects.filter(pk = duration).first()
                 if duration_exist is None:
-                    return JsonResponse({'messgae':'duration is not an Instance'})
+                    return JsonResponse({'messgae':'Given data do not match with Existing Query'})
                 marks_exist = Dropdown.objects.filter(pk = marks).first()
                 if marks_exist is None:
-                    return JsonResponse({'message':'marks is not an Instance'})
+                    return JsonResponse({'message':'Given data do not match with Existing Query'})
                 if admin_exist:
                     mapping, created = ExamMapping.objects.get_or_create(
                         duration=duration_exist,
                         exam=exam_exist,
                         marks=marks_exist,
-                        added_by=admin_exist.user
+                        defaults={"added_by":admin_exist.user}
+                        
                     )
                     if created:
                         # return JsonResponse({'message':f'{exam_exist.name} conduct for {marks_exist.name} marks for {duration_exist.name} minutes'})
                         return JsonResponse({'message':'Exam Mapping successfully done'})
                     else:
-                        return JsonResponse({'message':'exam already exist'},status=409)
+                        return JsonResponse({'message':'Mapping already exist'},status=409)
                 else:
                     return JsonResponse({'message':'admin not found'},status=204)
         else:
@@ -437,5 +434,17 @@ def datesheet_maping(request):
             return JsonResponse({'message':'You are not autherised'},status=403)
     else:
         return JsonResponse({'message':'You are not logged in'},status=401)
-                
+def course_dept_mapping(request):
+    if request.method =='GET':
+        all_mapping_data = Mapping.objects.filter(deleted_status=False).values('id','course_id__name','department_id__name')
+        return JsonResponse(list(all_mapping_data), safe=False)
+    else:
+        return JsonResponse({'message':'invalid request method'}, status=405)
+
+def all_exam_mapping(request):
+    if request.method =='GET':
+        all_data = ExamMapping.objects.filter(deleted_status=False).values('id','duration_id__name','exam_id__name','marks_id__name')
+        return JsonResponse(list(all_data), safe=False)
+    else:
+        return JsonResponse({'messgae':'invalid request method'},status=405)                
                 

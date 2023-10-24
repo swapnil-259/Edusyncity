@@ -53,18 +53,10 @@ def register_faculty(request):
                     return JsonResponse({'messge':'Missing any key'},status=400) 
                 if user_name is ' ' or email is ' ' or firstname is ' ' or lastname is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
-                print(firstname,lastname)
-                # if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
-                #     return JsonResponse({'message':'Match Your Username Requirements'},status=400)
-                validation(email,firstname,lastname)
-              
-                
-                # if not re.match(r'^[A-Za-z\s]+$', first_name):
-                #     return JsonResponse({'message':'Invalid first_name format'},status=400)
-                # if not re.match(r'^[A-Za-z\s]+$', last_name):
-                #     return JsonResponse({'message':'Invalid last_name format'},status=400)
-                # if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
-                #     return JsonResponse({'message':'Match Your email Requirements'},status=400)
+                validation_data =   validation(firstname=firstname, lastname=lastname, email=email)
+                print(validation_data)
+                if validation_data:
+                  return validation_data
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
                     return JsonResponse({'message':'Gender Not an instance'},status=400)
@@ -136,23 +128,11 @@ def register_student(request):
                               return JsonResponse({'message':'Missing Required Field'}, status = 400)
                 if user_name is None or email is None or firstname is None or lastname is None or  age is None or gender is None or contact is None or address is None or father_name is None or mother_name is None or year is None or course is None or religion is None:
                             return JsonResponse({'messge':'Missing any key'},status=400) 
-             
                 if user_name is ' ' or email is ' ' or firstname is ' ' or lastname is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
-                # if not re.match(r'^[a-zA-Z0-9_@-]{8,15}$',user_name):
-                #     return JsonResponse({'message':'Match Your Username Requirements'},status=400)
-                # if not re.match(r'^[A-Za-z\s]+$', first_name):
-                #     return JsonResponse({'message':'Invalid first_name format'},status=400)
-                # if not re.match(r'^[A-Za-z\s]+$', father_name):
-                #     return JsonResponse({'message':'Invalid first_name format'},status=400)
-                # if not re.match(r'^[A-Za-z\s]+$', mother_name):
-                #     return JsonResponse({'message':'Invalid first_name format'},status=400)
-                # if not re.match(r'^[A-Za-z\s]+$', last_name):
-                #     return JsonResponse({'message':'Invalid last_name format'},status=400)
-                # if not re.match(r'\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b',email):
-                #     return JsonResponse({'message':'Match Your email Requirements'},status=400)
-                
-
+                validation_data = validation(firstname=firstname, lastname=lastname, email=email, fathername=father_name, mothername=mother_name)
+                if validation_data:
+                    return validation_data
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
                     return JsonResponse({'message':'Gender Not an instance'},status=400)
@@ -242,8 +222,7 @@ def change_password(request):
         
         if not re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$",new_password):
             return JsonResponse({'message':'Match Your Password Requirements'},status=400)
-        
-        # user =  authenticate(username= username, password = old_password)
+
         user=User.objects.filter(Q(username=username)|Q(email=username)).first()
         if user is not None and user.check_password(old_password):
             user.set_password(new_password)

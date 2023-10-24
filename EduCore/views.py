@@ -257,8 +257,20 @@ def dropdown_option(request,dropdown):
         elif dropdown =='select_mapping':
             name = 'Mapping'
             return dropdown_value(name)
+        elif dropdown=='shift':
+            name = 'Shift'
+            return dropdown_value(name)
+        elif dropdown=='examtype':
+            name = 'Exam Type'
+            return dropdown_value(name)
+        elif dropdown =='duration':
+            name = 'Duration'
+            return dropdown_value(name)
+        elif dropdown =='marks':
+            name='Marks'
+            return dropdown_value(name)
         else:
-            return JsonResponse({"message":"no url found"})
+            return JsonResponse({"message":"no url found"},status=404)
     else:
         return JsonResponse({'message':'invalid request method'})
     
