@@ -93,15 +93,7 @@ AUTH_USER_MODEL = 'EduAdmin.User'
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     'NAME': 'Edusyncity',
-    #     'USER': 'harry',
-    #     'PASSWORD':'Kiet@123',
-    #     'HOST':'0.tcp.in.ngrok.io',
-    #     'PORT':'15721',
-    # }
-     'default': {
+    'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'Edusyncity',
         'USER': 'harry',
@@ -109,6 +101,14 @@ DATABASES = {
         'HOST':'10.21.67.7',
         'PORT':'3306',
     }
+    #  'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'EduSyncity',
+    #     'USER': 'nikhil',
+    #     'PASSWORD':'Nik212107@',
+    #     'HOST':'localhost',
+    #     'PORT':'3306',
+    # }
 
 }
 
