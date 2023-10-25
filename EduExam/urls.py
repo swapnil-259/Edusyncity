@@ -17,7 +17,9 @@ urlpatterns = [
     path('conduct_datesheet/', views.conduct_datesheet),
     path('get_exam_mapping/', views.get_exam_mapping),
     path('show_exam_type/', views.show_exam_type),
-    path('select_dept/',views.select_dept)
+    path('select_dept/',views.select_dept),
+    path('get_student_response/', views.get_student_response),
+    path('get_question_answer/',views.get_question_answer)
 
   
     

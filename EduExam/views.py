@@ -116,9 +116,9 @@ def paper_response(request):
 
             load = json.loads(request.body)
 
-            answer=load.get('answer')
+            answer=load.get('questions')
             paper_id = load.get('paper_id')
-
+            
             if answer is None or paper_id is None :
                 return JsonResponse({'message':'Missing value of any key'},status=400)
             if not answer or not paper_id :
@@ -129,12 +129,15 @@ def paper_response(request):
                 return JsonResponse({'message':'paper is not an Instance'})
             
             if student:
-                PaperResponse.objects.create(
-                    answer=answer,
+                response,created=PaperResponse.objects.get_or_create(
                     paper = paper_exist,
                     added_by = student.user,
-                )    
-                return JsonResponse({'message':'Created succesfully'},status=201)
+                    defaults={"answer":answer}
+                )
+                if created:
+                    return JsonResponse({'message':'Created succesfully'},status=201)
+                else:
+                    return JsonResponse({'message':'You have already submitted this this paper'},status=409)
             else:
                 return JsonResponse({'message':'You are not a Teacher'},status=403)
         else:
@@ -147,24 +150,24 @@ def paper_evaluation(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
             id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first()
 
             load=json.loads(request.body)
 
-            paper_id=load.get('paper_id')
+            student_id=load.get('student_id')
             evaluation=load.get('evaluation')
 
             if faculty:
-                evaluated=PaperResponse.objects.filter(pk=paper_id,deleted_status=False).update(
+                evaluated=PaperResponse.objects.filter(added_by=student_id,deleted_status=False,checked_status=False).update(
                 evaluation=evaluation,
                 checked_status=True,
                 checked_time=datetime.now(),
                 checked_by=faculty.user
                 )
                 if evaluated:
-                    return JsonResponse({'message':'Paper checked'})
+                    return JsonResponse({'message':'Paper checked'},status=200)
                 else:
-                    return JsonResponse({'message':'No content'},status=204)
+                    return JsonResponse({'message':'You have already checked this paper'},status=409)
             else:
                 return JsonResponse({'message':'You are not autherised'},status=403)
         else:
@@ -210,9 +213,49 @@ def paper_evaluation(request):
                 return JsonResponse({'message':'You are not autherised'},status=403)
         else:
             return JsonResponse({'message':'You are not logged in'},status=401)
-
+    
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+def get_student_response(request):
+    if request.method=='GET':
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
+            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first() 
+            if faculty:
+                data=PaperResponse.objects.filter(deleted_status=False).values('added_by','added_by__first_name','added_by__last_name','paper__exam_type__exam__name')
+                if data:
+                    return JsonResponse(list(data),safe=False)
+                else:
+                    return JsonResponse({'message':'No content'},status=204)
+            else:
+                return JsonResponse({'message':'You are not autherised'},status=403) 
+        else:
+            return JsonResponse({'message':'You are not authenticated'},status=401) 
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405) 
+
+
+def get_question_answer(request):
+    if request.method=='GET':
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
+            faculty=UserRole.objects.filter(role_id = id.pk).first() 
+            # faculty_subject=SubjectTeacherMapping.objects.filter(faculty=request.user.id,).first()
+            if faculty:
+                student_id=request.GET.get('student_id')
+                if student_id is None:
+                    return JsonResponse({'message':'You are not sending student id'},status=400)
+
+                data=PaperResponse.objects.filter(added_by=student_id,deleted_status=False,checked_satus=False).values('added_by','answer')
+                if data:
+                    return JsonResponse(list(data),safe=False)
+            else:
+                return JsonResponse({'message':'You are not autherised'},status=403) 
+        else:
+            return JsonResponse({'message':'You are not authenticated'},status=401) 
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405) 
 
 
 def exam_type(request):
@@ -328,17 +371,22 @@ def access_question(request):
 
 def get_question_paper(request):
     if request.method=='GET':
-        # subject_id=request.GET.get('id') 
-        # if subject_id is None or not subject_id:
-        #     return JsonResponse({'message':'You are not sending subject id'},status=400)
-        # student=Student.objects.filter(user=request.user.id).first()
-        # if student is None:
-        #     return JsonResponse({'message':'You are not registerd'})
-        data=QuestionPaper.objects.filter(deleted_status=False).values()
-        if data:
-            return JsonResponse(list(data),safe=False)
-        else:
-            return JsonResponse({'message':'No content'},status=204)
+        if request.user.is_authenticated:
+            id=Roles.objects.get(role_name='Student',deleted_status=False)
+            student=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first() 
+            if student:
+
+                # subject_id=request.GET.get('id') 
+                # if subject_id is None or not subject_id:
+                #     return JsonResponse({'message':'You are not sending subject id'},status=400)
+                # student=Student.objects.filter(user=request.user.id).first()
+                # if student is None:
+                #     return JsonResponse({'message':'You are not registerd'})
+                data=QuestionPaper.objects.filter(deleted_status=False).values()
+                if data:
+                    return JsonResponse(list(data),safe=False)
+            else:
+                return JsonResponse({'message':'No content'},status=204)
 
 # import re   
 
