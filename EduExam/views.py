@@ -17,15 +17,15 @@ def question_paper(request):
             load=json.loads(request.body)
             questions=load.get('questions')
             exam_type=load.get('exam_type')
-            subject=load.get('subject')
+            # subject=load.get('subject')
             department=load.get('department')
-            if  exam_type is None or subject is None or department is None or questions is None:
+            if  exam_type  is None or department is None or questions is None:
                 return JsonResponse({'message':'Missing value of any key'},status=400)
-            if not subject or not questions or not exam_type or not  department:
+            if  not questions or not exam_type or not  department:
                 return JsonResponse({'message':'Missing Required Field'},status=400)
-            subject_exist = SubjectMapping.objects.filter(id = subject).first()
-            if subject_exist is None:
-                return JsonResponse({'messgae':'subject is not Instance'},status=400)
+            # subject_exist = SubjectMapping.objects.filter(id = subject).first()
+            # if subject_exist is None:
+            #     return JsonResponse({'messgae':'subject is not Instance'},status=400)
             exam_exist = ExamMapping.objects.filter(exam = exam_type).first()
             if exam_exist is None:
                 return JsonResponse({'message':'exam type is not an Instance'},status=400)
@@ -35,7 +35,7 @@ def question_paper(request):
             if faculty_exist:
                 paper,created=QuestionPaper.objects.get_or_create(
                                             exam_type=exam_exist,
-                                            subject=subject_exist,
+                                            # subject=subject_exist,
                                             title="KIET Group Of Institutions",
                                             department=department_exist,
                                             defaults={"added_by" : faculty_exist.user,"questions":questions}
@@ -112,7 +112,7 @@ def question_paper(request):
         if student is None:
             return JsonResponse({'message':''})
         print(student)
-        data=QuestionPaper.objects.filter(department=student.department,subject=subject_id).values()
+        data=QuestionPaper.objects.filter(department=student.department,id=subject_id).values()
         return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
@@ -336,12 +336,12 @@ def get_question_paper(request):
     if request.method=='GET':
         subject_id=request.GET.get('id') 
         student=Student.objects.filter(user=request.user.id).first()
-        data=QuestionPaper.objects.filter(department=student.department,subject=subject_id).values()
+        data=QuestionPaper.objects.filter(id=subject_id).values()
         return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid'},status=405)
 
-import re   
+# import re   
 
 # def validation(load):
 #     key=['subject','exam_map','shift','date','start_time']
@@ -477,16 +477,19 @@ def conduct_datesheet(request):
                 course_dept_id = load.get('course_dept_id')
                 year = load.get('year')
                 start_date = load.get('start_date')
-                end_date = load.get('end_date')                 
+                end_date = load.get('end_date') 
+                print(exam_mapping_id, course_dept_id)                
                 if exam_mapping_id is None or course_dept_id is None or year is None or start_date is None or end_date is None:
                     return JsonResponse({'message':'missing any key'}, status=400)
                 if not exam_mapping_id or not course_dept_id or not year or not start_date or not end_date:
                     return JsonResponse({'message':'Missing Required Field'})
-                exam_exist = ExamMapping.objects.filter(id = exam_mapping_id).first()
+                exam_exist = ExamMapping.objects.filter(exam_id = exam_mapping_id).first()
+                print(exam_exist)
                 if exam_exist is None:
                     return JsonResponse({'messgae':'existing query do not match, data not found'}, status=204)
                 course_dept_exist = Mapping.objects.filter(id = course_dept_id).first()
-                if course_dept_exist:
+                print(course_dept_exist)
+                if course_dept_exist is None:
                     return JsonResponse({'message':'existing query do not match, data not found'}, status=204)
                 
                 datesheet_mapping, created = DateSheetMapping.objects.get_or_create(
@@ -508,6 +511,15 @@ def conduct_datesheet(request):
     else:
         return JsonResponse({'message':'invalid request method'}, status=405)
 
+def get_exam_mapping(request):
+    if request.method=='GET':
+        datesheet_mapping_data = DateSheetMapping.objects.filter(deleted_status=False, start_date__gte=date.today()).values('id','year','start_date','end_date','course_department__course_id__name','course_department__department_id__name')
+        return JsonResponse(list(datesheet_mapping_data), safe=False)
+    else:
+        return JsonResponse({'message':'invalid request method'}, status=405)
+
+# def select_dept(request):
+    # if request.method =='POST':
                 
                 
                 

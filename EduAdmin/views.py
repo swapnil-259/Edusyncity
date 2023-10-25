@@ -30,22 +30,15 @@ def validation(email = None,firstname = None,lastname = None,fathername = None, 
      else:
          return JsonResponse({'message':'Email is None'})
      if age is not None:
-        if age is ' ' or int(age) <= 0:
+        if age is ' ' or int(age) <= 15:
              return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
      else:
          return JsonResponse({'message':'Age is None'})
-def check_user(user):
-    user_exist = ['Admin','Teacher','Student']
-    for i in user_exist:
-        if user == i:
-            break
-        return i 
-    
-    
-    
+
 def register_faculty(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
+            
             id=Roles.objects.filter(role_name='Admin',deleted_status=False).first()
             admin_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             if admin_exist:
@@ -63,10 +56,10 @@ def register_faculty(request):
                 print(firstname,lastname)
                 # if age is ' ' or int(age) <= 0:
                 #     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
-                # if not user_name or not firstname or not lastname or not email or not gender or not contact or not age or not address  or not qualification or not title :
-                    #   return JsonResponse({'message':'Missing Required Field'}, status = 400)
-                # if user_name is None or email is None or firstname is None or lastname is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None :
-                    # return JsonResponse({'messge':'Missing any key'},status=400) 
+                if not username or not firstname or not lastname or not email or not gender or not contact or not age or not address  or not qualification or not title :
+                      return JsonResponse({'message':'Missing Required Field'}, status = 400)
+                if username is None or email is None or firstname is None or lastname is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None :
+                    return JsonResponse({'messge':'Missing any key'},status=400) 
                 if username is ' ' or email is ' ' or firstname is ' ' or lastname is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
                 validation_data =   validation(firstname=firstname, lastname=lastname, email=email, age=age)
@@ -456,7 +449,7 @@ def left_panel(request):
                 return JsonResponse({'message':'You are not autherised'},status=403)
     else:
         return JsonResponse({'message':'You are not logged in'},status=401)
-    
+
     
 
     

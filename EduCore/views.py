@@ -20,6 +20,8 @@ def logged_in(request):
             return JsonResponse({'message':'You are not Authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+    
+
 
 
 def get_parents(request):
@@ -35,31 +37,40 @@ def get_parents(request):
 
 def parents(request):
     if request.user.is_authenticated:
-        id=Roles.objects.get(role_name='Admin',deleted_status=False)
-        check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-        if check_admin:
-            if request.method=='POST':
+         check_Admin=check_user(request.user.id, 'Admin')
+         if check_Admin:
+          if request.method=='POST':
                 load = json.loads(request.body)
                 name = load.get('name')
                 child = load.get('child')
                 parent, created = Dropdown.objects.get_or_create(
                     name=name,
-                    added_by=check_admin.user,
-                    defaults={'child':child,'can_delete':False,'can_update':True}
-                )
+                    added_by=check_Admin,
+                    child=child                )
                 if created:
                     return JsonResponse({'message':f'{name} created successfully as Parent'},status=201)
                 else:
                     return JsonResponse({'message':f'This {name} already exist as Parent'},status=409)
-            else:
+          else:
                 return JsonResponse({'message':'invalid request method'},status=405)
-        else:
+         else:
             return JsonResponse({'message':'You are not Admin'},status=403)
     else:
         return JsonResponse({'message':'You not not Authenticated'},status=401)
-            
-            
+    
+def check_user(user, user_role):
+        role=Roles.objects.filter(role_name=user_role,deleted_status=False).first()
+        if role:
+          user_with_role=UserRole.objects.filter(user=user,role_id = role.id,deleted_status=False).first()
+          if user_with_role:
+              return user_with_role.user.id
+          else:
+              return None
+        else:
+            return None
 
+            
+            
 def get_childs(request):
     if request.method == 'GET':
         parent_id=request.GET.get('parent_id')
@@ -297,7 +308,6 @@ def assign_department_to_course(request):
                     load=json.loads(request.body)
                     course_id = load.get('course_id')
                     department_id = load.get('department_id')
-                    print(course_id,department_id)
                     course_exist= Dropdown.objects.filter(pk = course_id).first()
                     department_exist = Dropdown.objects.filter(pk = department_id).first()
                     if course_exist is not None and department_exist is not None:

@@ -107,7 +107,7 @@ DATABASES = {
     #     'USER': 'harry',
     #     'PASSWORD':'Kiet@123',
     #     'HOST':'0.tcp.in.ngrok.io',
-    #     'PORT':'11954',
+    #     'PORT':'15721',
     # }
 
 }
