@@ -327,29 +327,37 @@ def access_question(request):
 
 def get_question_paper(request):
     if request.method=='GET':
-        subject_id=request.GET.get('id') 
-        if subject_id is None or not subject_id:
-            return JsonResponse({'message':'You are not sending subject id'},status=400)
-        student=Student.objects.filter(user=request.user.id).first()
-        if student is None:
-            return JsonResponse({'message':'You are not registerd'})
-        data=QuestionPaper.objects.filter(department=student.department,subject=subject_id).values()
+        # subject_id=request.GET.get('id') 
+        # if subject_id is None or not subject_id:
+        #     return JsonResponse({'message':'You are not sending subject id'},status=400)
+        # student=Student.objects.filter(user=request.user.id).first()
+        # if student is None:
+        #     return JsonResponse({'message':'You are not registerd'})
+        data=QuestionPaper.objects.filter(deleted_status=False).values()
         if data:
             return JsonResponse(list(data),safe=False)
         else:
             return JsonResponse({'message':'No content'},status=204)
-
+    else:
+        return JsonResponse({'message':'invalid request method'}, status=405)
 import re   
 
-# def validation(load):
-#     key=['subject','exam_map','shift','date','start_time']
-#     for key in load:
-#         if not key:
-#             return JsonResponse({'message':f'{key} is none'},status=400)
-#         if not load[key] :
-#             return JsonResponse({'meassage':f'Value of {key} is missing'},status=400)
 
-#     return None
+
+def validation(load):
+    keys_to_check = ['subject', 'exam_map', 'shift', 'date', 'start_time']
+    
+    for key in keys_to_check:
+        if key not in load:
+            return JsonResponse({'message': f'{key} is missing'}, status=400)  
+        if load[key]=='':
+            return JsonResponse({'message': f'{key} can not be none'}, status=400)
+        value=str(load[key]).strip()
+        if value.isspace():
+            return JsonResponse({'message': f'{key} can not be space or none'}, status=400)
+
+    
+
 
 
 def datesheet_maping(request):
@@ -360,51 +368,43 @@ def datesheet_maping(request):
             if request.method == 'POST':
 
                 load=json.loads(request.body)
-                # load_data = validation(load)
-                # if load_data:
-                #     return load_data
-                # else:
-                #     return JsonResponse({'message':'correct'})
-                
-                # key=['subject','exam_map','shift','date','start_time']
-                # for key in load:
-                #     if not key :
-                #         return JsonResponse({'meassage':f'{key} is missing'},status=400)
-                # return None
-                
-                subject=load.get('subject')
-                exam_map=load.get('exam_map')
-                shift=load.get('shift')
-                date=load.get('date')
-                start_time=load.get('start_time')
-
-                if subject is None or exam_map is None or shift is None or date is None or start_time is None:
-                    return JsonResponse({'message':'Missing any key'},status=400)
-                if not subject or not exam_map or not shift or not date or not start_time:
-                    return JsonResponse({'message':'Missing required field'},status=400)
-                
-                exam_exist=ExamMapping.objects.filter(pk=exam_map,deleted_status=False).first()
-                if exam_exist is None:
-                    return JsonResponse({'message':'Exam_mapping is not an instance'},status=400)
-                subject_exist=SubjectMapping.objects.filter(pk=subject,deleted_status=False).first()
-                if subject_exist is None:
-                    return JsonResponse({'message':'Subject is not an instance'},status=400)
-                shift_exist=Dropdown.objects.filter(pk=shift,deleted_status=False).first()
-                if shift_exist is None:
-                    return JsonResponse({'message':'Shift is not an instance'},status=400)
-                
-                datesheet,created=DateSheet.objects.get_or_create(subject=subject_exist,
-                exam_mapping=exam_exist,
-                shift=shift_exist,
-                date=date,
-                start_time=start_time,
-                defaults={"added_by":admin.user}
-                )
-                if created:
-                    return JsonResponse({'message':'Exam mapped succesfully'},status=201)
+                load_data = validation(load)
+                if load_data:
+                    return load_data
                 else:
-                    return JsonResponse({'message':'Exam mapping already exist'},status=409)
-            
+                    
+                
+                
+                
+                    subject=load.get('subject')
+                    exam_map=load.get('exam_map')
+                    shift=load.get('shift')
+                    date=load.get('date')
+                    start_time=load.get('start_time')
+           
+                    
+                    exam_exist=ExamMapping.objects.filter(pk=exam_map,deleted_status=False).first()
+                    if exam_exist is None:
+                        return JsonResponse({'message':'Exam_mapping is not an instance'},status=400)
+                    subject_exist=SubjectMapping.objects.filter(pk=subject,deleted_status=False).first()
+                    if subject_exist is None:
+                        return JsonResponse({'message':'Subject is not an instance'},status=400)
+                    shift_exist=Dropdown.objects.filter(pk=shift,deleted_status=False).first()
+                    if shift_exist is None:
+                        return JsonResponse({'message':'Shift is not an instance'},status=400)
+                    
+                    datesheet,created=DateSheet.objects.get_or_create(subject=subject_exist,
+                    exam_mapping=exam_exist,
+                    shift=shift_exist,
+                    date=date,
+                    start_time=start_time,
+                    defaults={"added_by":admin.user}
+                    )
+                    if created:
+                        return JsonResponse({'message':'Exam mapped succesfully'},status=201)
+                    else:
+                        return JsonResponse({'message':'Exam mapping already exist'},status=409)
+                
             elif request.method == 'PUT':
                 load=json.loads(request.body)
         
@@ -508,7 +508,8 @@ def conduct_datesheet(request):
 
                 
                 
-                
+
+
 
                   
                 
