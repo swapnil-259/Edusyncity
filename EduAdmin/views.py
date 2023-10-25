@@ -294,9 +294,9 @@ def add_role(request):
             if new_name is None or role_id is None or not new_name or not role_id:
                 return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
             if check_admin:
-                role_check=Roles.objects.filter(pk=role_id).first()
+                role_check=Roles.objects.filter(pk=role_id,deleted_status=False).first()
                 if role_check:
-                    Roles.objects.filter(pk=role_id).update(role_name=new_name)
+                    Roles.objects.filter(pk=role_id,deleted_status=False).update(role_name=new_name)
                     return JsonResponse({'message':f'{role_check.role_name} updates with {new_name}'})
                 else:
                     return JsonResponse({'message':'data not found '},status=204)
@@ -311,9 +311,9 @@ def add_role(request):
             check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
             if check_admin:
                 id=request.GET.get('id')
-                deleted=Roles.objects.filter(pk=id).first()
+                deleted=Roles.objects.filter(pk=id,deleted_status=False).first()
                 if deleted:
-                    Roles.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.today())
+                    Roles.objects.filter(pk=id,deleted_status=False).update(deleted_status=True,deleted_time=datetime.today())
                     return JsonResponse({'message':f'{deleted.role_name} deleted Successfully'})
                 else:
                     return JsonResponse({'message':'Any role for this id cannot present'},status=204)
@@ -337,7 +337,7 @@ def child(request):
                 name = load.get('name')
                 if id is None or name is None or not id or not name:
                     return JsonResponse({'message':'Missing required field or key'},status=400)
-                parent=Dropdown.objects.filter(id = id, child__gt=0).first()
+                parent=Dropdown.objects.filter(id = id, child__gt=0,deleted_status=False).first()
                 if parent is not None:
                     dropdown, created=Dropdown.objects.get_or_create(
                         name= name,
@@ -361,9 +361,9 @@ def child(request):
                 if id is None or new_name is None or not id or not new_name:
                     return JsonResponse({'message':'Missing nany key or field'},status=400)
 
-                parent=Dropdown.objects.filter(id = id).first()
+                parent=Dropdown.objects.filter(id = id,deleted_status=False).first()
                 if parent:
-                    Dropdown.objects.filter(pk=id).update(name=new_name)
+                    Dropdown.objects.filter(pk=id,deleted_status=False).update(name=new_name)
                     return JsonResponse({'message':f'{parent.name} updates with {new_name}'},status=201)
                 else:
                     return JsonResponse({'message':'Parent not match'},status=400)
@@ -372,9 +372,9 @@ def child(request):
                 id=request.GET.get('id')
                 if id is None or not id:
                     return JsonResponse({'message':'Expecting an id'},status=400)
-                deleted=Dropdown.objects.filter(pk=id).first()
+                deleted=Dropdown.objects.filter(pk=id,deleted_status=False).first()
                 if deleted:
-                    Dropdown.objects.filter(pk=id).update(deleted_status=True,deleted_time=datetime.now())
+                    Dropdown.objects.filter(pk=id,deleted_status=False).update(deleted_status=True,deleted_time=datetime.now())
                     return JsonResponse({'message':f'{deleted.name} deleted Successfully'})
                 else:
                     return JsonResponse({'message':'No child Found'},status=204)
@@ -410,8 +410,8 @@ def left_panel(request):
                 type=type,                               
                 role=role,                               
                 pannel=1,
+                deleted_status=False,
                 defaults={ "added_by":check_admin.user,"role":role}
-               
                 )
                 if created:
                     return JsonResponse({'message':f'{name} successfully added for SideBar'},status=201)

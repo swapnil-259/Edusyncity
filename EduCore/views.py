@@ -10,12 +10,12 @@ from EduCore.models import Subject,SubjectMapping,SubjectTeacherMapping
 def logged_in(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
-            user_data=UserRole.objects.get(user=request.user.id)
-            username=User.objects.get(pk=user_data.user_id)
+            user_data=UserRole.objects.filter(user=request.user.id,deleted_status=False).first()
+            username=User.objects.filter(pk=user_data.user_id).first()
             if user_data and username:
                 return JsonResponse({'role_id':user_data.role_id,'username':username.username})
             else:
-                return JsonResponse({'message':'No content'},status=204)
+                return JsonResponse({'message':'User not found'},status=401)
         else:
             return JsonResponse({'message':'You are not Authenticated'},status=401)
     else:
@@ -124,17 +124,17 @@ def subjects(request):
 def sidebar(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
-             check_admin = UserRole.objects.filter(user =request.user.id).first()
+             check_user = UserRole.objects.filter(user =request.user.id).first()
              leftpanel = []
              child=[]
-             if check_admin:
-                pannels = Dropdown.objects.filter(pannel=1,deleted_status=False, role = check_admin.role.id).values('id')
+             if check_user:
+                pannels = Dropdown.objects.filter(pannel=1,deleted_status=False, role = check_user.role.id).values('id')
                 if not pannels or pannels is None:
                     return JsonResponse({'message':'Missing Required Field or Key'},status=400)
                 for i in pannels:
-                    child_data = list(Dropdown.objects.filter(relation_id = i.get('id'),deleted_status=False,role = check_admin.role.id).values('name','state','icon').order_by('order_by'))
+                    child_data = list(Dropdown.objects.filter(relation_id = i.get('id'),deleted_status=False,role = check_user.role.id).values('name','state','icon'))
                     child.append(child_data)
-                master_configuration = Dropdown.objects.filter(pannel=1,deleted_status=False,role=check_admin.role.id).values('pk','name','icon','type','state')
+                master_configuration = Dropdown.objects.filter(pannel=1,deleted_status=False,role=check_user.role.id).values('pk','name','icon','type','state')
                 master_configuration_list = list(master_configuration)
                 for i in range(0, len(master_configuration_list)):
                     master_configuration_list[i]['child'] = child[i]
@@ -341,11 +341,9 @@ def get_departments(request):
 def get_years(request):
     if request.method =='GET':
         id = request.GET.get('dept_mapped_id')
-        print(id)
-        mapping_exist = Mapping.objects.filter(id = id).first()
+        mapping_exist = Mapping.objects.filter(id = id,deleted_status=False).first()
         if mapping_exist:
             year = mapping_exist.course.year
-            print(year)
             years=[]
             for i in range(1,int(year)+1):
                 years.append(i)

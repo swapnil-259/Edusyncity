@@ -103,17 +103,6 @@ def question_paper(request):
                 return JsonResponse({'message':'You are not autherised'},status=403)
         else:
             return JsonResponse({'message':'You are not logged in'},status=401)
-        
-    elif request.method=='GET':
-        subject_id=request.GET.get('id') 
-        if subject_id is None or not subject_id:
-            return JsonResponse({'message':'You are not sending subject id'},status=400)
-        student=Student.objects.filter(user=request.user.id).first()
-        if student is None:
-            return JsonResponse({'message':''})
-        print(student)
-        data=QuestionPaper.objects.filter(department=student.department,id=subject_id).values()
-        return JsonResponse(list(data),safe=False)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
@@ -121,7 +110,7 @@ def question_paper(request):
 def paper_response(request):
     if request.method=='POST':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Student',deleted_status=False)
+            id=Roles.objects.filter(role_name='Student',deleted_status=False).first()
             student=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
 
             load = json.loads(request.body)
@@ -326,20 +315,29 @@ def subject_year(request):
 def access_question(request):
     if request.method=='GET':
         student=Student.objects.filter(user=request.user.id).first()
-        print(student.department)
-        data=SubjectMapping.objects.filter(department=student.department).values('pk','subject__subject_name')
-        return JsonResponse(list(data),safe=False)
+        if student is None:
+            return JsonResponse({'message':''})
+        data=SubjectMapping.objects.filter(department=student.department,deleted_status=False).values('pk','subject__subject_name').distinct()
+        if data:
+            return JsonResponse(list(data),safe=False)
+        else:
+            return JsonResponse({'message':'No content'},status=204)
     else:
-        return JsonResponse({'message':'Invalid'},status=405)     
+        return JsonResponse({'message':'Invalid Request Method'},status=405)     
 
 def get_question_paper(request):
     if request.method=='GET':
         subject_id=request.GET.get('id') 
+        if subject_id is None or not subject_id:
+            return JsonResponse({'message':'You are not sending subject id'},status=400)
         student=Student.objects.filter(user=request.user.id).first()
-        data=QuestionPaper.objects.filter(id=subject_id).values()
-        return JsonResponse(list(data),safe=False)
-    else:
-        return JsonResponse({'message':'Invalid'},status=405)
+        if student is None:
+            return JsonResponse({'message':'You are not registerd'})
+        data=QuestionPaper.objects.filter(department=student.department,subject=subject_id).values()
+        if data:
+            return JsonResponse(list(data),safe=False)
+        else:
+            return JsonResponse({'message':'No content'},status=204)
 
 # import re   
 
