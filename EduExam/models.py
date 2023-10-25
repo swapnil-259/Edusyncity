@@ -24,14 +24,14 @@ class DateSheet(BaseModel):
     datesheet_mapping=models.ForeignKey(DateSheetMapping,on_delete=models.SET_NULL,null=True)
     shift=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='shift_identity')
     date=models.DateField(null=True)
-    start_time=models.TimeField(null=True)
+    start_time=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='start_time_identity')
 
 class QuestionPaper(BaseModel):
     date_sheet=models.ForeignKey(DateSheet,on_delete=models.SET_NULL,null=True)
     exam_type=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exam_type')
     department=models.ForeignKey(Mapping,null=True,on_delete=models.SET_NULL,related_name='department_identity')
     set=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='set_identity')
-    start_time=models.TimeField(null=True)
+    # start_time=models.TimeField(null=True)
     questions=JSONField(max_length=1000,null=True)
     
     
