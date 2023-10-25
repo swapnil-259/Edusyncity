@@ -15,7 +15,9 @@ urlpatterns = [
     path('course_dept_mapping/',views.course_dept_mapping),
     path('all_exam_mapping/', views.all_exam_mapping),
     path('conduct_datesheet/', views.conduct_datesheet),
-    path('get_exam_mapping/', views.get_exam_mapping)
+    path('get_exam_mapping/', views.get_exam_mapping),
+    path('show_exam_type/', views.show_exam_type),
+    path('select_dept/',views.select_dept)
 
   
     

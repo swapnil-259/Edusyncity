@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from .models import QuestionPaper,PaperResponse,ExamMapping,DateSheet, DateSheetMapping
 from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty,Student
 from EduCore.models import SubjectMapping,SubjectTeacherMapping
+from EduCore.views import check_user
 # from EduExam.models import Subjects
 from datetime import datetime,date
 
@@ -480,7 +481,7 @@ def conduct_datesheet(request):
                     return JsonResponse({'message':'missing any key'}, status=400)
                 if not exam_mapping_id or not course_dept_id or not year or not start_date or not end_date:
                     return JsonResponse({'message':'Missing Required Field'})
-                exam_exist = ExamMapping.objects.filter(exam_id = exam_mapping_id).first()
+                exam_exist = ExamMapping.objects.filter(id = exam_mapping_id).first()
                 print(exam_exist)
                 if exam_exist is None:
                     return JsonResponse({'messgae':'existing query do not match, data not found'}, status=204)
@@ -494,7 +495,8 @@ def conduct_datesheet(request):
                     course_department=course_dept_exist,
                     year=year,
                     start_date=start_date,
-                    end_date=end_date
+                    end_date=end_date,
+                    defaults={'added_by':admin.user}
                     
                 )
                 if created:
@@ -510,13 +512,49 @@ def conduct_datesheet(request):
 
 def get_exam_mapping(request):
     if request.method=='GET':
-        datesheet_mapping_data = DateSheetMapping.objects.filter(deleted_status=False, start_date__gte=date.today()).values('id','year','start_date','end_date','course_department__course_id__name','course_department__department_id__name')
+        datesheet_mapping_data = DateSheetMapping.objects.filter(deleted_status=False, start_date__gte=date.today()).values('id','year','start_date','end_date','course_department__course_id__name','course_department__department_id__name','exam_mapping__duration_id__name','exam_mapping__exam_id__name','exam_mapping__marks_id__name')
         return JsonResponse(list(datesheet_mapping_data), safe=False)
     else:
         return JsonResponse({'message':'invalid request method'}, status=405)
 
-# def select_dept(request):
-    # if request.method =='POST':
+def select_dept(request):
+    if request.method =='GET':
+        if request.user.is_authenticated:
+             check_Admin=check_user(request.user.id, 'Admin')
+             if check_Admin:
+                #  load = json.loads(request.body)
+                
+                 id = request.GET.get('id')
+                 if id:
+                     store_id=[]
+                     for i in range(0,int(id)):
+                         store_id.append(i)
+                         print(store_id)
+                         return JsonResponse({'message':'id found'})
+                 else:
+                    return JsonResponse({'message':'data not found'})
+             else:
+                 return JsonResponse({'message':'user is not Admin'})
+        else:
+            return JsonResponse({'message':'user is not authenticated'})
+    else:
+        return JsonResponse({'messsage':'invalid method request'})
+                                                         
+def show_exam_type(request):
+    if request.method =='GET':
+        exam_mapping_data = ExamMapping.objects.filter(deleted_status=False).values('id','duration_id__name','exam_id__name','marks_id__name')
+        if exam_mapping_data:
+            return JsonResponse(list(exam_mapping_data), safe=False)
+        else:
+            return JsonResponse({'message':'data not found'}, status=204)
+    else:
+        return JsonResponse({'message':'invalid request method'}, status=204)
+                 
+                 
+
+                 
+            
+        
                 
 
 
