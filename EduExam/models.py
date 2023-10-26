@@ -13,7 +13,7 @@ class ExamMapping(BaseModel):
 
 class DateSheetMapping(BaseModel):
     exam_mapping=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exammap_identity')
-    course_department=models.ForeignKey(Mapping,on_delete=models.SET_NULL,null=True,related_name='course_dept_idty')
+    course=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='exam_course')
     year=models.PositiveIntegerField(null=True)
     start_date=models.DateField(null=True)
     end_date=models.DateField(null=True)
@@ -22,12 +22,14 @@ class DateSheetMapping(BaseModel):
 class DateSheet(BaseModel):
     subject=models.ForeignKey(Subject,on_delete=models.SET_NULL,null=True)
     datesheet_mapping=models.ForeignKey(DateSheetMapping,on_delete=models.SET_NULL,null=True)
+    course_department=models.ForeignKey(Mapping,on_delete=models.SET_NULL,null=True,related_name='course_dept_idty')
     shift=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='shift_identity')
     date=models.DateField(null=True)
     start_time=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='start_time_identity')
 
 class QuestionPaper(BaseModel):
     date_sheet=models.ForeignKey(DateSheet,on_delete=models.SET_NULL,null=True)
+    subject=models.ForeignKey(Subject,on_delete=models.SET_NULL,null=True)
     exam_type=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exam_type')
     department=models.ForeignKey(Mapping,null=True,on_delete=models.SET_NULL,related_name='department_identity')
     set=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='set_identity')
@@ -39,7 +41,7 @@ class PaperResponse(BaseModel):
     paper=models.ForeignKey(QuestionPaper,on_delete=models.SET_NULL,null=True)
     answer=JSONField(max_length=1000,blank=True)
     evaluation=JSONField(max_length=1000,blank=True)
-    checked_satus=models.BooleanField(default=False)
+    checked_status=models.BooleanField(default=False)
     checked_time=models.DateTimeField(null=True)
     checked_by=models.ForeignKey(Faculty,on_delete=models.SET_NULL, null=True,related_name='checked_by')
 

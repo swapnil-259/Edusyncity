@@ -282,6 +282,9 @@ def dropdown_option(request,dropdown):
         elif dropdown =='marks':
             name='Marks'
             return dropdown_value(name)
+        elif dropdown=='Set':
+            return dropdown_value(dropdown)
+        
         else:
             return JsonResponse({"message":"no url found"},status=404)
     else:

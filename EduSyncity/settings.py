@@ -103,7 +103,7 @@ DATABASES = {
     }
     #  'default': {
     #     'ENGINE': 'django.db.backends.mysql',
-    #     'NAME': 'EduSyncity',
+    #     'NAME': 'Edusyncity',
     #     'USER': 'nikhil',
     #     'PASSWORD':'Nik212107@',
     #     'HOST':'localhost',
