@@ -18,27 +18,31 @@ def question_paper(request):
             load=json.loads(request.body)
             questions=load.get('questions')
             exam_type=load.get('exam_type')
-            # subject=load.get('subject')
+            subject=load.get('subject')
             department=load.get('department')
+            set=load.get('set')
             if  exam_type  is None or department is None or questions is None:
                 return JsonResponse({'message':'Missing value of any key'},status=400)
             if  not questions or not exam_type or not  department:
                 return JsonResponse({'message':'Missing Required Field'},status=400)
-            # subject_exist = SubjectMapping.objects.filter(id = subject).first()
-            # if subject_exist is None:
-            #     return JsonResponse({'messgae':'subject is not Instance'},status=400)
+            subject_exist = SubjectMapping.objects.filter(id = subject).first()
+            if subject_exist is None:
+                return JsonResponse({'messgae':'subject is not found'},status=400)
             exam_exist = ExamMapping.objects.filter(exam = exam_type).first()
             if exam_exist is None:
-                return JsonResponse({'message':'exam type is not an Instance'},status=400)
+                return JsonResponse({'message':'exam type is not an found'},status=400)
             department_exist = Mapping.objects.filter(id = department).first()
             if department_exist is None:
-                return JsonResponse({'message':'department is not an Instance'},status=400)
+                return JsonResponse({'message':'department is not an found'},status=400)
+            set_exist = Dropdown.objects.filter(id = set).first()
+            if set_exist is None:
+                return JsonResponse({'message':'set type is not an found'},status=400)
             if faculty_exist:
                 paper,created=QuestionPaper.objects.get_or_create(
                                             exam_type=exam_exist,
-                                            # subject=subject_exist,
-                                            title="KIET Group Of Institutions",
+                                            subject=subject_exist,
                                             department=department_exist,
+                                            set=set_exist,
                                             defaults={"added_by" : faculty_exist.user,"questions":questions}
                                             
                                             )
@@ -247,7 +251,7 @@ def get_question_answer(request):
                 if student_id is None:
                     return JsonResponse({'message':'You are not sending student id'},status=400)
 
-                data=PaperResponse.objects.filter(added_by=student_id,deleted_status=False,checked_satus=False).values('added_by','answer')
+                data=PaperResponse.objects.filter(added_by=student_id,deleted_status=False,checked_status=False).values('added_by','answer')
                 if data:
                     return JsonResponse(list(data),safe=False)
             else:
@@ -260,6 +264,7 @@ def get_question_answer(request):
 
 def exam_type(request):
     if request.method == 'GET':
+        # data=DateSheetMapping.objects.filter(deleted_status=False,)
         data=Dropdown.objects.get(deleted_status=False,name='Exam Type')
         print(data)
         exam_type=Dropdown.objects.filter(deleted_status=False,relation=data).values('pk','name')
@@ -331,8 +336,9 @@ def exam_mapping(request):
 def department_course(request):
     if request.method == 'GET':
         id=Faculty.objects.filter(user=request.user.id).first()
-        # if not id :
-        #     return JsonResponse()
+        # dept=SubjectTeacherMapping.objects.
+        if not id :
+            return JsonResponse({'message':'You not have any department'},status=400)
         data=SubjectTeacherMapping.objects.filter(deleted_status=False,faculty=id).values('subject__department__pk','subject__department__department__name','subject__department__course__name').distinct()
         if data:
             return JsonResponse(list(data),safe=False)
