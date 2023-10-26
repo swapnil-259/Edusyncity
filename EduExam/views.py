@@ -573,18 +573,40 @@ def select_dept(request):
                 #  load = json.loads(request.body)
                 
                  id = request.GET.get('id')
+                 id_data = id.split(',')
+                 print(id_data)
+                 length = len(id_data)
                  if id:
-                     store_id=[]
-                     for i in range(0,int(id)):
-                         store_id.append(i)
-                         print(store_id)
-                         return JsonResponse({'message':'id found'})
+                     dept = []
+                     datesheet_details=[]
+                     datesheet_data=[]
+                     sub_data=[]
+                     for i in range(length):
+                         print(id_data[i])
+                         dept.append(id_data[i])
+                         
+                     for i in dept:
+                         subject_data = list(DateSheetMapping.objects.filter(id =int(i), deleted_status=False).values('course_department_id','year'))
+                         datesheet_details.append(subject_data)
+                     print(datesheet_details) 
+                     for i in datesheet_details:
+                        data = [i[0]['course_department_id'], i[0]['year']]
+                        datesheet_data.append(data)
+                     length = len(datesheet_data)
+                     for i in range(0,length):
+                         for j in range(0,i):
+                              print(datesheet_data[j][0])
+                              sub_details =SubjectMapping.objects.filter(department_id=datesheet_data[j][0], year=datesheet_data[j][1]).values('id','subject_id__subject_name','subject_id__subject_code')
+                              sub_data.append(list(sub_details))
+                    
+                           
+                     return JsonResponse(list(sub_data) , safe=False)
                  else:
                     return JsonResponse({'message':'data not found'})
              else:
                  return JsonResponse({'message':'user is not Admin'})
         else:
-            return JsonResponse({'message':'user is not authenticated'})
+            return JsonResponse({'message':'user is not authenticated'}, status=403)
     else:
         return JsonResponse({'messsage':'invalid method request'})
                                                          
@@ -597,6 +619,15 @@ def show_exam_type(request):
             return JsonResponse({'message':'data not found'}, status=204)
     else:
         return JsonResponse({'message':'invalid request method'}, status=204)
+    
+#     sub_data = [[{'id': 5, 'course_department_id': 11, 'year': 2}], [{'id': 6, 'course_department_id': 6, 'year': 3}]]
+# new_array = []
+
+# for item in sub_data:
+#     new_item = [item[0]['id'], item[0]['course_department_id'], item[0]['year']]
+#     new_array.append(new_item)
+
+# print(new_array)
                  
                  
 
