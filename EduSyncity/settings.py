@@ -101,22 +101,22 @@ DATABASES = {
     #     'HOST':'10.21.67.7',
     #     'PORT':'3306',
     # }
-    #  'default': {
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     'NAME': 'Edusyncity',
-    #     'USER': 'harry',
-    #     'PASSWORD':'Kiet@123',
-    #     'HOST':'0.tcp.in.ngrok.io',
-    #     'PORT':'15456',
-    # }
      'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'edusyncity',
-        'USER': 'swapnil',
-        'PASSWORD':'@Swapnil259',
-        'HOST':'localhost',
-        'PORT':'3306',
+        'NAME': 'Edusyncity',
+        'USER': 'harry',
+        'PASSWORD':'Kiet@123',
+        'HOST':'0.tcp.in.ngrok.io',
+        'PORT':'19968',
     }
+    #  'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'edusyncity',
+    #     'USER': 'swapnil',
+    #     'PASSWORD':'@Swapnil259',
+    #     'HOST':'localhost',
+    #     'PORT':'3306',
+    # }
 
 }
 

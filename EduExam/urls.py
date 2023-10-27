@@ -22,7 +22,9 @@ urlpatterns = [
     path('get_question_answer/',views.get_question_answer),
     path('selectdept/', views.selectdept),
     path('get_shift_time/',views.get_shift_time),
-    path('get_date/',views.get_date)
+    path('get_date/',views.get_date),
+    path('datesheet/',views.datesheet),
+    path('graph_course_dept/',views.graph_course_dept)
 
   
     

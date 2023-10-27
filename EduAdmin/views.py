@@ -31,7 +31,7 @@ def validation(email = None,firstname = None,lastname = None,fathername = None, 
      else:
          return JsonResponse({'message':'Email is None'})
      if age is not None:
-        if age is ' ' or int(age) <= 15:
+        if age is ' ' or int(age) <= 25:
              return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
      else:
          return JsonResponse({'message':'Age is None'})
@@ -58,7 +58,7 @@ def register_faculty(request):
                 title = load.get('title')
                 print(firstname,lastname)
                 # if age is ' ' or int(age) <= 0:
-                #     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
+                    # return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
                 if not username or not firstname or not lastname or not email or not gender or not contact or not age or not address  or not qualification or not title :
                       return JsonResponse({'message':'Missing Required Field'}, status = 400)
                 if username is None or email is None or firstname is None or lastname is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None :
@@ -103,6 +103,8 @@ def register_faculty(request):
                     role_id = roles.id,
                     added_by = admin
                     )
+                return JsonResponse({'message':'registration Successful'})
+
             else:
                 return JsonResponse({'message':'You are not Admin'},status=403)
         else:
@@ -134,6 +136,8 @@ def register_student(request):
                 department = load.get('department')
                 year = load.get('year')
                 religion = load.get('religion')
+                print(admin)
+
                 
                 # if age is ' ' or int(age) <= 0:
                 #     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
