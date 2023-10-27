@@ -33,7 +33,31 @@ def validation(email = None,firstname = None,lastname = None,fathername = None, 
         if age is ' ' or int(age) <= 15:
              return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
      else:
-         return JsonResponse({'message':'Age is None'})
+         return JsonResponse({'message':'Age is None'},status=400)
+     
+
+def faculty_validation(load):
+    keys_to_check = ['firstname', 'lastname', 'username', 'email', 'gender','contact','age','qualification','title']
+    
+    for key in keys_to_check:
+        if key not in load:
+            return JsonResponse({'message': f'{key} is missing'}, status=400)  
+        value=str(load[key]).strip()
+        if value == '':
+            return JsonResponse({'message': f'{key} can not be space or none'}, status=400)
+        elif key == 'age':
+            if not value.isdigit():
+                return JsonResponse({'message':f'{key} accept only integer'},status=400)
+        elif key == 'title':
+            if not value.isdigit():
+                return JsonResponse({'message':f'{key} accept only integer'},status=400)
+        elif key == 'contact':
+            if not value.isdigit():
+                return JsonResponse({'message':f'{key} accept only integer'},status=400)
+        elif key == 'qualification':
+            if not value.isalpha():
+                return JsonResponse({'message':f'{key} accept only aphanumeric character'},status=400)
+        
 
 def register_faculty(request):
     if request.method == 'POST':
@@ -66,6 +90,10 @@ def register_faculty(request):
                 print(validation_data)
                 if validation_data:
                   return validation_data
+                check=faculty_validation(load)
+                if check:
+                    return check
+
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
                     return JsonResponse({'message':'Gender Not an instance'},status=400)
@@ -144,16 +172,16 @@ def register_student(request):
                     return validation_data
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
-                    return JsonResponse({'message':'Gender Not an instance'},status=400)
+                    return JsonResponse({'message':'Gender Not  found'},status=400)
                 department_exist = Mapping.objects.filter(department = department).first()
                 if department_exist is None:
-                    return JsonResponse({'message':'Department Not an Instance'},status=400)
+                    return JsonResponse({'message':'Department Not found'},status=400)
                 course_exist = Dropdown.objects.filter(id = course).first()
                 if course_exist is None:
-                    return JsonResponse({'message':'Course Not an Instance'},status=400)
+                    return JsonResponse({'message':'Course Not found'},status=400)
                 religion_exist = Dropdown.objects.filter(id = religion).first()
                 if religion_exist is None:
-                    return JsonResponse({'message':'Religion Not an Instance'},status=400)
+                    return JsonResponse({'message':'Religion Not found'},status=400)
                 if User.objects.filter(username=user_name).exists():
                     return JsonResponse({'message':'Username Already exists'},status=409)
                 elif User.objects.filter(email=email).exists():

@@ -29,7 +29,7 @@ class DateSheet(BaseModel):
 
 class QuestionPaper(BaseModel):
     date_sheet=models.ForeignKey(DateSheet,on_delete=models.SET_NULL,null=True)
-    subject=models.ForeignKey(Subject,on_delete=models.SET_NULL,null=True)
+    subject=models.ForeignKey(SubjectMapping,on_delete=models.SET_NULL,null=True)
     exam_type=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exam_type')
     department=models.ForeignKey(Mapping,null=True,on_delete=models.SET_NULL,related_name='department_identity')
     set=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='set_identity')

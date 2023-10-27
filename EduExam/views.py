@@ -8,6 +8,28 @@ from EduCore.models import SubjectMapping,SubjectTeacherMapping
 from datetime import datetime,date
 
 
+def questionpaper_validation(load):
+    keys_to_check = ['questions', 'exam_type', 'subject', 'department', 'set']
+    
+    for key in keys_to_check:
+        if key not in load:
+            return JsonResponse({'message': f'{key} is missing'}, status=400)  
+        value=str(load[key]).strip()
+        if value == '':
+            return JsonResponse({'message': f'{key} can not be space or none'}, status=400)
+        elif key == 'exam_type':
+            if not value.isdigit():
+                return JsonResponse({'message':f'{key} accept only integer'},status=400)
+        elif key == 'subject':
+            if not value.isdigit():
+                return JsonResponse({'message':f'{key} accept only integer'},status=400)
+        elif key == 'department':
+            if not value.isdigit():
+                return JsonResponse({'message':f'{key} accept only integer'},status=400)
+        elif key == 'set':
+            if not value.isdigit():
+                return JsonResponse({'message':f'{key} accept only integer'},status=400)
+
 
 def question_paper(request):
     if request.method=='POST':
@@ -20,10 +42,14 @@ def question_paper(request):
             subject=load.get('subject')
             department=load.get('department')
             set=load.get('set')
-            if  exam_type  is None or department is None or questions is None:
-                return JsonResponse({'message':'Missing value of any key'},status=400)
-            if  not questions or not exam_type or not  department:
-                return JsonResponse({'message':'Missing Required Field'},status=400)
+            
+            response=questionpaper_validation(load)
+            if response:
+                return response
+            # if  exam_type  is None or department is None or questions is None:
+            #     return JsonResponse({'message':'Missing value of any key'},status=400)
+            # if  not questions or not exam_type or not  department:
+            #     return JsonResponse({'message':'Missing Required Field'},status=400)
             subject_exist = SubjectMapping.objects.filter(id = subject).first()
             if subject_exist is None:
                 return JsonResponse({'messgae':'subject is not found'},status=400)
@@ -48,7 +74,7 @@ def question_paper(request):
                 if created:
                     return JsonResponse({'message':'Created succesfully'},status=201)
                 else:
-                    return JsonResponse({'message':f'Question peper already created for {{department_exists__department__name}}'},status=409)
+                    return JsonResponse({'message':'Question peper already created for selected options'},status=409)
             else:
                 return JsonResponse({'message':'You are not a Teacher'},status=403)
         else:
@@ -259,6 +285,23 @@ def get_question_answer(request):
             return JsonResponse({'message':'You are not authenticated'},status=401) 
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405) 
+
+def get_students_answer(request):
+    if request.method== 'GET':
+        # if request.user.is_authenticated:
+        #     id=Roles.objects.get(role_name='Teacher',deleted_status=False)
+        #     faculty=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first()
+        #     if faculty:
+
+
+        data=PaperResponse.objects.filter(deleted_status=False,checked_status=False).values('added_by','paper__subject__subject__subject_name','paper__subject__subject__subject_code')
+        if data:
+            return JsonResponse(list(data),safe=False)
+        else:
+            return JsonResponse({'message':'No answers found'},status=204)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+
 
 
 def exam_type(request):
@@ -504,6 +547,7 @@ def datesheet_maping(request):
             return JsonResponse({'message':'You are not autherised'},status=403)
     else:
         return JsonResponse({'message':'You are not logged in'},status=401)
+
 def course_dept_mapping(request):
     if request.method =='GET':
         all_mapping_data = Mapping.objects.filter(deleted_status=False).values('id','course_id__name','department_id__name')
@@ -574,6 +618,5 @@ def get_exam_mapping(request):
                 
 
 
-
-                  
+               
                 
