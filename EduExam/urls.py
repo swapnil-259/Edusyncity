@@ -6,6 +6,7 @@ urlpatterns = [
     path('examinfo/',views.exam_info),
     path('question_paper/',views.question_paper),
     path('paper_response/',views.paper_response),
+    path('paper_evaluation/',views.paper_evaluation),
     path('exam_mapping/',views.exam_mapping),
     path('department_course/',views.department_course),
     path('subject_year/',views.subject_year),
@@ -22,7 +23,9 @@ urlpatterns = [
     path('get_question_answer/',views.get_question_answer),
     path('selectdept/', views.selectdept),
     path('get_shift_time/',views.get_shift_time),
-    path('get_date/',views.get_date)
+    path('get_date/',views.get_date),
+    path('paper_set/',views.paper_sets),
+    path('get_students_answer/', views.get_students_answer),
 
   
     

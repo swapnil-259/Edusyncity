@@ -41,9 +41,10 @@ class PaperResponse(BaseModel):
     paper=models.ForeignKey(QuestionPaper,on_delete=models.SET_NULL,null=True)
     answer=JSONField(max_length=1000,blank=True)
     evaluation=JSONField(max_length=1000,blank=True)
+    total_marks=models.PositiveIntegerField(null=True)
     checked_status=models.BooleanField(default=False)
     checked_time=models.DateTimeField(null=True)
-    checked_by=models.ForeignKey(Faculty,on_delete=models.SET_NULL, null=True,related_name='checked_by')
+    checked_by=models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='checked_by')
 
 
     
