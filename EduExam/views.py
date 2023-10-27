@@ -6,15 +6,17 @@ from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty,Student
 from EduCore.models import SubjectMapping,SubjectTeacherMapping
 from EduCore.views import check_user
 # from EduExam.models import Subjects
-from datetime import datetime,date
+from datetime import datetime, timedelta, date
+import pandas as pd
 
 
 
 def question_paper(request):
     if request.method=='POST':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first()
+            # id=Roles.objects.get(role_name='Teacher',deleted_status=False)
+            # faculty_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first()
+            check_faculty = check_user(request.user.id,'Teacher')
             load=json.loads(request.body)
             questions=load.get('questions')
             exam_type=load.get('exam_type')
@@ -37,13 +39,13 @@ def question_paper(request):
             set_exist = Dropdown.objects.filter(id = set).first()
             if set_exist is None:
                 return JsonResponse({'message':'set type is not an found'},status=400)
-            if faculty_exist:
+            if check_faculty:
                 paper,created=QuestionPaper.objects.get_or_create(
                                             exam_type=exam_exist,
                                             subject=subject_exist,
                                             department=department_exist,
                                             set=set_exist,
-                                            defaults={"added_by" : faculty_exist.user,"questions":questions}
+                                            defaults={"added_by" : check_faculty,"questions":questions}
                                             
                                             )
                 if created:
@@ -58,10 +60,12 @@ def question_paper(request):
 
     elif request.method=='PUT':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            admin=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            # id=Roles.objects.get(role_name='Teacher',deleted_status=False)
+            # faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            # id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            # admin=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            faculty = check_user(request.user.id, 'Teacher')
+            admin = check_user(request.user.id, 'Admin')
             
             load=json.loads(request.body)
             paper_id=load.get('paper_id')
@@ -91,10 +95,8 @@ def question_paper(request):
 
     elif request.method == 'DELETE':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            admin=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            faculty = check_user(request.user.id, 'Teacher')
+            admin = check_user(request.user.id, 'Admin')
 
             paper_id=request.GET.get('papper_id')
 
@@ -115,8 +117,8 @@ def question_paper(request):
 def paper_response(request):
     if request.method=='POST':
         if request.user.is_authenticated:
-            id=Roles.objects.filter(role_name='Student',deleted_status=False).first()
-            student=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+           
+            student = check_user(request.user.id, 'Student')
 
             load = json.loads(request.body)
 
@@ -135,7 +137,7 @@ def paper_response(request):
             if student:
                 response,created=PaperResponse.objects.get_or_create(
                     paper = paper_exist,
-                    added_by = student.user,
+                    added_by = student,
                     defaults={"answer":answer}
                 )
                 if created:
@@ -153,8 +155,7 @@ def paper_response(request):
 def paper_evaluation(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first()
+            faculty = check_user(request.user.id, 'Teacher')
 
             load=json.loads(request.body)
 
@@ -166,7 +167,7 @@ def paper_evaluation(request):
                 evaluation=evaluation,
                 checked_status=True,
                 checked_time=datetime.now(),
-                checked_by=faculty.user
+                checked_by=faculty
                 )
                 if evaluated:
                     return JsonResponse({'message':'Paper checked'},status=200)
@@ -179,8 +180,8 @@ def paper_evaluation(request):
         
     elif request.method == 'PUT':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
+            faculty = check_user(request.user.id, 'Teacher')
+
 
             load=json.loads(request.body)
 
@@ -188,9 +189,7 @@ def paper_evaluation(request):
             evaluation=load.get('evaluation')
 
             if faculty:
-                evaluated=PaperResponse.objects.filter(pk=paper_id,deleted_status=False).update(evaluation=evaluation,
-                                                                                      checked_time=datetime.now(),
-                                                                                      )
+                evaluated=PaperResponse.objects.filter(pk=paper_id,deleted_status=False).update(evaluation=evaluation,checked_time=datetime.now(),)
                 if evaluated:
                     return JsonResponse({'message':'Paper edited'})
                 else:
@@ -202,9 +201,7 @@ def paper_evaluation(request):
         
     elif request.method == 'DELETE':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.id).first()
-
+            faculty = check_user(request.user.id, 'Teacher')
             paper_id=request.GET.get('papper_id')
 
             if faculty:
@@ -224,8 +221,8 @@ def paper_evaluation(request):
 def get_student_response(request):
     if request.method=='GET':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first() 
+            faculty = check_user(request.user.id, 'Teacher')
+
             if faculty:
                 data=PaperResponse.objects.filter(deleted_status=False).values('added_by','added_by__first_name','added_by__last_name','paper__exam_type__exam__name')
                 if data:
@@ -243,8 +240,8 @@ def get_student_response(request):
 def get_question_answer(request):
     if request.method=='GET':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Teacher',deleted_status=False)
-            faculty=UserRole.objects.filter(role_id = id.pk).first() 
+            faculty = check_user(request.user.id, 'Teacher')
+
             # faculty_subject=SubjectTeacherMapping.objects.filter(faculty=request.user.id,).first()
             if faculty:
                 student_id=request.GET.get('student_id')
@@ -291,42 +288,41 @@ def exam_info(request):
 def exam_mapping(request):
     if request.method =='POST':
         if request.user.is_authenticated:
-            id=Roles.objects.filter(role_name='Admin',deleted_status=False).first()
-            if id:
-                admin_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-                load = json.loads(request.body)
-                exam_type = load.get('exam_type_id')
-                duration=load.get('duration')
-                marks = load.get('marks')
-                print(exam_type,duration, marks)
-                if duration is None or marks is None or exam_type is None :
-                    return JsonResponse({'message':'Missing value of any key'},status=400)
-                if not duration or not marks or not exam_type :
-                    return JsonResponse({'message':'Missing Required Field'},status=400)
-                exam_exist = Dropdown.objects.filter(pk = exam_type).first()
-                if exam_exist is None:
-                    return JsonResponse({'message':'Given data do not match with Existing Query'},status=400)
-                duration_exist = Dropdown.objects.filter(pk = duration).first()
-                if duration_exist is None:
-                    return JsonResponse({'messgae':'Given data do not match with Existing Query'})
-                marks_exist = Dropdown.objects.filter(pk = marks).first()
-                if marks_exist is None:
-                    return JsonResponse({'message':'Given data do not match with Existing Query'})
-                if admin_exist:
-                    mapping, created = ExamMapping.objects.get_or_create(
-                        duration=duration_exist,
-                        exam=exam_exist,
-                        marks=marks_exist,
-                        defaults={"added_by":admin_exist.user}
-                        
-                    )
-                    if created:
-                        # return JsonResponse({'message':f'{exam_exist.name} conduct for {marks_exist.name} marks for {duration_exist.name} minutes'})
-                        return JsonResponse({'message':'Exam Mapping successfully done'})
-                    else:
-                        return JsonResponse({'message':'Mapping already exist'},status=409)
+            admin = check_user(request.user.id, 'Admin')
+
+            load = json.loads(request.body)
+            exam_type = load.get('exam_type_id')
+            duration=load.get('duration')
+            marks = load.get('marks')
+            print(exam_type,duration, marks)
+            if duration is None or marks is None or exam_type is None :
+                return JsonResponse({'message':'Missing value of any key'},status=400)
+            if not duration or not marks or not exam_type :
+                return JsonResponse({'message':'Missing Required Field'},status=400)
+            exam_exist = Dropdown.objects.filter(pk = exam_type).first()
+            if exam_exist is None:
+                return JsonResponse({'message':'Given data do not match with Existing Query'},status=400)
+            duration_exist = Dropdown.objects.filter(pk = duration).first()
+            if duration_exist is None:
+                return JsonResponse({'messgae':'Given data do not match with Existing Query'})
+            marks_exist = Dropdown.objects.filter(pk = marks).first()
+            if marks_exist is None:
+                return JsonResponse({'message':'Given data do not match with Existing Query'})
+            if admin:
+                mapping, created = ExamMapping.objects.get_or_create(
+                    duration=duration_exist,
+                    exam=exam_exist,
+                marks=marks_exist,
+                defaults={"added_by":admin}
+                    
+                )
+                if created:
+                    # return JsonResponse({'message':f'{exam_exist.name} conduct for {marks_exist.name} marks for {duration_exist.name} minutes'})
+                    return JsonResponse({'message':'Exam Mapping successfully done'})
                 else:
-                    return JsonResponse({'message':'admin not found'},status=204)
+                    return JsonResponse({'message':'Mapping already exist'},status=409)
+            else:
+                return JsonResponse({'message':'admin not found'},status=204)
         else:
             return JsonResponse({'message':'user is not authenticated'},status=403)
     else:
@@ -378,8 +374,8 @@ def access_question(request):
 def get_question_paper(request):
     if request.method=='GET':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Student',deleted_status=False)
-            student=UserRole.objects.filter(user=request.user.id,role_id = id.pk).first() 
+            student = check_user(request.user.id, 'Student')
+
             if student:
 
                 # subject_id=request.GET.get('id') 
@@ -416,8 +412,8 @@ def validation(load):
 
 def datesheet_maping(request):
     if request.user.is_authenticated:
-        id=Roles.objects.get(role_name='Admin',deleted_status=False)
-        admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+        admin = check_user(request.user.id, 'Admin')
+
         if admin:
             if request.method == 'POST':
 
@@ -426,17 +422,11 @@ def datesheet_maping(request):
                 if load_data:
                     return load_data
                 else:
-                    
-                
-                
-                
                     subject=load.get('subject')
                     exam_map=load.get('exam_map')
                     shift=load.get('shift')
                     date=load.get('date')
                     start_time=load.get('start_time')
-           
-                    
                     exam_exist=ExamMapping.objects.filter(pk=exam_map,deleted_status=False).first()
                     if exam_exist is None:
                         return JsonResponse({'message':'Exam_mapping is not an instance'},status=400)
@@ -452,7 +442,7 @@ def datesheet_maping(request):
                     shift=shift_exist,
                     date=date,
                     start_time=start_time,
-                    defaults={"added_by":admin.user}
+                    defaults={"added_by":admin}
                     )
                     if created:
                         return JsonResponse({'message':'Exam mapped succesfully'},status=201)
@@ -521,36 +511,36 @@ def all_exam_mapping(request):
 def conduct_datesheet(request):
     if request.method=='POST':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            admin = check_user(request.user.id, 'Admin')
+
             if admin:
                 load = json.loads(request.body)
                 exam_mapping_id = load.get('exam_mapping_id')
-                course_dept_id = load.get('course_dept_id')
+                course_id = load.get('course_dept_id')
                 year = load.get('year')
                 start_date = load.get('start_date')
                 end_date = load.get('end_date') 
-                print(exam_mapping_id, course_dept_id)                
-                if exam_mapping_id is None or course_dept_id is None or year is None or start_date is None or end_date is None:
+                print(exam_mapping_id, course_id)                
+                if exam_mapping_id is None or course_id is None or year is None or start_date is None or end_date is None:
                     return JsonResponse({'message':'missing any key'}, status=400)
-                if not exam_mapping_id or not course_dept_id or not year or not start_date or not end_date:
+                if not exam_mapping_id or not course_id or not year or not start_date or not end_date:
                     return JsonResponse({'message':'Missing Required Field'})
                 exam_exist = ExamMapping.objects.filter(id = exam_mapping_id).first()
                 print(exam_exist)
                 if exam_exist is None:
                     return JsonResponse({'messgae':'existing query do not match, data not found'}, status=204)
-                course_dept_exist = Mapping.objects.filter(id = course_dept_id).first()
-                print(course_dept_exist)
-                if course_dept_exist is None:
+                course_exist = Dropdown.objects.filter(id = course_id).first()
+                print(course_exist)
+                if course_exist is None:
                     return JsonResponse({'message':'existing query do not match, data not found'}, status=204)
                 
                 datesheet_mapping, created = DateSheetMapping.objects.get_or_create(
                     exam_mapping = exam_exist,
-                    course_department=course_dept_exist,
+                    course_id=course_exist.pk,
                     year=year,
                     start_date=start_date,
                     end_date=end_date,
-                    defaults={'added_by':admin.user}
+                    defaults={'added_by':admin}
                     
                 )
                 if created:
@@ -566,12 +556,19 @@ def conduct_datesheet(request):
 
 def get_exam_mapping(request):
     if request.method=='GET':
-        datesheet_mapping_data = DateSheetMapping.objects.filter(deleted_status=False, start_date__gte=date.today()).values('id','year','start_date','end_date','course_department__course_id__name','course_department__department_id__name','exam_mapping__duration_id__name','exam_mapping__exam_id__name','exam_mapping__marks_id__name')
+        datesheet_mapping_data = DateSheetMapping.objects.filter(deleted_status=False, start_date__gte=date.today()).values('id','year','start_date','end_date','course_id__name','exam_mapping__duration_id__name','exam_mapping__exam_id__name','exam_mapping__marks_id__name','course_id__id')
         return JsonResponse(list(datesheet_mapping_data), safe=False)
     else:
         return JsonResponse({'message':'invalid request method'}, status=405)
+def selectdept(request):
+    if request.method=='GET':
+        course_id = request.GET.get('id')
+        department_data = Mapping.objects.filter(course_id = course_id).values('id','department_id__name','course_id')
+        return JsonResponse(list(department_data), safe=False)
+    else:
+        return JsonResponse({'message':'invalid request method'})
 
-def select_dept(request):
+def select_sub(request):
     if request.method =='GET':
         if request.user.is_authenticated:
              check_Admin=check_user(request.user.id, 'Admin')
@@ -579,10 +576,12 @@ def select_dept(request):
                 #  load = json.loads(request.body)
                 
                  id = request.GET.get('id')
+                 year = request.GET.get('year')
+                 
                  id_data = id.split(',')
                  print(id_data)
                  length = len(id_data)
-                 if id:
+                 if id: 
                      dept = []
                      datesheet_details=[]
                      datesheet_data=[]
@@ -592,21 +591,24 @@ def select_dept(request):
                          dept.append(id_data[i])
                          
                      for i in dept:
-                         subject_data = list(DateSheetMapping.objects.filter(id =int(i), deleted_status=False).values('course_department_id','year'))
+                         subject_data = list(Mapping.objects.filter(id =int(i), deleted_status=False).values('id'))
                          datesheet_details.append(subject_data)
                      print(datesheet_details) 
                      for i in datesheet_details:
-                        data = [i[0]['course_department_id'], i[0]['year']]
+                        data = [i[0]['id']]
                         datesheet_data.append(data)
+                     print(datesheet_data)
                      length = len(datesheet_data)
-                     for i in range(0,length):
-                         for j in range(0,i):
-                              print(datesheet_data[j][0])
-                              sub_details =SubjectMapping.objects.filter(department_id=datesheet_data[j][0], year=datesheet_data[j][1]).values('id','subject_id__subject_name','subject_id__subject_code')
+                     print(length)
+                     for i in datesheet_data:
+                        #  print(datesheet_data[i])
+                         for j in i:
+                              print(j)
+                              sub_details =SubjectMapping.objects.filter(department_id=j, year=year).values('id','subject_id__subject_name','subject_id__subject_code')
                               sub_data.append(list(sub_details))
                     
                            
-                     return JsonResponse(list(sub_data) , safe=False)
+                     return JsonResponse(list(sub_data), safe=False)
                  else:
                     return JsonResponse({'message':'data not found'})
              else:
@@ -626,15 +628,39 @@ def show_exam_type(request):
     else:
         return JsonResponse({'message':'invalid request method'}, status=204)
     
-#     sub_data = [[{'id': 5, 'course_department_id': 11, 'year': 2}], [{'id': 6, 'course_department_id': 6, 'year': 3}]]
-# new_array = []
+def get_date(request):
+    if request.method =='GET':
+        id = request.GET.get("id")
+        get_dates= DateSheetMapping.objects.filter(id = id).first()
+        start_date = get_dates.start_date
+        end_date=get_dates.end_date
+        get_date_btw =get_dates_between(start_date,end_date)
+        print(get_date_btw)
+        if get_date_btw:
+            return JsonResponse(list(get_date_btw), safe=False)
+        else:
+            return JsonResponse({'message':'date not found'})
+        # if (start_date + timedelta(n)).weekday() != 6
+        
+            
+       
+        
 
-# for item in sub_data:
-#     new_item = [item[0]['id'], item[0]['course_department_id'], item[0]['year']]
-#     new_array.append(new_item)
+def get_dates_between(start_date, end_date):
+    dates = [start_date + timedelta(n+1) for n in range(int((end_date - start_date).days))]
+    
+    return dates
 
-# print(new_array)
-                 
+def get_shift_time(request):
+    if request.method=='GET':
+        id = request.GET.get("id")
+        get_shift_data = Dropdown.objects.filter(relation_id = id).values("name",'id')
+        if get_shift_data:
+            return JsonResponse(list(get_shift_data), safe=False)
+        else:
+            return JsonResponse({'message':'data not found'})
+
+        
                  
 
                  

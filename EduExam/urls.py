@@ -17,9 +17,12 @@ urlpatterns = [
     path('conduct_datesheet/', views.conduct_datesheet),
     path('get_exam_mapping/', views.get_exam_mapping),
     path('show_exam_type/', views.show_exam_type),
-    path('select_dept/',views.select_dept),
+    path('select_sub/',views.select_sub),
     path('get_student_response/', views.get_student_response),
-    path('get_question_answer/',views.get_question_answer)
+    path('get_question_answer/',views.get_question_answer),
+    path('selectdept/', views.selectdept),
+    path('get_shift_time/',views.get_shift_time),
+    path('get_date/',views.get_date)
 
   
     
