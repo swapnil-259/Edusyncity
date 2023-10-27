@@ -6,6 +6,7 @@ from .models import User,Roles, UserRole, Faculty,Dropdown,Mapping, Student
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.hashers import make_password
 from datetime import datetime,date
+from EduCore.views import check_user
 from django.db.models import Q
 
 def validation(email = None,firstname = None,lastname = None,fathername = None, mothername = None, age=None):
@@ -63,9 +64,11 @@ def register_faculty(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
             
-            id=Roles.objects.filter(role_name='Admin',deleted_status=False).first()
-            admin_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            if admin_exist:
+            # id=Roles.objects.filter(role_name='Admin',deleted_status=False).first()
+            # admin_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            admin = check_user(request.user.id, 'Admin')
+
+            if admin:
                 load= json.loads(request.body)
                 firstname = load.get('firstname')
                 lastname = load.get('lastname')
@@ -118,7 +121,7 @@ def register_faculty(request):
                 address = address,
                 title = title_exist,
                 contact= contact,
-                added_by = admin_exist.user,
+                added_by = admin,
                 age = age,
                 gender = gender_exist
                 )
@@ -126,7 +129,7 @@ def register_faculty(request):
                 UserRole.objects.create(
                     user_id = user.id,
                     role_id = roles.id,
-                    added_by = admin_exist.user
+                    added_by = admin
                     )
             else:
                 return JsonResponse({'message':'You are not Admin'},status=403)
@@ -139,9 +142,11 @@ def register_faculty(request):
 def register_student(request):
     if request.method == 'POST':
          if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            admin_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            if admin_exist:
+            # id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            # admin_exist=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            admin = check_user(request.user.id, 'Admin')
+
+            if admin:
                 load=json.loads(request.body)
                 firstname = load.get('first_name')
                 lastname = load.get('last_name')
@@ -207,14 +212,13 @@ def register_student(request):
                     father_name = father_name,
                     mother_name= mother_name,
                     religion = religion_exist,
-                    added_by = admin_exist.user
+                    added_by = admin
                 )
                 roles, created = Roles.objects.get_or_create(role_name= 'Student')
                 UserRole.objects.create(
                     user_id = user.id,
                     role_id = roles.id,
-                    added_by = admin_exist.user
-                    )
+                    added_by = admin                    )
                 return JsonResponse({'message':'registration Successful'})
             else:   
                 return JsonResponse({'message':'user is not admin'},status=403)
@@ -287,17 +291,21 @@ def logout_user(request):
 def add_role(request):
     if request.method =='POST':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            # id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            # check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            admin = check_user(request.user.id, 'Admin')
+
+
+            
             roles_data = json.loads(request.body)
             name=roles_data.get('name')
             if name is None or not name:
                 return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
 
-            if check_admin: 
+            if admin: 
                 role_exist , created= Roles.objects.get_or_create(
                     role_name = name,
-                    added_by = check_admin.user,
+                    added_by = admin,
                     deleted_status=False,
                     )
                 if created:
@@ -312,16 +320,17 @@ def add_role(request):
         
     elif request.method == "PUT":
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            user_exist = User.objects.get(pk = request.user.id)
+            # id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            # check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            # user_exist = User.objects.get(pk = request.user.id)
+            admin = check_user(request.user.id, 'Admin')
 
             load = json.loads(request.body)
             new_name=load.get('new_name')
             role_id=load.get('role_id')
             if new_name is None or role_id is None or not new_name or not role_id:
                 return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
-            if check_admin:
+            if admin:
                 role_check=Roles.objects.filter(pk=role_id,deleted_status=False).first()
                 if role_check:
                     Roles.objects.filter(pk=role_id,deleted_status=False).update(role_name=new_name)
@@ -335,9 +344,10 @@ def add_role(request):
 
     elif request.method=='DELETE':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            if check_admin:
+            # id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            # check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            admin = check_user(request.user.id, 'Admin')
+            if admin:
                 id=request.GET.get('id')
                 deleted=Roles.objects.filter(pk=id,deleted_status=False).first()
                 if deleted:
@@ -356,9 +366,10 @@ def add_role(request):
 
 def child(request):
     if request.user.is_authenticated:
-        id=Roles.objects.get(role_name='Admin',deleted_status=False)
-        check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-        if check_admin:   
+        # id=Roles.objects.get(role_name='Admin',deleted_status=False)
+        # check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+        admin = check_user(request.user.id, 'Admin')
+        if admin:   
             if request.method == 'POST':
                 load = json.loads(request.body)
                 id = load.get('id')
@@ -372,7 +383,7 @@ def child(request):
                         relation_id = parent.pk,
                         child = int(parent.child) -1,
                         deleted_status=False,
-                        defaults={"added_by":check_admin.user}
+                        defaults={"added_by":admin}
                     )
                     if created:
                         return JsonResponse({'message':f'{name} successfully added for {parent.name}'})
@@ -417,9 +428,10 @@ def child(request):
 
 def left_panel(request):
     if request.user.is_authenticated:
-        id=Roles.objects.filter(role_name='Admin',deleted_status=False).first()
-        check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-        if check_admin:
+        # id=Roles.objects.filter(role_name='Admin',deleted_status=False).first()
+        # check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+        admin = check_user(request.user.id, 'Admin')
+        if admin:
             if request.method == 'POST':
                 load=json.loads(request.body)
                 name=load.get('name')
@@ -439,7 +451,7 @@ def left_panel(request):
                 role=role,                               
                 pannel=1,
                 deleted_status=False,
-                defaults={ "added_by":check_admin.user,"role":role}
+                defaults={ "added_by":admin,"role":role}
                 )
                 if created:
                     return JsonResponse({'message':f'{name} successfully added for SideBar'},status=201)

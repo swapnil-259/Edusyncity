@@ -63,7 +63,7 @@ def check_user(user, user_role):
         if role:
           user_with_role=UserRole.objects.filter(user=user,role_id = role.id,deleted_status=False).first()
           if user_with_role:
-              return user_with_role.user.id
+              return user_with_role.user
           else:
               return None
         else:
@@ -152,9 +152,11 @@ def subject(request):
     if request.method =='POST':
         data = json.loads(request.body)
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            if check_admin:
+            # id=Roles.objects.get(role_name='Admin',deleted_status=False)
+            # check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+            admin = check_user(request.user.id, 'Admin')
+
+            if admin:
                 subject_name = data.get('subject_name')
                 subject_code = data.get('subject_code')   
                 if not subject_name or not subject_code:
@@ -164,7 +166,7 @@ def subject(request):
                 subjects , created = Subject.objects.get_or_create(
                 subject_name= subject_name,
                 subject_code=subject_code,
-                added_by=check_admin.user
+                added_by=admin
                 
                 ) 
                 if created:
@@ -183,9 +185,9 @@ def subject_mapping(request):
     if request.method=='POST':
         data = json.loads(request.body)
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            if check_admin:
+            admin = check_user(request.user.id, 'Admin')
+
+            if admin:
                 subject = data.get('subject_id')
                 department = data.get('department_id')
                 year = data.get('year')
@@ -203,7 +205,7 @@ def subject_mapping(request):
                     subject=subject_exist,
                     department=department_exist,
                     year=year,
-                    added_by=check_admin.user
+                    added_by=admin
                 )
                 if created:
                     return JsonResponse({'message':f'{subject_exist.subject_name} mapped successfully with {department_exist.department.name} department for this {year}rd year'})
@@ -221,9 +223,9 @@ def subject_teacher_mapping(request):
     if request.method=='POST':
         data = json.loads(request.body)
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            if check_admin:
+            admin = check_user(request.user.id, 'Admin')
+
+            if admin:
                 sub_mapping = data.get('sub_mapping_id')
                 faculty = data.get('faculty_id')
                 if not sub_mapping or not faculty:
@@ -239,7 +241,7 @@ def subject_teacher_mapping(request):
                 teacher_mapping, created = SubjectTeacherMapping.objects.get_or_create(
                 faculty=faculty_exist,
                 subject=sub_mapping_exist,
-                added_by = check_admin.user
+                added_by = admin
                 )
                 if created:
                     return JsonResponse({'message':f'{sub_mapping_exist.subject.subject_name} mapped successfully with {faculty_exist.title.name} {faculty_exist.user.first_name} {faculty_exist.user.last_name}'})
@@ -288,7 +290,7 @@ def dropdown_option(request,dropdown):
         else:
             return JsonResponse({"message":"no url found"},status=404)
     else:
-        return JsonResponse({'message':'invalid request method'})
+        return JsonResponse({'message':'invalid request method'}, status=40)
     
     
 def dropdown_value(name):
@@ -304,17 +306,16 @@ def dropdown_value(name):
 def assign_department_to_course(request):
     if request.method == 'POST':
         if request.user.is_authenticated:
-            id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            user_exist = User.objects.get(pk = request.user.id)
-            if check_admin:
+            admin = check_user(request.user.id, 'Admin')
+
+            if admin:
                     load=json.loads(request.body)
                     course_id = load.get('course_id')
                     department_id = load.get('department_id')
                     course_exist= Dropdown.objects.filter(pk = course_id).first()
                     department_exist = Dropdown.objects.filter(pk = department_id).first()
                     if course_exist is not None and department_exist is not None:
-                        mapping, created = Mapping.objects.get_or_create(course= course_exist, department = department_exist, defaults={"added_by" : user_exist} )
+                        mapping, created = Mapping.objects.get_or_create(course= course_exist, department = department_exist, defaults={"added_by" : admin} )
                         if created:
                             return JsonResponse({'message':f'{department_exist.name} successfully mapped with {course_exist.name}'},status=201)
                         else:
