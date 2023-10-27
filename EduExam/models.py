@@ -29,7 +29,7 @@ class DateSheet(BaseModel):
 
 class QuestionPaper(BaseModel):
     date_sheet=models.ForeignKey(DateSheet,on_delete=models.SET_NULL,null=True)
-    subject=models.ForeignKey(Subject,on_delete=models.SET_NULL,null=True)
+    subject=models.ForeignKey(SubjectMapping,on_delete=models.SET_NULL,null=True)
     exam_type=models.ForeignKey(ExamMapping,on_delete=models.SET_NULL,null=True,related_name='exam_type')
     department=models.ForeignKey(Mapping,null=True,on_delete=models.SET_NULL,related_name='department_identity')
     set=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='set_identity')
@@ -41,9 +41,10 @@ class PaperResponse(BaseModel):
     paper=models.ForeignKey(QuestionPaper,on_delete=models.SET_NULL,null=True)
     answer=JSONField(max_length=1000,blank=True)
     evaluation=JSONField(max_length=1000,blank=True)
+    total_marks=models.PositiveIntegerField(null=True)
     checked_status=models.BooleanField(default=False)
     checked_time=models.DateTimeField(null=True)
-    checked_by=models.ForeignKey(Faculty,on_delete=models.SET_NULL, null=True,related_name='checked_by')
+    checked_by=models.ForeignKey(User,on_delete=models.SET_NULL, null=True,related_name='checked_by')
 
 
     

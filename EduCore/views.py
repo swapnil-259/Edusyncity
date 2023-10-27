@@ -395,8 +395,24 @@ def mapped_faculty(request):
         
         
             
-        
-        
+def admin_chart(request):
+    if request.method== 'GET':
+        id = Dropdown.objects.filter(deleted_status=False,name='Courses').first()
+        print(id.id)
+        courses=[]
+        departments=[]
+        courses= list(Dropdown.objects.filter(deleted_status=False,relation=id.pk).values('id'))
+        print(courses)
+        for i in courses:
+            id=i['id']
+            print(id)
+            dept_data=list(Mapping.objects.filter(department = i.get('id'),deleted_status=False).count())
+            courses.append(dept_data)
+        return JsonResponse(courses,safe=False)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+
     
   
 

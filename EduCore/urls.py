@@ -19,6 +19,7 @@ urlpatterns = [
     path('get_departments/',views.get_departments),
     path('get_years/',views.get_years),
     path('faculty/',views.faculty),
-    path('mapped_faculty/',views.mapped_faculty)
-    # path('get_courses/',views.get_courses, name='get_courses')
+    path('mapped_faculty/',views.mapped_faculty),
+    # path('get_courses/',views.get_courses, name='get_courses'),
+    # path('admin_chart/',views.admin_chart)
 ]

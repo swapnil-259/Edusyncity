@@ -6,6 +6,7 @@ urlpatterns = [
     path('examinfo/',views.exam_info),
     path('question_paper/',views.question_paper),
     path('paper_response/',views.paper_response),
+    path('paper_evaluation/',views.paper_evaluation),
     path('exam_mapping/',views.exam_mapping),
     path('department_course/',views.department_course),
     path('subject_year/',views.subject_year),
