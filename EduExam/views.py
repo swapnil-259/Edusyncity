@@ -295,10 +295,11 @@ def get_question_answer(request):
             print(faculty_subject)
             if faculty:
                 student_id=request.GET.get('student_id')
+                print(student_id)
                 if student_id is None:
                     return JsonResponse({'message':'You are not sending student id'},status=400)
 
-                data=PaperResponse.objects.filter(added_by=student_id,deleted_status=False,checked_status=False).values('added_by','answer')
+                data=PaperResponse.objects.filter(added_by=student_id,deleted_status=False).values('added_by','answer')
                 if data:
                     return JsonResponse(list(data),safe=False)
                 else:
