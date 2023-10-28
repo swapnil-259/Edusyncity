@@ -804,6 +804,7 @@ def datesheet(request):
                 start_time_exist = Dropdown.objects.filter(id = time).first()
                 if start_time_exist is None:
                     return JsonResponse({'message':'data not found'})
+                print(exam_exist.year,exam_exist.course)
                 
                 datesheet, created=DateSheet.objects.get_or_create(
                     
@@ -830,6 +831,7 @@ def graph_course_dept(request):
      if request.method == 'GET':
         if request.user.is_authenticated:
             admin = check_user(request.user.id,'Admin')
+            faculty = check_user(request.user.id,'Teacher')
             if admin:
                 courses = Dropdown.objects.filter(relation_id='2').all()
                 print(courses)
@@ -845,8 +847,8 @@ def graph_course_dept(request):
                     data['department_count'].append(department_count)
 
                 return JsonResponse(data, safe=False)
-            else:
-                return JsonResponse({'message': 'User not found'}, status=204)
+            elif faculty:
+                return JsonResponse({'message': 'User not found'}, status=200)
         else:
             return JsonResponse({'message': 'User is not authenticated'}, status=401)
      else:
@@ -855,7 +857,14 @@ def graph_course_dept(request):
 def get_datesheet(request):
     if request.method=='GET':
         id = request.GET.get("id")
-        get_datesheet_data = DateSheet.objects.filter(datesheet_mapping=id).values('id','subject_id__subject_name','subject_id__subject_code')
+        get_datesheet_data = DateSheet.objects.filter(datesheet_mapping=id,deleted_status=False).values('id','subject_id__subject_name','subject_id__subject_code''start_time_id__name','datesheet_mapping_id__course_id__name','datesheet_mapping_id__exam_mapping_id__exam_id__name')
+        if get_datesheet_data:
+            return JsonResponse(list(get_datesheet_data),safe=False)
+        else:
+            return JsonResponse({'message':'content not found'})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+    
         
                 
                 

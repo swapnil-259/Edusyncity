@@ -6,6 +6,7 @@ from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty
 from datetime import datetime,date
 from .models import Subject
 from EduCore.models import Subject,SubjectMapping,SubjectTeacherMapping
+import re
 
 def logged_in(request):
     if request.method == 'GET':
@@ -26,7 +27,7 @@ def logged_in(request):
 
 def get_parents(request):
     if request.method == 'GET':
-        data=Dropdown.objects.filter(deleted_status=False,child__gt=0,pannel=0).values('id','name','child','can_delete')
+        data=Dropdown.objects.filter(deleted_status=False,child__gt=0,pannel=0).values('id','name','child','can_delete','can_update')
         if data is None:
             return JsonResponse({'message':'Courses Not Found'},status=204)
         else:
@@ -43,6 +44,12 @@ def parents(request):
                 load = json.loads(request.body)
                 name = load.get('name')
                 child = load.get('child')
+                if name is None or child is None:
+                    return JsonResponse({'message':'missing field'},status=400)
+                if not name or not child:
+                    return JsonResponse({'message':'required Field'})
+                if not re.match(r'^[A-Za-z\s]+$',name):
+                    return JsonResponse({'message':'Invalid name format'},status=400)
                 parent, created = Dropdown.objects.get_or_create(
                     name=name,
                     added_by=check_Admin,
@@ -373,7 +380,7 @@ def get_subjects(request):
     if request.method =='GET':
         id = request.GET.get('mapped_sub')
         year = request.GET.get('year')
-        subj_data = SubjectMapping.objects.filter(department=id,year=year).values('subject_id__subject_name','subject_id__subject_code','id')
+        subj_data = SubjectMapping.objects.filter(department=id,year=year,deleted_status=False).values('subject_id__subject_name','subject_id__subject_code','id')
         if subj_data:
             return JsonResponse(list(subj_data), safe=False)
         else:
@@ -396,7 +403,7 @@ def faculty(request):
 def mapped_faculty(request):
     if request.method =='GET':
         id = request.GET.get('id')
-        faculty_mapping = SubjectTeacherMapping.objects.filter(subject_id =id).values('faculty_id__user_id__first_name','faculty_id__user_id__last_name','id')
+        faculty_mapping = SubjectTeacherMapping.objects.filter(subject_id =id,deleted_status=False).values('faculty_id__user_id__first_name','faculty_id__user_id__last_name','id')
         if faculty_mapping:
             return JsonResponse(list(faculty_mapping),safe=False)
         else:
