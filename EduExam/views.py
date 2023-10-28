@@ -833,6 +833,7 @@ def graph_course_dept(request):
         if request.user.is_authenticated:
             admin = check_user(request.user.id,'Admin')
             faculty = check_user(request.user.id,'Teacher')
+            student = check_user(request.user.id,'Student')
             if admin:
                 courses = Dropdown.objects.filter(relation_id='2').all()
                 print(courses)
@@ -849,7 +850,12 @@ def graph_course_dept(request):
 
                 return JsonResponse(data, safe=False)
             elif faculty:
-                return JsonResponse({'message': 'User not found'}, status=200)
+                subjects = SubjectMapping.objects.all()
+                return JsonResponse({'message': 'faculty found'}, status=200)
+            elif student:
+                return JsonResponse({'message': 'student found'}, status=200)
+            else:
+                return JsonResponse({'user not found'})
         else:
             return JsonResponse({'message': 'User is not authenticated'}, status=401)
      else:
