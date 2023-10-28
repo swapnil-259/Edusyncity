@@ -85,7 +85,7 @@ def get_childs(request):
     
 def departments(request):
     if request.method == 'GET':
-        id = request.GET.get('id')
+        id = request.GET.get('course_id')
         data=Mapping.objects.filter(deleted_status=False, course=id).values('department__name','id')
         if data is None:
             return JsonResponse({'message':'Courses Not Found'},status=204)

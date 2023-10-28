@@ -30,12 +30,6 @@ def validation(email = None,firstname = None,lastname = None,fathername = None, 
         return JsonResponse({'message':'Match Your email Requirements'},status=400)
      else:
          return JsonResponse({'message':'Email is None'})
-     if age is not None:
-        if age is ' ' or int(age) <= 25:
-             return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
-     else:
-         return JsonResponse({'message':'Age is None'},status=400)
-     
 
 def faculty_validation(load):
     keys_to_check = ['firstname', 'lastname', 'username', 'email', 'gender','contact','age','qualification','title','address']
@@ -55,10 +49,6 @@ def faculty_validation(load):
         elif key == 'contact':
             if not value.isdigit():
                 return JsonResponse({'message':f'{key} accept only integer'},status=400)
-        elif key == 'qualification':
-            if not value.isalpha():
-                return JsonResponse({'message':f'{key} accept only aphanumeric character'},status=400)
-        
 
 def register_faculty(request):
     if request.method == 'POST':
@@ -81,8 +71,8 @@ def register_faculty(request):
                 qualification = load.get('qualification')
                 title = load.get('title')
                 print(firstname,lastname)
-                # if age is ' ' or int(age) <= 0:
-                    # return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
+                if age is ' ' or int(age) <= 25:
+                    return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
                 if not username or not firstname or not lastname or not email or not gender or not contact or not age or not address  or not qualification or not title :
                       return JsonResponse({'message':'Missing Required Field'}, status = 400)
                 if username is None or email is None or firstname is None or lastname is None or  age is None or gender is None or contact is None or address is None or qualification is None or title is None :
@@ -169,8 +159,8 @@ def register_student(request):
                 print(admin)
 
                 
-                # if age is ' ' or int(age) <= 0:
-                #     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
+                if age is ' ' or int(age) < 16:
+                    return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)
 
                 if not user_name or not firstname or not lastname or not email or not gender or not contact or not age or not address or not department or not father_name or not mother_name or not year or not course or not religion:
                               return JsonResponse({'message':'Missing Required Field'}, status = 400)
@@ -178,13 +168,13 @@ def register_student(request):
                             return JsonResponse({'messge':'Missing any key'},status=400) 
                 if user_name is ' ' or email is ' ' or firstname is ' ' or lastname is ' ' or age is ' ' or gender is ' ' or contact is ' ' or address is ' ':
                     return JsonResponse({'messsage':'You Are Passing Space to the Field'},status=400)
-                validation_data = validation(firstname=firstname, lastname=lastname, email=email, fathername=father_name, mothername=mother_name, age=age)
+                validation_data = validation(firstname=firstname, lastname=lastname, email=email, fathername=father_name, mothername=mother_name)
                 if validation_data:
                     return validation_data
                 gender_exist = Dropdown.objects.filter(id = gender ).first()
                 if gender_exist is None:
                     return JsonResponse({'message':'Gender Not  found'},status=400)
-                department_exist = Mapping.objects.filter(department = department).first()
+                department_exist = Mapping.objects.filter(id = department).first()
                 if department_exist is None:
                     return JsonResponse({'message':'Department Not found'},status=400)
                 course_exist = Dropdown.objects.filter(id = course).first()
