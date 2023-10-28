@@ -3,7 +3,7 @@ import json
 from django.http import JsonResponse
 from .models import QuestionPaper,PaperResponse,ExamMapping,DateSheet, DateSheetMapping
 from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty,Student
-from EduCore.models import SubjectMapping,SubjectTeacherMapping
+from EduCore.models import SubjectMapping,SubjectTeacherMapping,Subject
 from EduCore.views import check_user
 # from EduExam.models import Subjects
 from datetime import datetime, timedelta, date
@@ -702,6 +702,7 @@ def selectdept(request):
     else:
         return JsonResponse({'message':'invalid request method'})
 
+# def course_Subj
 def select_sub(request):
     if request.method =='GET':
         if request.user.is_authenticated:
@@ -725,23 +726,16 @@ def select_sub(request):
                          dept.append(id_data[i])
                          
                      for i in dept:
-                         subject_data = list(Mapping.objects.filter(id =int(i), deleted_status=False).values('id'))
+                         subject_data = list(Mapping.objects.filter(course_id =int(i), deleted_status=False).values('id'))
                          datesheet_details.append(subject_data)
                      print(datesheet_details) 
-                     for i in datesheet_details:
-                        data = [i[0]['id']]
-                        datesheet_data.append(data)
-                     print(datesheet_data)
-                     length = len(datesheet_data)
-                     print(length)
+                     for sublist in datesheet_details:
+                       for item in sublist:
+                         for dictionary in item:
+                             datesheet_data.append(item[dictionary])
                      for i in datesheet_data:
-                        #  print(datesheet_data[i])
-                         for j in i:
-                              print(j)
-                              sub_details =SubjectMapping.objects.filter(department_id=j, year=year).values('id','subject_id__subject_name','subject_id__subject_code')
+                              sub_details =SubjectMapping.objects.filter(department_id=int(i), year=year,deleted_status=False).values('id','subject_id__subject_name','subject_id__subject_code','department_id__department_id__name','subject_id__id')
                               sub_data.append(list(sub_details))
-                    
-                           
                      return JsonResponse(list(sub_data), safe=False)
                  else:
                     return JsonResponse({'message':'data not found'})
@@ -769,18 +763,13 @@ def get_date(request):
         start_date = get_dates.start_date
         end_date=get_dates.end_date
         get_date_btw =get_dates_between(start_date,end_date)
-        print(get_date_btw)
         if get_date_btw:
             return JsonResponse(list(get_date_btw), safe=False)
         else:
-            return JsonResponse({'message':'date not found'},status=400)
-        # if (start_date + timedelta(n)).weekday() != 6
-        
-            
-       
+            return JsonResponse({'message':'date not found'})
+
 def get_dates_between(start_date, end_date):
-    dates = [start_date + timedelta(n+1) for n in range(int((end_date - start_date).days))]
-    
+    dates = [start_date + timedelta(n+1) for n in range(int((end_date - start_date).days)) if (start_date+timedelta(n+1)).weekday()!=6]
     return dates
 
 def get_shift_time(request):
@@ -790,7 +779,87 @@ def get_shift_time(request):
         if get_shift_data:
             return JsonResponse(list(get_shift_data), safe=False)
         else:
-            return JsonResponse({'message':'data not found'})
+            return JsonResponse({'message':'data not found'},status=204)
+
+def datesheet(request):
+    if request.method=='POST':
+        if request.user.is_authenticated:
+            admin = check_user(request.user.id, 'Admin')
+            if admin:
+                load = json.loads(request.body)
+                conduct_exam_id = load.get('course_id')
+                subject = load.get('subject')
+                date = load.get('date')
+                shift= load.get('shift')
+                time = load.get('time')
+                exam_exist = DateSheetMapping.objects.filter(id = conduct_exam_id).first()
+                if exam_exist is None:
+                    return JsonResponse({'message':'data not found'},status=204)
+                subject_exist = Subject.objects.filter(id = subject).first()
+                if subject_exist is None:
+                    return JsonResponse({'message':'not found'}, status=204)
+                shift_exist = Dropdown.objects.filter(id = shift).first()
+                if shift_exist is None:
+                    return JsonResponse({'message':'data not found'})
+                start_time_exist = Dropdown.objects.filter(id = time).first()
+                if start_time_exist is None:
+                    return JsonResponse({'message':'data not found'})
+                
+                datesheet, created=DateSheet.objects.get_or_create(
+                    
+                    subject = subject_exist,
+                    datesheet_mapping=exam_exist,
+                    date=date,
+                    start_time=start_time_exist,
+                    shift=shift_exist
+                    
+
+                )   
+                if created:
+                    return JsonResponse({'message':'added successfully'}, status=201)
+                else:
+                    return JsonResponse({'message':'already created'})
+            else:
+                return JsonResponse({'message':'user is not admin'})
+        else:
+            return JsonResponse({'message':'user is not authenticated'})
+    else:
+        return JsonResponse({'message':'invalid request method'})
+def graph_course_dept(request):
+     if request.method == 'GET':
+        if request.user.is_authenticated:
+            admin = check_user(request.user.id,'Admin')
+            if admin:
+                courses = Dropdown.objects.filter(relation_id='2').all()
+                print(courses)
+                data = {
+                    'course_name':[],
+                    'department_count':[]
+                }   
+
+                for course_id in courses:
+                    print(course_id.id)
+                    department_count = Mapping.objects.filter(course_id=course_id.id).count()
+                    data['course_name'].append(course_id.name)
+                    data['department_count'].append(department_count)
+
+                return JsonResponse(data, safe=False)
+            else:
+                return JsonResponse({'message': 'User not found'}, status=204)
+        else:
+            return JsonResponse({'message': 'User is not authenticated'}, status=401)
+     else:
+        return JsonResponse({'message': 'Invalid request method'}, status=405)
+
+def get_datesheet(request):
+    if request.method=='GET':
+        id = request.GET.get("id")
+        get_datesheet_data = DateSheet.objects.filter(datesheet_mapping=id).values('id','subject_id__subject_name','subject_id__subject_code')
+        
+                
+                
+                
+                
 
         
                  

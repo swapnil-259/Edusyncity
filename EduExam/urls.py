@@ -24,9 +24,8 @@ urlpatterns = [
     path('selectdept/', views.selectdept),
     path('get_shift_time/',views.get_shift_time),
     path('get_date/',views.get_date),
-    path('paper_set/',views.paper_sets),
-    path('get_students_answer/', views.get_students_answer),
-    path('select_paper_set/',views.select_paper_set)
+    path('datesheet/',views.datesheet),
+    path('graph_course_dept/',views.graph_course_dept)
 
   
     
