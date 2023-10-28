@@ -26,6 +26,7 @@ urlpatterns = [
     path('get_date/',views.get_date),
     path('paper_set/',views.paper_sets),
     path('get_students_answer/', views.get_students_answer),
+    path('select_paper_set/',views.select_paper_set)
 
   
     

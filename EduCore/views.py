@@ -401,12 +401,12 @@ def admin_chart(request):
         print(id.id)
         courses=[]
         departments=[]
-        courses= list(Dropdown.objects.filter(deleted_status=False,relation=id.pk).values('id'))
+        courses= Dropdown.objects.filter(deleted_status=False,relation=id.pk).values('id')
         print(courses)
         for i in courses:
             id=i['id']
             print(id)
-            dept_data=list(Mapping.objects.filter(department = i.get('id'),deleted_status=False).count())
+            dept_data=list(Mapping.objects.filter(course = i.id,deleted_status=False).count())
             courses.append(dept_data)
         return JsonResponse(courses,safe=False)
     else:

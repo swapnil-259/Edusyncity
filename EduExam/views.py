@@ -191,7 +191,7 @@ def paper_validation(load):
             if not value.isdigit():
                 return JsonResponse({'message':f'{key} accept only integer'},status=400)
         elif key == 'marks_obtained':
-            if not value.isdigit() or value<0:
+            if not value.isdigit:
                 return JsonResponse({'message':f'{key} accept only positive integer'},status=400)
 
 def paper_evaluation(request):
@@ -205,10 +205,9 @@ def paper_evaluation(request):
             evaluation=load.get('evaluation')
             marks_obtained=load.get('marks_obtained')
 
-            # if student_id is None:
-            #     return JsonResponse({'message':'Student id is required'},status=400)
-            # elif evaluation is None:
-            #     return JsonResponse({'message':'evaluation is requ'})
+            response=paper_validation(load)
+            if response:
+                return response
 
 
             if faculty:
@@ -302,6 +301,8 @@ def get_question_answer(request):
                 data=PaperResponse.objects.filter(added_by=student_id,deleted_status=False,checked_status=False).values('added_by','answer')
                 if data:
                     return JsonResponse(list(data),safe=False)
+                else:
+                    return JsonResponse({'message':'Data not found'},status=204)
             else:
                 return JsonResponse({'message':'You are not autherised'},status=403) 
         else:
@@ -316,12 +317,26 @@ def paper_sets(request):
         sub_id=request.GET.get('sub_id')
         exam_id=request.GET.get('exam_id')
 
+        if not sub_id or sub_id is None:
+            return JsonResponse({'message':'sub id missing or none'},status=400)
+        if not exam_id or exam_id is None:
+            return JsonResponse({'message':'exam id missing or none'},status=400)
+        if not dept_id or dept_id is None:
+            return JsonResponse({'message':'dept id missing or none'},status=400)
 
+        subject_exist = SubjectMapping.objects.filter(id = sub_id).first()
+        if subject_exist is None or not sub_id:
+            return JsonResponse({'messgae':'subject is not found'},status=400)
+        
+        department_exist = Mapping.objects.filter(id = dept_id).first()
+        if department_exist is None or not dept_id:
+            return JsonResponse({'message':'department is not an found'},status=400)
 
         exam_exist=ExamMapping.objects.filter(exam=exam_id).first()
+        if exam_exist is None or not exam_exist:
+            return JsonResponse({'message':'exama is not found'},status=400)
 
         data=QuestionPaper.objects.filter(deleted_status=False,department=dept_id,subject=sub_id,exam_type=exam_exist).values('pk','added_by','set__name')
-        print(data)
         if data:
             return JsonResponse(list(data),safe=False)
         else:
@@ -336,10 +351,8 @@ def get_students_answer(request):
             faculty = check_user(request.user.id, 'Teacher')
             if faculty:
                 paper_id=request.GET.get('paper_id')
-
-
-
-
+                if paper_id is None or not paper_id:
+                    return JsonResponse({'message':'Paper id is required'},status=400)
                 data=PaperResponse.objects.filter(deleted_status=False,paper=paper_id).values('added_by','added_by__first_name','added_by__last_name','checked_status')
                 if data:
                     return JsonResponse(list(data),safe=False)
@@ -353,7 +366,9 @@ def get_students_answer(request):
 def exam_type(request):
     if request.method == 'GET':
         # data=DateSheetMapping.objects.filter(deleted_status=False,)
-        id=Dropdown.objects.get(deleted_status=False,name='Exam Type')
+        id=Dropdown.objects.filter(deleted_status=False,name='Exam Type').first()
+        if id is None:
+            return JsonResponse({'message':'Exam Type not match'},status=400)
         exam_type=Dropdown.objects.filter(deleted_status=False,relation=id).values('pk','name')
         if exam_type:
             return JsonResponse(list(exam_type),safe=False)
@@ -366,6 +381,8 @@ def exam_type(request):
 def exam_info(request):
     if request.method == 'GET':
         id=request.GET.get('id')
+        if id is None or not id:
+            return JsonResponse({'message':'You are not sending exam id'},status=400)
         data=ExamMapping.objects.filter(deleted_status=False,exam=id).values('marks__name','duration__name')
         
         if data:
@@ -452,8 +469,8 @@ def access_question(request):
     if request.method=='GET':
         student=Student.objects.filter(user=request.user.id).first()
         if student is None:
-            return JsonResponse({'message':''})
-        data=SubjectMapping.objects.filter(department=student.department,deleted_status=False).values('pk','subject__subject_name').distinct()
+            return JsonResponse({'message':'You have not filled your data'},status=400)
+        data=SubjectMapping.objects.filter(department=student.department,year=student.year,deleted_status=False).values('pk','subject__subject_name').distinct()
         if data:
             return JsonResponse(list(data),safe=False)
         else:
@@ -461,30 +478,60 @@ def access_question(request):
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)     
 
+
+def select_paper_set(request):
+    if request.method == 'GET':
+        
+        sub_id=request.GET.get('sub_id')
+        exam_id=request.GET.get('exam_id')
+
+        if not sub_id or sub_id is None:
+            return JsonResponse({'message':'sub id missing or none'},status=400)
+        if not exam_id or exam_id is None:
+            return JsonResponse({'message':'exam id missing or none'},status=400)
+
+        subject_exist = SubjectMapping.objects.filter(id = sub_id).first()
+        if subject_exist is None or not sub_id:
+            return JsonResponse({'messgae':'subject is not found'},status=400)
+        
+        student=Student.objects.filter(user=request.user.id).first()
+        if student is None :
+            return JsonResponse({'message':'student data not found'},status=400)
+
+        exam_exist=ExamMapping.objects.filter(exam=exam_id).first()
+        if exam_exist is None or not exam_exist:
+            return JsonResponse({'message':'exama is not found'},status=400)
+
+        data=QuestionPaper.objects.filter(deleted_status=False,department=student.department,subject=sub_id,exam_type=exam_exist).values('pk','added_by','set__name')
+        if data:
+            return JsonResponse(list(data),safe=False)
+        else:
+            return JsonResponse({'message':'No answers found'},status=204)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+
 def get_question_paper(request):
     if request.method=='GET':
         if request.user.is_authenticated:
             student = check_user(request.user.id, 'Student')
 
             if student:
-
-                # subject_id=request.GET.get('id') 
-                # if subject_id is None or not subject_id:
-                #     return JsonResponse({'message':'You are not sending subject id'},status=400)
-                # student=Student.objects.filter(user=request.user.id).first()
-                # if student is None:
-                #     return JsonResponse({'message':'You are not registerd'})
-                data=QuestionPaper.objects.filter(deleted_status=False).values()
+                paper_id=request.GET.get('paper_id')
+                if paper_id is None or not paper_id:
+                    return JsonResponse({'message':'Paper id is required'},status=400)
+                data=QuestionPaper.objects.filter(deleted_status=False,pk=paper_id).values('pk','questions','exam_type__duration__name')
                 if data:
                     return JsonResponse(list(data),safe=False)
+                else:
+                    return JsonResponse({'message':'Paper not found'},status=204)
             else:
-                return JsonResponse({'message':'No content'},status=204)
+                return JsonResponse({'message':'You are not a student'},status=403)
+        else:
+            return JsonResponse({'message':'You are not authenticated'},status=401)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
 
-# import re   
-
-
-
-def validation(load):
+def datesheet_validation(load):
     keys_to_check = ['subject', 'exam_map', 'shift', 'date', 'start_time']
     
     for key in keys_to_check:
@@ -496,10 +543,6 @@ def validation(load):
         if value=='':
             return JsonResponse({'message': f'{key} can not be space or none'}, status=400)
 
-    
-
-
-
 def datesheet_maping(request):
     if request.user.is_authenticated:
         admin = check_user(request.user.id, 'Admin')
@@ -508,7 +551,7 @@ def datesheet_maping(request):
             if request.method == 'POST':
 
                 load=json.loads(request.body)
-                load_data = validation(load)
+                load_data = datesheet_validation(load)
                 if load_data:
                     return load_data
                 else:
@@ -735,8 +778,6 @@ def get_date(request):
         
             
        
-        
-
 def get_dates_between(start_date, end_date):
     dates = [start_date + timedelta(n+1) for n in range(int((end_date - start_date).days))]
     

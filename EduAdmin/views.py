@@ -424,7 +424,8 @@ def child(request):
             return JsonResponse({'message':'You are not autherised'},status=403)
     else:
         return JsonResponse({'message':'You are not authenticated'},status=401)
-    
+
+   
 
 def left_panel(request):
     if request.user.is_authenticated:
