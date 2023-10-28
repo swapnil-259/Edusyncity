@@ -825,6 +825,7 @@ def datesheet(request):
             return JsonResponse({'message':'user is not authenticated'})
     else:
         return JsonResponse({'message':'invalid request method'})
+
 def graph_course_dept(request):
      if request.method == 'GET':
         if request.user.is_authenticated:
