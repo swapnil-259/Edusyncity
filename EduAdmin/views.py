@@ -246,7 +246,7 @@ def login_user(request):
             user_data = list(user_exist)
             return JsonResponse(user_data, safe=False)
         else:
-            return JsonResponse({'message':'You are not authenticated'},status=401)
+            return JsonResponse({'message':'Incorrect username or password'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 

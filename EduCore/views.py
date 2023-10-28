@@ -259,7 +259,7 @@ def subject_teacher_mapping(request):
                 teacher_mapping, created = SubjectTeacherMapping.objects.get_or_create(
                 faculty=faculty_exist,
                 subject=sub_mapping_exist,
-                added_by = admin
+                defaults={"added_by" : admin}
                 )
                 if created:
                     return JsonResponse({'message':f'{sub_mapping_exist.subject.subject_name} mapped successfully with {faculty_exist.title.name} {faculty_exist.user.first_name} {faculty_exist.user.last_name}'})
