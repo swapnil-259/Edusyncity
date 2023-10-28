@@ -9,7 +9,7 @@ from datetime import datetime,date
 from EduCore.views import check_user
 from django.db.models import Q
 
-def validation(email = None,firstname = None,lastname = None,fathername = None, mothername = None, age=None):
+def validation(email = None,firstname = None,lastname = None,fathername = None, mothername = None):
      print(email,firstname,lastname)
      if firstname is not None:
          if not re.match(r'^[A-Za-z\s]+$',firstname):
