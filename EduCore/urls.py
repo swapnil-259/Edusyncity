@@ -21,5 +21,5 @@ urlpatterns = [
     path('faculty/',views.faculty),
     path('mapped_faculty/',views.mapped_faculty),
     # path('get_courses/',views.get_courses, name='get_courses'),
-    # path('admin_chart/',views.admin_chart)
+    path('admin_chart/',views.admin_chart)
 ]
