@@ -29,7 +29,8 @@ urlpatterns = [
     path('select_paper_set/',views.select_paper_set),
     path('get_students_answer/',views.get_students_answer),
     path('paper_set/',views.paper_sets),
-    path('get_datesheet',views.get_datesheet)
+    path('get_datesheet',views.get_datesheet),
+    path('student_marks/',views.student_marks)
 
   
     

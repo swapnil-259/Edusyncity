@@ -167,7 +167,7 @@ def paper_response(request):
                     defaults={"answer":answer}
                 )
                 if created:
-                    return JsonResponse({'message':'Created succesfully'},status=201)
+                    return JsonResponse({'message':'Paper successfully submited'},status=201)
                 else:
                     return JsonResponse({'message':'You have already submitted this this paper'},status=409)
             else:
@@ -520,6 +520,8 @@ def get_question_paper(request):
                 paper_id=request.GET.get('paper_id')
                 if paper_id is None or not paper_id:
                     return JsonResponse({'message':'Paper id is required'},status=400)
+                if PaperResponse.objects.filter(added_by=student.id,paper=paper_id).exists():
+                    return JsonResponse({'message':'You already submited this paper'},status=400)
                 data=QuestionPaper.objects.filter(deleted_status=False,pk=paper_id).values('pk','questions','exam_type__duration__name')
                 if data:
                     return JsonResponse(list(data),safe=False)
@@ -805,6 +807,7 @@ def datesheet(request):
                 start_time_exist = Dropdown.objects.filter(id = time).first()
                 if start_time_exist is None:
                     return JsonResponse({'message':'data not found'})
+                print(exam_exist.year,exam_exist.course)
                 
                 datesheet, created=DateSheet.objects.get_or_create(
                     
@@ -831,6 +834,8 @@ def graph_course_dept(request):
      if request.method == 'GET':
         if request.user.is_authenticated:
             admin = check_user(request.user.id,'Admin')
+            faculty = check_user(request.user.id,'Teacher')
+            student = check_user(request.user.id,'Student')
             if admin:
                 courses = Dropdown.objects.filter(relation_id='2').all()
                 print(courses)
@@ -846,8 +851,13 @@ def graph_course_dept(request):
                     data['department_count'].append(department_count)
 
                 return JsonResponse(data, safe=False)
+            elif faculty:
+                subjects = SubjectMapping.objects.all()
+                return JsonResponse({'message': 'faculty found'}, status=200)
+            elif student:
+                return JsonResponse({'message': 'student found'}, status=200)
             else:
-                return JsonResponse({'message': 'User not found'}, status=204)
+                return JsonResponse({'user not found'},status=400)
         else:
             return JsonResponse({'message': 'User is not authenticated'}, status=401)
      else:
@@ -856,8 +866,24 @@ def graph_course_dept(request):
 def get_datesheet(request):
     if request.method=='GET':
         id = request.GET.get("id")
-        get_datesheet_data = DateSheet.objects.filter(datesheet_mapping=id).values('id','subject_id__subject_name','subject_id__subject_code')
-        
+        get_datesheet_data = DateSheet.objects.filter(datesheet_mapping=id,deleted_status=False).values('id','subject_id__subject_name','subject_id__subject_code''start_time_id__name','datesheet_mapping_id__course_id__name','datesheet_mapping_id__exam_mapping_id__exam_id__name')
+        if get_datesheet_data:
+            return JsonResponse(list(get_datesheet_data),safe=False)
+        else:
+            return JsonResponse({'message':'content not found'},status=204)
+    else:
+        return JsonResponse({'message':'invalid request method'},status=405)
+
+def student_marks(request):
+    if request.method=='GET':
+        # exam_id = request.GET.get("exam_id")
+        result=ExamMapping.objects.filter(pk=1,exam_type__department=1).values('duration')
+        if result:
+            return JsonResponse(list(result),safe=False)
+        else:
+            return JsonResponse({'message':'content not found'},status=204)
+    else:
+        return JsonResponse({'message':'invalid request method'},status=405)
                 
                 
                 
