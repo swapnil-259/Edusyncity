@@ -38,7 +38,7 @@ def validation(email = None,firstname = None,lastname = None,fathername = None, 
      
 
 def faculty_validation(load):
-    keys_to_check = ['firstname', 'lastname', 'username', 'email', 'gender','contact','age','qualification','title']
+    keys_to_check = ['firstname', 'lastname', 'username', 'email', 'gender','contact','age','qualification','title','address']
     
     for key in keys_to_check:
         if key not in load:
@@ -139,6 +139,8 @@ def register_faculty(request):
             return JsonResponse({'message':'You are not Authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+
+
 
 
 def register_student(request):
@@ -264,16 +266,17 @@ def change_password(request):
         username = load_data.get('username')
         old_password = load_data.get('old_password')
         new_password = load_data.get('new_password')
+        # "(?=.\d)(?=.[$@$!%#?&_^])(?=.[a-z])(?=.*[A-Z]).{8,}"
         
-        if not re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$",new_password):
-            return JsonResponse({'message':'Match Your Password Requirements'},status=400)
+        if not re.match(r"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-_]).{8,}$",new_password):
+            return JsonResponse({'message':'Password Requirements min length 8, atleast 1 upercase and lowercase and numeric, allowed special characters #?!@$%^&*-_'},status=400)
 
         user=User.objects.filter(Q(username=username)|Q(email=username)).first()
         if user is not None and user.check_password(old_password):
             user.set_password(new_password)
             user.save()
             return JsonResponse({'message':'Password Updated Successfully'})
-        else:
+        else: 
             return JsonResponse({'message':'Incorrect username or password'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
