@@ -26,7 +26,7 @@ def logged_in(request):
 
 def get_parents(request):
     if request.method == 'GET':
-        data=Dropdown.objects.filter(deleted_status=False,child__gt=0,pannel=0).values('id','name','child')
+        data=Dropdown.objects.filter(deleted_status=False,child__gt=0,pannel=0).values('id','name','child','can_delete')
         if data is None:
             return JsonResponse({'message':'Courses Not Found'},status=204)
         else:
@@ -94,6 +94,17 @@ def departments(request):
            
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+# def department(request):
+#     if request.method=='GET':
+#         id = request.GET.get('id')
+#         data=Mapping.objects.filter(deleted_status=False, course=id).values('department__name','id')
+#         if data is None:
+#             return JsonResponse({'message':'Courses Not Found'},status=204)
+#         else:
+#             return JsonResponse(list(data),safe=False)
+           
+#     else:
+#         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 
 def years(request):
