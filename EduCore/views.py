@@ -43,21 +43,57 @@ def parents(request):
           if request.method=='POST':
                 load = json.loads(request.body)
                 name = load.get('name')
-                child = load.get('child')
-                if name is None or child is None:
+                depth = load.get('depth')
+                can_edit = load.get('editable')
+                can_delete=load.get('deletable')
+                
+                if name is None or depth is None:
                     return JsonResponse({'message':'missing field'},status=400)
-                if not name or not child:
+                if not name or not depth:
                     return JsonResponse({'message':'required Field'})
                 if not re.match(r'^[A-Za-z\s]+$',name):
                     return JsonResponse({'message':'Invalid name format'},status=400)
+                
                 parent, created = Dropdown.objects.get_or_create(
                     name=name,
-                    added_by=check_Admin,
-                    child=child                )
+                    defaults={"added_by":check_Admin,
+                    "can_delete":can_delete,
+                     "child":depth ,
+                    "can_update":can_edit}
+                    )
+                print(parent,created)
                 if created:
                     return JsonResponse({'message':f'{name} created successfully as Parent'},status=201)
                 else:
-                    return JsonResponse({'message':f'This {name} already exist as Parent'},status=409)
+                    if parent.deleted_status=='0':
+                        Dropdown.objects.create(
+                        name=name,
+                        added_by=check_Admin,
+                        can_delete=can_delete,
+                        child=depth ,
+                        can_update=can_edit)
+                        return JsonResponse({'message':'created Successfully'},status=201)
+                    else: 
+                        return JsonResponse({'message':f'This {name} already exist as Parent'},status=409)
+          elif request.method =='DELETE':
+              if request.user.is_authenticated:
+                  admin = check_user(request.user.id,'Admin')
+                  if admin:
+                      
+                      id = request.GET.get('id')
+                      Dropdown.objects.filter(id =id).update(deleted_status=True, deleted_time=datetime.now())
+                      return JsonResponse({'message':'deleted successfully'})
+                  else:
+                     return JsonResponse({'message':'user is not student'})
+              else:
+                   return JsonResponse({'message':'user is not authenticatedx'})
+        #   elif request.method=='PUT':
+        #       if request.user.is_authenticated:
+        #           admin = check_user(request.user.id,'Admin')
+        #           if admin:
+        #               id = request.GET.get('id')
+            #           name = request.GET.get('name')
+            #           Dropdown.objects.filter(id=id).update()
           else:
                 return JsonResponse({'message':'invalid request method'},status=405)
          else:

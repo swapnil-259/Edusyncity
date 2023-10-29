@@ -380,6 +380,8 @@ def child(request):
                         relation_id = parent.pk,
                         child = int(parent.child) -1,
                         deleted_status=False,
+                        can_delete=parent.can_delete,
+                        can_update=parent.can_update,
                         defaults={"added_by":admin}
                     )
                     if created:
@@ -395,8 +397,8 @@ def child(request):
                 new_name = load.get('new_name')
                 
                 if id is None or new_name is None or not id or not new_name:
-                    return JsonResponse({'message':'Missing nany key or field'},status=400)
-
+                    return JsonResponse({'message':'Missing any key or field'},status=400)
+                
                 parent=Dropdown.objects.filter(id = id,deleted_status=False).first()
                 if parent:
                     Dropdown.objects.filter(pk=id,deleted_status=False).update(name=new_name)
