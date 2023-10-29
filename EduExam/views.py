@@ -825,7 +825,7 @@ def select_sub(request):
                          for dictionary in item:
                              datesheet_data.append(item[dictionary])
                      for i in datesheet_data:
-                              sub_details =SubjectMapping.objects.filter(department_id=int(i), year=year,deleted_status=False).values('subject_id__subject_name','subject_id__id','department_id__department_id__name','department_id').distinct()
+                              sub_details =SubjectMapping.objects.filter(department_id=int(i), year=year,deleted_status=False).values('subject_id__subject_name','subject_id__id').distinct()
                               sub_data.append(list(sub_details))
                      return JsonResponse(list(sub_data), safe=False)
                  else:
@@ -949,7 +949,7 @@ def datesheet(request):
                     
                     return JsonResponse({'message':'added successfully'}, status=201)
                 else:
-                    return JsonResponse({'message':'already created'}, status=409)
+                    return JsonResponse({'message':'already created'})
             else:
                 return JsonResponse({'message':'user is not admin'},status=403)
         else:
@@ -1059,7 +1059,7 @@ def subject_mapped_dept(request):
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'invalid request method'}, status=405)
-def student_marks(request):
+def subjects(request):
     if request.method =='GET':
         if request.user.is_authenticated:
             student = check_user(request.user.id,'Student')
@@ -1099,6 +1099,20 @@ def exam_type_for_marks(request):
             return JsonResponse({'message':'user is not authentiacted'},status=401)
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
+                
+                
+                
+                
+
+        
+                 
+
+                 
+            
+        
+           
+
+
 
         
                 

@@ -2,8 +2,12 @@
 EduAdmin/migrations/*
 EduCore/migrations/*
 EduExam/migrations/*
+EduPaper
+# EduPaper/migrations/*
+# EduPaper/__pycache__/*
 
 # But include EduSyncity/EduAdmin/migrations/__init__.py
 !EduAdmin/migrations/__init__.py
 !EduCore/migrations/__init__.py
 !EduExam/migrations/__init__.py
+# !EduPaper/migrations/__init__.py
