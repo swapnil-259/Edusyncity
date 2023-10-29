@@ -126,7 +126,7 @@ def get_childs(request):
     
 def departments(request):
     if request.method == 'GET':
-        if request.is_authenticated:
+        if request.user.is_authenticated:
             id = request.GET.get('course_id')
             data=Mapping.objects.filter(deleted_status=False, course=id).values('department__name','id')
             if data is None:
@@ -446,7 +446,7 @@ def get_subjects(request):
     
 def faculty(request):
     if request.method=='GET':
-        if request.user.is_authentiacted:
+        if request.user.is_authenticated:
             faculty_data = Faculty.objects.filter(deleted_status=False).values('user_id__first_name','user_id__last_name','title_id__name','id')
             if faculty_data:
                 return JsonResponse(list(faculty_data),safe=False)
