@@ -172,7 +172,7 @@ def paper_response(request):
                 )
                 
                 if created:
-                    return JsonResponse({'message':'Created succesfully'},status=201)
+                    return JsonResponse({'message':'Paper successfully submited'},status=201)
                 else:
                     return JsonResponse({'message':'You have already submitted this this paper'},status=409)
             else:
@@ -544,6 +544,8 @@ def get_question_paper(request):
                 paper_id=request.GET.get('paper_id')
                 if paper_id is None or not paper_id:
                     return JsonResponse({'message':'Paper id is required'},status=400)
+                if PaperResponse.objects.filter(added_by=student.id,paper=paper_id).exists():
+                    return JsonResponse({'message':'You already submited this paper'},status=400)
                 data=QuestionPaper.objects.filter(deleted_status=False,pk=paper_id).values('pk','questions','exam_type__duration__name')
                 if data:
                     return JsonResponse(list(data),safe=False)
@@ -932,7 +934,7 @@ def graph_course_dept(request):
                 return JsonResponse(data, safe=False)
              
             else:
-                return JsonResponse({'user not found'})
+                return JsonResponse({'user not found'},status=400)
         else:
             return JsonResponse({'message': 'User is not authenticated'}, status=401)
      else:
@@ -950,7 +952,7 @@ def get_datesheet(request):
             
             return JsonResponse(list(get_datesheet_data),safe=False)
         else:
-            return JsonResponse({'message':'content not found'})
+            return JsonResponse({'message':'content not found'},status=204)
     else:
         return JsonResponse({'message':'invalid request method'})
     
