@@ -256,8 +256,11 @@ def change_password(request):
         username = load_data.get('username')
         old_password = load_data.get('old_password')
         new_password = load_data.get('new_password')
-        # "(?=.\d)(?=.[$@$!%#?&_^])(?=.[a-z])(?=.*[A-Z]).{8,}"
-        
+        if username is None or old_password is None or new_password is None:
+            return JsonResponse({'message':'Missing any Key.'})
+        if not new_password or not old_password or not username:
+              return JsonResponse({'message': 'Missing Required field.'}, status=400)
+    
         if not re.match(r"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-_]).{8,}$",new_password):
             return JsonResponse({'message':'Password Requirements min length 8, atleast 1 upercase and lowercase and numeric, allowed special characters #?!@$%^&*-_'},status=400)
 
@@ -276,7 +279,9 @@ def logout_user(request):
     if request.method == 'GET':
         
         if request.user.is_authenticated:
+            
             logout(request)
+            
             return JsonResponse({'message':'Logged Out Succesfully'})
         else:
             return JsonResponse({'message':'User Is Not Authenticated'},status=401) 
@@ -287,15 +292,13 @@ def logout_user(request):
           
 def add_role(request):
     if request.method =='POST':
+        
         if request.user.is_authenticated:
-            # id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            # check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+           
             admin = check_user(request.user.id, 'Admin')
-
-
-            
             roles_data = json.loads(request.body)
             name=roles_data.get('name')
+            
             if name is None or not name:
                 return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
 
@@ -317,19 +320,18 @@ def add_role(request):
         
     elif request.method == "PUT":
         if request.user.is_authenticated:
-            # id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            # check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
-            # user_exist = User.objects.get(pk = request.user.id)
+           
             admin = check_user(request.user.id, 'Admin')
 
             load = json.loads(request.body)
             new_name=load.get('new_name')
             role_id=load.get('role_id')
             if new_name is None or role_id is None or not new_name or not role_id:
-                return JsonResponse({'message':'Missing Required Filed or Key'},status=400)
+                return JsonResponse({'message':'Missing Required Filed/Key'},status=400)
             if admin:
                 role_check=Roles.objects.filter(pk=role_id,deleted_status=False).first()
                 if role_check:
+                    
                     Roles.objects.filter(pk=role_id,deleted_status=False).update(role_name=new_name)
                     return JsonResponse({'message':f'{role_check.role_name} updates with {new_name}'})
                 else:
@@ -341,12 +343,14 @@ def add_role(request):
 
     elif request.method=='DELETE':
         if request.user.is_authenticated:
-            # id=Roles.objects.get(role_name='Admin',deleted_status=False)
-            # check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+           
             admin = check_user(request.user.id, 'Admin')
+            
             if admin:
+                
                 id=request.GET.get('id')
                 deleted=Roles.objects.filter(pk=id,deleted_status=False).first()
+                
                 if deleted:
                     Roles.objects.filter(pk=id,deleted_status=False).update(deleted_status=True,deleted_time=datetime.today())
                     return JsonResponse({'message':f'{deleted.role_name} deleted Successfully'})
@@ -363,8 +367,7 @@ def add_role(request):
 
 def child(request):
     if request.user.is_authenticated:
-        # id=Roles.objects.get(role_name='Admin',deleted_status=False)
-        # check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+       
         admin = check_user(request.user.id, 'Admin')
         if admin:   
             if request.method == 'POST':
@@ -428,8 +431,7 @@ def child(request):
 
 def left_panel(request):
     if request.user.is_authenticated:
-        # id=Roles.objects.filter(role_name='Admin',deleted_status=False).first()
-        # check_admin=UserRole.objects.filter(user=request.user.id,role_id = id.pk,deleted_status=False).first()
+      
         admin = check_user(request.user.id, 'Admin')
         if admin:
             if request.method == 'POST':
@@ -445,7 +447,8 @@ def left_panel(request):
                 if not name or not state or not icon or not type or not role:
                     return JsonResponse({'message':'Missing required field'},status=400)
 
-                panel,created=Dropdown.objects.get_or_create(name=name,                   
+                panel,created=Dropdown.objects.get_or_create(
+                name=name,                   
                 state=state,                                                             
                 type=type,                               
                 role=role,                               
@@ -482,7 +485,6 @@ def left_panel(request):
                     return JsonResponse({'message':'Updated successfully'},status=200)
                 else:
                     return JsonResponse({'message':'Panel not found'},status=400)
-    
             else:
                 return JsonResponse({'message':'Invalid Request Method'},status=405)
         else:
