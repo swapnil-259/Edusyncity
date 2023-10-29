@@ -755,7 +755,7 @@ def select_sub(request):
                          for dictionary in item:
                              datesheet_data.append(item[dictionary])
                      for i in datesheet_data:
-                              sub_details =SubjectMapping.objects.filter(department_id=int(i), year=year,deleted_status=False).values('subject_id__subject_name','subject_id__id').distinct()
+                              sub_details =SubjectMapping.objects.filter(department_id=int(i), year=year,deleted_status=False).values('subject_id__subject_name','subject_id__id','department_id__department_id__name','department_id').distinct()
                               sub_data.append(list(sub_details))
                      return JsonResponse(list(sub_data), safe=False)
                  else:
@@ -864,7 +864,7 @@ def datesheet(request):
                     
                     return JsonResponse({'message':'added successfully'}, status=201)
                 else:
-                    return JsonResponse({'message':'already created'})
+                    return JsonResponse({'message':'already created'}, status=409)
             else:
                 return JsonResponse({'message':'user is not admin'})
         else:
@@ -969,12 +969,43 @@ def subject_mapped_dept(request):
             return JsonResponse({'message':'data not found'},status=204)
     else:
         return JsonResponse({'message':'invalid request method'}, status=405)
-def subjects(request):
+def student_marks(request):
     if request.method =='GET':
-        year = request.GET.get('year')
-        course_id = request.GET.get('id')
-        SubjectMapping.objects.filter(year = year, department_id = course_id)
-
+        if request.user.is_authenticated:
+            student = check_user(request.user.id,'Student')
+            if student:
+                paper = []
+                response = []
+                exam_type_id = request.GET.get('exam_id')
+                
+                exam_exist = QuestionPaper.objects.filter(exam_type_id=exam_type_id).values('id','subject_id__subject_id__subject_name')
+                for exam in exam_exist:
+                    print(exam['id'])
+                    paper.append(exam['id'])
+                print(paper)
+                for i in paper:
+                    print(i)
+                    student_mark=PaperResponse.objects.filter(added_by = request.user.id, paper_id=i).values('total_marks','paper_id__subject_id__subject_id__subject_name','paper_id__subject_id__subject_id__subject_code','paper_id__exam_type_id__exam_id__name','paper_id__exam_type_id__marks_id__name')
+                    response.append(list(student_mark))
+                    if student_mark:
+                        return JsonResponse(list(response), safe=False)
+                else:
+                    return JsonResponse({'message':'data not found'},status=204)
+            else:
+                return JsonResponse({'message':'not student logged in'}, status=403)
+        else:
+            return JsonResponse({"message":'user is not authenticated'}, status=401)
+    else:
+        return JsonResponse({'message':'invalid request method'}, status=405)
+def exam_type_for_marks(request):
+    if request.method =='GET':
+        exams = QuestionPaper.objects.filter(deleted_status=False).values('exam_type_id','exam_type_id__exam_id__name','exam_type_id__marks_id__name').distinct()
+        if exams:
+            return JsonResponse(list(exams), safe=False)
+        else:
+            return JsonResponse({'message':'data not found'}, status=204)
+    else:
+        return JsonResponse({'message':'invalid request method'},status=405)
 
         
                 
