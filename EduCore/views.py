@@ -27,11 +27,14 @@ def logged_in(request):
 
 def get_parents(request):
     if request.method == 'GET':
-        data=Dropdown.objects.filter(deleted_status=False,child__gt=0,pannel=0).values('id','name','child','can_delete','can_update')
-        if data is None:
-            return JsonResponse({'message':'Courses Not Found'},status=204)
+        if request.user.is_authenticated:
+            data=Dropdown.objects.filter(deleted_status=False,child__gt=0,pannel=0).values('id','name','child','can_delete','can_update')
+            if data is None:
+                return JsonResponse({'message':'Courses Not Found'},status=204)
+            else:
+                return JsonResponse(list(data),safe=False)
         else:
-            return JsonResponse(list(data),safe=False)
+            return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
     
@@ -50,7 +53,7 @@ def parents(request):
                 if name is None or depth is None:
                     return JsonResponse({'message':'missing field'},status=400)
                 if not name or not depth:
-                    return JsonResponse({'message':'required Field'})
+                    return JsonResponse({'message':'required Field'},status=400)
                 if not re.match(r'^[A-Za-z\s]+$',name):
                     return JsonResponse({'message':'Invalid name format'},status=400)
                 
@@ -76,24 +79,16 @@ def parents(request):
                     else: 
                         return JsonResponse({'message':f'This {name} already exist as Parent'},status=409)
           elif request.method =='DELETE':
-              if request.user.is_authenticated:
-                  admin = check_user(request.user.id,'Admin')
-                  if admin:
-                      
                       id = request.GET.get('id')
                       Dropdown.objects.filter(id =id).update(deleted_status=True, deleted_time=datetime.now())
                       return JsonResponse({'message':'deleted successfully'})
-                  else:
-                     return JsonResponse({'message':'user is not student'})
-              else:
-                   return JsonResponse({'message':'user is not authenticatedx'})
-        #   elif request.method=='PUT':
-        #       if request.user.is_authenticated:
-        #           admin = check_user(request.user.id,'Admin')
-        #           if admin:
-        #               id = request.GET.get('id')
-            #           name = request.GET.get('name')
-            #           Dropdown.objects.filter(id=id).update()
+          elif request.method=='PUT':
+              load = json.loads(request.body)
+              id = load.get('id')
+              name = load.get('name')
+              print(name)
+              Dropdown.objects.filter(id=id).update(name = name)
+              return JsonResponse({"message":'Parent updated successfully'})
           else:
                 return JsonResponse({'message':'invalid request method'},status=405)
          else:
@@ -116,25 +111,30 @@ def check_user(user, user_role):
             
 def get_childs(request):
     if request.method == 'GET':
-        parent_id=request.GET.get('parent_id')
-        data=Dropdown.objects.filter(relation=parent_id,deleted_status=False).values('id','name')
-        if data is None:
-            return JsonResponse({'message':'Childs Not Found'},status=204)
+        if request.user.is_authenticated:
+            parent_id=request.GET.get('parent_id')
+            data=Dropdown.objects.filter(relation=parent_id,deleted_status=False).values('id','name')
+            if data is None:
+                return JsonResponse({'message':'Childs Not Found'},status=204)
+            else:
+                return JsonResponse(list(data),safe=False)
         else:
-            return JsonResponse(list(data),safe=False)
+            return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
     
     
 def departments(request):
     if request.method == 'GET':
-        id = request.GET.get('course_id')
-        data=Mapping.objects.filter(deleted_status=False, course=id).values('department__name','id')
-        if data is None:
-            return JsonResponse({'message':'Courses Not Found'},status=204)
+        if request.is_authenticated:
+            id = request.GET.get('course_id')
+            data=Mapping.objects.filter(deleted_status=False, course=id).values('department__name','id')
+            if data is None:
+                return JsonResponse({'message':'Courses Not Found'},status=204)
+            else:
+                return JsonResponse(list(data),safe=False)
         else:
-            return JsonResponse(list(data),safe=False)
-           
+            return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 # def department(request):
@@ -152,25 +152,31 @@ def departments(request):
 
 def years(request):
     if request.method == 'GET':
-        course_id=request.GET.get('course_id')
-        data=Dropdown.objects.filter(pk=course_id,deleted_status=False).first()
-        year_data = data.year
-        print(year_data)
-        years=[]
-        for i in range(1,int(year_data)+1):
-            years.append(i)
-        return JsonResponse(years,safe=False)
+        if request.user.is_authenticated:
+            course_id=request.GET.get('course_id')
+            data=Dropdown.objects.filter(pk=course_id,deleted_status=False).first()
+            year_data = data.year
+            print(year_data)
+            years=[]
+            for i in range(1,int(year_data)+1):
+                years.append(i)
+            return JsonResponse(years,safe=False)
+        else:
+            return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 
 def subjects(request):
     if request.method == 'GET':
-        subjects=Subject.objects.filter(deleted_status=False).values('id','subject_name','subject_code')
-        if subjects:
-            return JsonResponse(list(subjects),safe=False)
+        if request.user.is_authenticated:
+            subjects=Subject.objects.filter(deleted_status=False).values('id','subject_name','subject_code')
+            if subjects:
+                return JsonResponse(list(subjects),safe=False)
+            else:
+                return JsonResponse({'message':'Subject Not Found'},status=204)
         else:
-            return JsonResponse({'message':'Subject Not Found'},status=204)
+            return JsonResponse({'message':'user is not authenticated'}, status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
@@ -311,35 +317,38 @@ def subject_teacher_mapping(request):
     
 def dropdown_option(request,dropdown):
     if request.method =='GET':
-        if dropdown =='gender':
-            name = 'Gender'
-            return dropdown_value(name)
-        elif dropdown =='title':
-            name = 'Title'
-            return dropdown_value(name)
-        elif dropdown =='courses':
-            name = 'Courses'
-            return dropdown_value(name)
-        elif dropdown =='religion':
-            name = 'Religion'
-            return dropdown_value(name)
-        elif dropdown =='select_mapping':
-            name = 'Mapping'
-            return dropdown_value(name)
-        elif dropdown=='shift':
-            name = 'Shift'
-            return dropdown_value(name)
-        elif dropdown=='examtype':
-            name = 'Exam Type'
-            return dropdown_value(name)
-        elif dropdown =='duration':
-            name = 'Duration'
-            return dropdown_value(name)
-        elif dropdown =='marks':
-            name='Marks'
-            return dropdown_value(name)
-        elif dropdown=='Set':
-            return dropdown_value(dropdown)
+        if request.user.is_authenticated:
+            if dropdown =='gender':
+                name = 'Gender'
+                return dropdown_value(name)
+            elif dropdown =='title':
+                name = 'Title'
+                return dropdown_value(name)
+            elif dropdown =='courses':
+                name = 'Courses'
+                return dropdown_value(name)
+            elif dropdown =='religion':
+                name = 'Religion'
+                return dropdown_value(name)
+            elif dropdown =='select_mapping':
+                name = 'Mapping'
+                return dropdown_value(name)
+            elif dropdown=='shift':
+                name = 'Shift'
+                return dropdown_value(name)
+            elif dropdown=='examtype':
+                name = 'Exam Type'
+                return dropdown_value(name)
+            elif dropdown =='duration':
+                name = 'Duration'
+                return dropdown_value(name)
+            elif dropdown =='marks':
+                name='Marks'
+                return dropdown_value(name)
+            elif dropdown=='Set':
+                return dropdown_value(dropdown)
+            else:
+                return JsonResponse({'message':'user is not authenticated'})
         
         else:
             return JsonResponse({"message":"no url found"},status=404)
@@ -386,64 +395,80 @@ def assign_department_to_course(request):
     
 def get_departments(request):
     if request.method=='GET':
-        dept_id = Dropdown.objects.filter(name='Departments',deleted_status=False).first()
-        dept_data = Dropdown.objects.filter(relation=dept_id.id,deleted_status=False).values('name','id')
-        if dept_data:
-            return JsonResponse(list(dept_data),safe=False)
+        if request.user.is_authenticated:
+            dept_id = Dropdown.objects.filter(name='Departments',deleted_status=False).first()
+            dept_data = Dropdown.objects.filter(relation=dept_id.id,deleted_status=False).values('name','id')
+            if dept_data:
+                return JsonResponse(list(dept_data),safe=False)
+            else:
+                return JsonResponse({'message':'data not found'},status=204)
         else:
-            return JsonResponse({'message':'data not found'},status=204)
+            return JsonResponse({'message':'user is not authenticated'})
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
     
     
 def get_years(request):
     if request.method =='GET':
-        id = request.GET.get('dept_mapped_id')
-        mapping_exist = Mapping.objects.filter(id = id,deleted_status=False).first()
-        if mapping_exist:
-            year = mapping_exist.course.year
-            years=[]
-            for i in range(1,int(year)+1):
-                years.append(i)
-            return JsonResponse(years,safe=False)
+        if request.user.is_authenticated:
+            id = request.GET.get('dept_mapped_id')
+            mapping_exist = Mapping.objects.filter(id = id,deleted_status=False).first()
+            if mapping_exist:
+                year = mapping_exist.course.year
+                years=[]
+                for i in range(1,int(year)+1):
+                    years.append(i)
+                return JsonResponse(years,safe=False)
+            else:
+                return JsonResponse({'message':'data not found'},status=204)
         else:
-            return JsonResponse({'message':'data not found'},status=204)
+            return JsonResponse({'message':'user is not authenticated'})
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
     
     
 def get_subjects(request):
     if request.method =='GET':
-        id = request.GET.get('mapped_sub')
-        year = request.GET.get('year')
-        subj_data = SubjectMapping.objects.filter(department=id,year=year,deleted_status=False).values('subject_id__subject_name','subject_id__subject_code','id')
-        if subj_data:
-            return JsonResponse(list(subj_data), safe=False)
+        if request.user.is_authenticated:
+            id = request.GET.get('mapped_sub')
+            year = request.GET.get('year')
+            subj_data = SubjectMapping.objects.filter(department=id,year=year,deleted_status=False).values('subject_id__subject_name','subject_id__subject_code','id')
+            if subj_data:
+                return JsonResponse(list(subj_data), safe=False)
+            else:
+                return JsonResponse({'message':'no data found'},status=204)
         else:
-            return JsonResponse({'message':'no data found'},status=204)
+            return JsonResponse({'message':'user is not authenticated'})
+        
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
     
     
 def faculty(request):
     if request.method=='GET':
-        faculty_data = Faculty.objects.filter(deleted_status=False).values('user_id__first_name','user_id__last_name','title_id__name','id')
-        if faculty_data:
-            return JsonResponse(list(faculty_data),safe=False)
+        if request.user.is_authentiacted:
+            faculty_data = Faculty.objects.filter(deleted_status=False).values('user_id__first_name','user_id__last_name','title_id__name','id')
+            if faculty_data:
+                return JsonResponse(list(faculty_data),safe=False)
+            else:
+                return JsonResponse({'message':'data not found'},status=204)
         else:
-            return JsonResponse({'message':'data not found'},status=204)
+            return JsonResponse({'message':'user is not authenticated'})
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
 
 
 def mapped_faculty(request):
     if request.method =='GET':
-        id = request.GET.get('id')
-        faculty_mapping = SubjectTeacherMapping.objects.filter(subject_id =id,deleted_status=False).values('faculty_id__user_id__first_name','faculty_id__user_id__last_name','id')
-        if faculty_mapping:
-            return JsonResponse(list(faculty_mapping),safe=False)
+        if request.user.is_authenticated:
+            id = request.GET.get('id')
+            faculty_mapping = SubjectTeacherMapping.objects.filter(subject_id =id,deleted_status=False).values('faculty_id__user_id__first_name','faculty_id__user_id__last_name','id')
+            if faculty_mapping:
+                return JsonResponse(list(faculty_mapping),safe=False)
+            else:
+                return JsonResponse({'message':'data not found'},safe=204)
         else:
-            return JsonResponse({'message':'data not found'},safe=204)
+            return JsonResponse({'message':'user is not authentiacted'})
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
         
@@ -451,18 +476,21 @@ def mapped_faculty(request):
             
 def admin_chart(request):
     if request.method== 'GET':
-        id = Dropdown.objects.filter(deleted_status=False,name='Courses').first()
-        print(id.id)
-        courses=[]
-        departments=[]
-        courses= Dropdown.objects.filter(deleted_status=False,relation=id.pk).values('id')
-        print(courses)
-        for i in courses:
-            id=i['id']
-            print(id)
-            dept_data=list(Mapping.objects.filter(course = i.id,deleted_status=False).count())
-            courses.append(dept_data)
-        return JsonResponse(courses,safe=False)
+        if request.user.is_authenticated:
+            id = Dropdown.objects.filter(deleted_status=False,name='Courses').first()
+            print(id.id)
+            courses=[]
+            departments=[]
+            courses= Dropdown.objects.filter(deleted_status=False,relation=id.pk).values('id')
+            print(courses)
+            for i in courses:
+                id=i['id']
+                print(id)
+                dept_data=list(Mapping.objects.filter(course = i.id,deleted_status=False).count())
+                courses.append(dept_data)
+            return JsonResponse(courses,safe=False)
+        else:
+            return JsonResponse({'message':'user is not authenticated'})
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
