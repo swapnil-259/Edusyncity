@@ -17,7 +17,8 @@ class DateSheetMapping(BaseModel):
     year=models.PositiveIntegerField(null=True)
     start_date=models.DateField(null=True)
     end_date=models.DateField(null=True)
-    # shift=models.ForeignKey(Dropdown,on_delete=models.SET_NULL,null=True,related_name='shift_identity')
+    published=models.BooleanField(null=True,default=False)
+    published_time=models.TimeField(null=True)
     
 class DateSheet(BaseModel):
     subject=models.ForeignKey(Subject,on_delete=models.SET_NULL,null=True)

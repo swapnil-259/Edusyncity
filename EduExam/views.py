@@ -516,8 +516,10 @@ def subject_year(request):
         if request.user.is_authenticated:
             department_id=request.GET.get('dept_id')
             if department_id is None:
-                return JsonResponse({'message':'You are not sending department_id'})
-            data=SubjectMapping.objects.filter(deleted_status=False,department=department_id).values('subject__pk','year','subject__subject_name','subject__subject_code')
+                return JsonResponse({'message':'You are not sending department_id'},status=400)
+            # id=Faculty.objects.filter(deleted_status=False,user=request.user.id).first()
+            # data=SubjectTeacherMapping.objects.filter(deleted_status=False,faculty=id,faculty_id__department=department_id).values()
+            data=SubjectMapping.objects.filter(deleted_status=False,department=department_id).values('pk','year','subject__subject_name','subject__subject_code')
             if data:
                 return JsonResponse(list(data),safe=False)
             else:
@@ -530,7 +532,7 @@ def subject_year(request):
             
 def access_question(request):
     if request.method=='GET':
-        if request.user.is_authentiacted:
+        if request.user.is_authenticated:
             student=Student.objects.filter(user=request.user.id).first()
             if student is None:
                 return JsonResponse({'message':'You have not filled your data'},status=400)
@@ -589,7 +591,7 @@ def get_question_paper(request):
                 if paper_id is None or not paper_id:
                     return JsonResponse({'message':'Paper id is required'},status=400)
                 if PaperResponse.objects.filter(added_by=student.id,paper=paper_id).exists():
-                    return JsonResponse({'message':'You already submited this paper'},status=200)
+                    return JsonResponse({'message':'You already submited this paper'},status=409)
                 data=QuestionPaper.objects.filter(deleted_status=False,pk=paper_id).values('pk','questions','exam_type__duration__name')
                 if data:
                     return JsonResponse(list(data),safe=False)
@@ -601,6 +603,28 @@ def get_question_paper(request):
             return JsonResponse({'message':'You are not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+    
+
+def view_paper(request):
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+            faculty=check_user(request.user.id, 'Teacher')
+            if faculty:
+                data=QuestionPaper.objects.filter(deleted_status=False,added_by=request.user.id).values('pk','set__name','exam_type__exam__name','department__course__name','department__department__name','subject__year','subject__subject__subject_name','subject__subject__subject_code')
+                if data:
+                    return JsonResponse(list(data),safe=False)
+                else:
+                    return JsonResponse({'message':'No paper found'},status=204)
+            else:
+                return JsonResponse({'message':'You are not faculty'},status=403)
+        else:
+            return JsonResponse({'message':'You are not logged in'},status=401)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+    
+
+
+
 
 def datesheet_validation(load):
     keys_to_check = ['subject', 'exam_map', 'shift', 'date', 'start_time']
@@ -771,7 +795,7 @@ def conduct_datesheet(request):
 
 def get_exam_mapping(request):
     if request.method=='GET':
-        if request.user.is_authentiacted:
+        if request.user.is_authenticated:
             datesheet_mapping_data = DateSheetMapping.objects.filter(deleted_status=False, start_date__gte=date.today()).values('id','year','start_date','end_date','course_id__name','exam_mapping__duration_id__name','exam_mapping__exam_id__name','exam_mapping__marks_id__name','course_id__id')
             if datesheet_mapping_data:
                 return JsonResponse(list(datesheet_mapping_data), safe=False)
