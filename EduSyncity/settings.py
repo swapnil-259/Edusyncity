@@ -107,7 +107,7 @@ DATABASES = {
     #     'USER': 'harry',
     #     'PASSWORD':'Kiet@123',
     #     'HOST':'0.tcp.in.ngrok.io',
-    #     'PORT':'18169',
+    #     'PORT':'14400',
     # }
     #  'default': {
     #     'ENGINE': 'django.db.backends.mysql',
