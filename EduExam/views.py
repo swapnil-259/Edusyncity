@@ -570,9 +570,10 @@ def subject_year(request):
             
             department_id=request.GET.get('dept_id')
             if department_id is None:
-                return JsonResponse({'message':'You are not sending department_id'})
-            
-            data=SubjectMapping.objects.filter(deleted_status=False,department=department_id).values('subject__pk','year','subject__subject_name','subject__subject_code')
+                return JsonResponse({'message':'You are not sending department_id'},status=400)
+            # id=Faculty.objects.filter(deleted_status=False,user=request.user.id).first()
+            # data=SubjectTeacherMapping.objects.filter(deleted_status=False,faculty=id,faculty_id__department=department_id).values()
+            data=SubjectMapping.objects.filter(deleted_status=False,department=department_id).values('pk','year','subject__subject_name','subject__subject_code')
             if data:
                 return JsonResponse(list(data),safe=False)
             
@@ -672,6 +673,28 @@ def get_question_paper(request):
             return JsonResponse({'message':'You are not authenticated'},status=401)
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+    
+
+def view_paper(request):
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+            faculty=check_user(request.user.id, 'Teacher')
+            if faculty:
+                data=QuestionPaper.objects.filter(deleted_status=False,added_by=request.user.id).values('pk','set__name','exam_type__exam__name','department__course__name','department__department__name','subject__year','subject__subject__subject_name','subject__subject__subject_code')
+                if data:
+                    return JsonResponse(list(data),safe=False)
+                else:
+                    return JsonResponse({'message':'No paper found'},status=204)
+            else:
+                return JsonResponse({'message':'You are not faculty'},status=403)
+        else:
+            return JsonResponse({'message':'You are not logged in'},status=401)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+    
+
+
+
 
 def datesheet_validation(load):
     

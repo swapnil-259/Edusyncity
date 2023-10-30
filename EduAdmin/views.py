@@ -133,8 +133,8 @@ def register_faculty(request):
                     role_id = roles.id,
                     added_by = admin
                     )
-                
-                return JsonResponse({'message':'registration Successful'})
+                return JsonResponse({'message':'registration Successful'},status=201)
+
             else:
                 return JsonResponse({'message':'You are not Admin'},status=403)
         else:
@@ -237,10 +237,8 @@ def register_student(request):
                 UserRole.objects.create(
                     user_id = user.id,
                     role_id = roles.id,
-                    added_by = admin                    
-                    )
-                
-                return JsonResponse({'message':'registration Successful'})
+                    added_by = admin                    )
+                return JsonResponse({'message':'registration Successful'},status=201)
             else:   
                 return JsonResponse({'message':'user is not admin'},status=403)
          else:
