@@ -142,7 +142,44 @@ def register_faculty(request):
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
 
+def get_personal_info(request):
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+            faculty=check_user(request.user.id,'Teacher')
+            student=check_user(request.user.id,'Student')
+            admin=check_user(request.user.id,'Admin')
+            if faculty:
+                info=Faculty.objects.filter(deleted_status=False,user=request.user.id).values('title__name','user__first_name','user__last_name','age','gender__name','address','contact','qualification')
+                if info:
+                    return JsonResponse(list(info),safe=False)
+                else:
+                    return JsonResponse({'message':'no data found'},status=204)
+            elif student:
+                info=Student.objects.filter(deleted_status=False,user=request.user.id).values('user__first_name','user__last_name','age','gender__name','address','contact','father_name','mother_name','course__name','department__department__name','year','religion__name')
+                if info:
+                    return JsonResponse(list(info),safe=False)
+                else:
+                    return JsonResponse({'message':'no data found'},status=204)
+            elif admin:
+                relation=Dropdown.objects.filter(name='Courses').first()
+                courses = Dropdown.objects.filter(relation_id=relation.pk).all()
+                data = {
+                    'course_name':[],
+                    'department_count':[]
+                }   
 
+                for course_id in courses:
+                    department_count = Mapping.objects.filter(course_id=course_id.id).count()
+                    data['course_name'].append(course_id.name)
+                    data['department_count'].append(department_count)
+                return JsonResponse(data, safe=False)
+
+            else:
+                return JsonResponse({'message':'you are not autherised'},status=403)
+        else:
+            return JsonResponse({'message':'You are not logged in'},status=401)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
 
 
 def register_student(request):
@@ -153,7 +190,7 @@ def register_student(request):
             admin = check_user(request.user.id, 'Admin')
 
             if admin:
-                load=json.loads(request.body)
+                load=json.loads(request.body)     
                 firstname = load.get('first_name')
                 lastname = load.get('last_name')
                 user_name =  load.get('username')
@@ -169,7 +206,18 @@ def register_student(request):
                 year = load.get('year')
                 religion = load.get('religion')
                 print(admin)
+                # try:
+                #     firstname = load['first_name'] 
+                # except:
+                #     return JsonResponse({'message':'firstname is missing'},status=400) 
 
+                # for key in load:
+                #     if key not in load:
+                #         return JsonResponse({'message':'firstname is missing'},status=400) 
+                # value=load.keys()
+                # if 'first_name' not in value:
+                #     return JsonResponse({'message':'firstname is missing'},status=400) 
+                 
                 
                 if age is ' ' or int(age) < 16:
                     return JsonResponse({'message':'Age Can Not Be Negative or blank space'},status=400)

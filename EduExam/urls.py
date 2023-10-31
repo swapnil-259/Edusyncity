@@ -30,11 +30,12 @@ urlpatterns = [
     path('get_students_answer/',views.get_students_answer),
     path('paper_set/',views.paper_sets),
     path('subject_mapped_dept/',views.subject_mapped_dept),
-    # path('student_marks/', views.student_marks),
+    path('student_marks/', views.student_marks),
     path('exam_type_for_marks/',views.exam_type_for_marks),
     path('get_datesheet/',views.get_datesheet),
     path('view_paper/', views.view_paper),
     path('exam_type_for_marks/',views.exam_type_for_marks),
+    path('year_and_subject/',views.year_and_subject)
 
   
     
