@@ -35,7 +35,7 @@ urlpatterns = [
     path('get_datesheet/',views.get_datesheet),
     path('view_paper/', views.view_paper),
     path('exam_type_for_marks/',views.exam_type_for_marks),
-    path('year_and_subject/',views.year_and_subject)
+   
 
   
     

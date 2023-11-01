@@ -149,15 +149,15 @@ def get_personal_info(request):
             student=check_user(request.user.id,'Student')
             admin=check_user(request.user.id,'Admin')
             if faculty:
-                info=Faculty.objects.filter(deleted_status=False,user=request.user.id).values('title__name','user__first_name','user__last_name','age','gender__name','address','contact','qualification')
+                info=list(Faculty.objects.filter(deleted_status=False,user=request.user.id).values('title__name','user__first_name','user__last_name','age','gender__name','address','contact','qualification'))
                 if info:
-                    return JsonResponse(list(info),safe=False)
+                    return JsonResponse({'t_detail':info})
                 else:
                     return JsonResponse({'message':'no data found'},status=204)
             elif student:
-                info=Student.objects.filter(deleted_status=False,user=request.user.id).values('user__first_name','user__last_name','age','gender__name','address','contact','father_name','mother_name','course__name','department__department__name','year','religion__name')
+                info=list(Student.objects.filter(deleted_status=False,user=request.user.id).values('user__first_name','user__last_name','age','gender__name','address','contact','father_name','mother_name','course__name','department__department__name','year','religion__name'))
                 if info:
-                    return JsonResponse(list(info),safe=False)
+                    return JsonResponse({'s_detail':info})
                 else:
                     return JsonResponse({'message':'no data found'},status=204)
             elif admin:
