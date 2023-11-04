@@ -9,8 +9,8 @@ urlpatterns = [
     path('logout/', views.logout_user),
     path('add_role/', views.add_role),
     path('child/', views.child),
-    path('left_panel/',views.left_panel)
-    # path('subject/',views.subject, name = 'subject'),
+    path('left_panel/',views.left_panel),
+    path('personal_info/',views.get_personal_info),
     # path('assign_department/',views.assign_department_to_course, name='assign_department_to_course'),
 ]
   

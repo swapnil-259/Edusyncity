@@ -566,7 +566,7 @@ def department_course(request):
         return JsonResponse({'message':'Invalid Request Method'},status=405)
             
             
-def subject_year(request):
+def year_and_subject(request):
     
     if request.method == 'GET':
         
@@ -1221,6 +1221,42 @@ def subjects(request):
     else:
         return JsonResponse({'message':'invalid request method'}, status=405)
     
+
+def student_marks(request):
+    if request.method =='GET':
+        # year = request.GET.get('year')
+        # course_id = request.GET.get('id')
+        # SubjectMapping.objects.filter(year = year, department_id = course_id)
+
+        if request.user.is_authenticated:
+            student = check_user(request.user.id,'Student')
+            if student:
+                paper = []
+                response = []
+                exam_type_id = request.GET.get('exam_id')
+
+                exam_exist = QuestionPaper.objects.filter(exam_type_id=exam_type_id).values('id','subject_id__subject_id__subject_name')
+                for exam in exam_exist:
+                    print(exam['id'])
+                    paper.append(exam['id'])
+                print(paper)
+                for i in paper:
+                    print(i)
+                    student_mark=PaperResponse.objects.filter(added_by = request.user.id, paper_id=i).values('total_marks','paper_id__subject_id__subject_id__subject_name','paper_id__subject_id__subject_id__subject_code','paper_id__exam_type_id__exam_id__name','paper_id__exam_type_id__marks_id__name')
+                    response.append(list(student_mark))
+                    if student_mark:
+                        return JsonResponse(list(response), safe=False)
+                else:
+                    return JsonResponse({'message':'data not found'},status=204)
+            else:
+                return JsonResponse({'message':'not student logged in'}, status=403)
+        else:
+            return JsonResponse({"message":'user is not authenticated'}, status=401)
+    else:
+        return JsonResponse({'message':'invalid request method'}, status=405)
+
+
+
 def exam_type_for_marks(request):
     
     if request.method =='GET':
@@ -1400,3 +1436,37 @@ def show_datesheet(request):
                     
                    
                 
+
+            
+                
+def subject_year(request):
+    
+    if request.method == 'GET':
+        
+        if request.user.is_authenticated:
+            faculty=check_user(request.user.id,'Teacher')
+            if faculty:
+                department_id=request.GET.get('dept_id')
+                subject_id=[]
+                subjects=[]
+                id=Faculty.objects.filter(deleted_status=False,user=request.user.id).first()
+                data=SubjectTeacherMapping.objects.filter(deleted_status=False,faculty=id).values('subject')
+                for i in data:
+                    subject_id.append(i['subject'])
+                for i in subject_id:
+                    sub=list(SubjectMapping.objects.filter(pk=i,department=department_id).values('pk','year','subject__subject_name','subject__subject_code'))
+                    if sub:
+                        subjects.append(sub)
+                if subjects != []:
+                    return JsonResponse(subjects,safe=False)
+                
+                else:
+                   return JsonResponse({'message':'No Content'},status=204)
+        else:
+            return JsonResponse({"message":'user is not authenticated'},status=401)
+    else:
+        return JsonResponse({'message':'Invalid Request Method'},status=405)
+    
+
+
+    
