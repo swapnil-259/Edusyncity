@@ -17,7 +17,7 @@ def logged_in(request):
             username=User.objects.filter(pk=user_data.user_id).first()
             
             if user_data and username:
-                return JsonResponse({'role_id':user_data.role_id,'username':username.username})
+                return JsonResponse({'role_id':user_data.role_id,'username':username.username,'first_name':username.first_name,'last_name':username.last_name})
             
             else:
                 return JsonResponse({'message':'User not found'},status=401)
@@ -26,7 +26,6 @@ def logged_in(request):
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
     
-
 
 
 def get_parents(request):
@@ -476,6 +475,7 @@ def get_departments(request):
     
     
 def get_years(request):
+    print(request)
     
     if request.method =='GET':
         
@@ -579,6 +579,7 @@ def admin_chart(request):
             return JsonResponse({'message':'user is not authenticated'})
     else:
         return JsonResponse({'message':'Invalid Request Method'},status=405)
+
 
 
 
