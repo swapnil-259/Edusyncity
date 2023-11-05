@@ -298,11 +298,20 @@ def register_student(request):
 
 def login_user(request):
     if request.method == 'POST':
+        #  m = User.objects.get(username=request.POST["username"])
+        #  if m.check_password(request.POST["password"]):
+        #       login(request,m)
+        #     #   request.session=m.id
+        #       return JsonResponse({"message":"user logged in"})
+        #  else:
+        #       return JsonResponse({"message":"user  not logged in"})
+             
 
         load=json.loads(request.body)
         user_name = load.get('username')
         password = load.get('password')
-
+        
+         
         if user_name is None or password is None:
             return JsonResponse({'message': 'Missing any Key.'}, status=400)
         
@@ -371,6 +380,7 @@ def logout_user(request):
 def add_role(request):
     
     if request.method =='POST':
+      
         
         if request.user.is_authenticated:
            
@@ -590,6 +600,8 @@ def left_panel(request):
                 return JsonResponse({'message':'You are not autherised'},status=403)
     else:
         return JsonResponse({'message':'You are not logged in'},status=401)
+
+# def s
 
     
 

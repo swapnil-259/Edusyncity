@@ -107,13 +107,13 @@ DATABASES = {
     #     'USER': 'harry',
     #     'PASSWORD':'Kiet@123',
     #     'HOST':'0.tcp.in.ngrok.io',
-    #     'PORT':'11624',
+    #     'PORT':'18529',
     # }
     #  'default': {
     #     'ENGINE': 'django.db.backends.mysql',
-    #     'NAME': 'Educyncity',
-    #     'USER': 'nikhil',
-    #     'PASSWORD':'Nik212107@',
+    #     'NAME': 'edusyncity',
+    #     'USER': 'swapnil',
+    #     'PASSWORD':'@Swapnil259',
     #     'HOST':'localhost',
     #     'PORT':'3306',
     # }

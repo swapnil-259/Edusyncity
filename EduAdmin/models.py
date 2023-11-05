@@ -63,6 +63,17 @@ class Student(BaseModel):
     mother_name = models.CharField(max_length=200, null=True)
     religion = models.ForeignKey(Dropdown, on_delete=models.SET_NULL, null=True,related_name="student_religion")
     
+class LeftPanel(BaseModel):
+    name = models.CharField(null = True, max_length=100)
+    relation = models.ForeignKey("LeftPanel", on_delete=models.SET_NULL, null=True)
+    order_by=models.PositiveIntegerField(default=0)
+    icon=models.TextField(max_length=100,null=True)
+    type=models.TextField(max_length=100,null=True)
+    state=models.TextField(max_length=100,null=True)
+    panel=models.BooleanField(default=0)
+    role= models.PositiveIntegerField(null=True)
+    
+    
   
 
     
