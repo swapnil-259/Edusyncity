@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 import json
 from django.http import JsonResponse,HttpResponse
-from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty
+from EduAdmin.models import UserRole,Dropdown,Mapping,User,Roles,Faculty,LeftPanel
 from datetime import datetime,date
 from .models import Subject
 from EduCore.models import Subject,SubjectMapping,SubjectTeacherMapping
@@ -216,15 +216,15 @@ def sidebar(request):
              child=[]
              
              if check_user:
-                pannels = Dropdown.objects.filter(pannel=1,deleted_status=False, role = check_user.role.id).values('id')
+                panels = LeftPanel.objects.filter(panel=1,deleted_status=False, role = check_user.role.id).values('id')
                 
-                if not pannels or pannels is None:
+                if not panels or panels is None:
                     return JsonResponse({'message':'Missing Required Field or Key'},status=400)
                 
-                for i in pannels:
-                    child_data = list(Dropdown.objects.filter(relation_id = i.get('id'),deleted_status=False,role = check_user.role.id).values('name','state','icon'))
+                for i in panels:
+                    child_data = list(LeftPanel.objects.filter(relation_id = i.get('id'),deleted_status=False,role = check_user.role.id).values('name','state','icon'))
                     child.append(child_data)
-                master_configuration = Dropdown.objects.filter(pannel=1,deleted_status=False,role=check_user.role.id).values('pk','name','icon','type','state')
+                master_configuration = LeftPanel.objects.filter(panel=1,deleted_status=False,role=check_user.role.id).values('pk','name','icon','type','state')
                 master_configuration_list = list(master_configuration)
                 
                 for i in range(0, len(master_configuration_list)):
@@ -238,6 +238,7 @@ def sidebar(request):
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:
         return JsonResponse({'message':'invalid request method'},status=405)
+
     
     
 def subject(request):
