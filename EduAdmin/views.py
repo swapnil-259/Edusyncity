@@ -310,6 +310,12 @@ def login_user(request):
         load=json.loads(request.body)
         user_name = load.get('username')
         password = load.get('password')
+        print(request.session.items())
+
+        request.session["hash1"]=user_name
+        # print(request.session.items())
+
+
         
          
         if user_name is None or password is None:
@@ -363,7 +369,7 @@ def change_password(request):
 
 def logout_user(request):      
     
-    if request.method == 'GET':
+    if request.method == 'POST':
         
         if request.user.is_authenticated:
             

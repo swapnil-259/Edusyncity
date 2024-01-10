@@ -915,7 +915,7 @@ def get_exam_mapping(request):
                 return JsonResponse(list(datesheet_mapping_data), safe=False)
             
             else:
-                return JsonResponse({'message':'data not found'},status=401)
+                return JsonResponse({'message':'data not found'})
         else:
             return JsonResponse({'message':'user is not authenticated'},status=401)
     else:

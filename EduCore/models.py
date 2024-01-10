@@ -15,3 +15,4 @@ class SubjectTeacherMapping(BaseModel):
     subject = models.ForeignKey(SubjectMapping,on_delete=models.SET_NULL,null=True,related_name='identify_mapped_subjects')
     faculty = models.ForeignKey(Faculty,on_delete=models.SET_NULL,null=True)
     
+    

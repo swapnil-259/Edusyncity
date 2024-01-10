@@ -111,11 +111,11 @@ DATABASES = {
     # }
      'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'edusyncity',
+        'NAME': 'edu',
         'USER': 'swapnil',
         'PASSWORD':'@Swapnil259',
         'HOST':'localhost',
-        'PORT':'3306',
+        'PORT':'3306',    
     }
 
 }
